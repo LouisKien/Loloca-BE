@@ -1,8 +1,11 @@
+using Loloca_BE.Business.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Loloca_BE.Controllers
+namespace Loloca_BE.Presentation.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {

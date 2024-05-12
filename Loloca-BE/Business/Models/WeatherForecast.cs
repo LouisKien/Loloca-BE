@@ -1,4 +1,4 @@
-namespace Loloca_BE
+namespace Loloca_BE.Business.Models
 {
     public class WeatherForecast
     {
