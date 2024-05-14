@@ -41,7 +41,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
 //Add services to the container
-builder.Services.AddScoped<IAccountsService, AccountsService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
+// Register in-memory caching
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
