@@ -1,14 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Loloca_BE.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace Loloca_BE.Data.Repositories
 {
     public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : class
     {
-        internal ApplicationDbContext context;
+        internal LolocaDbContext context;
         internal DbSet<TEntity> dbSet;
 
-        public GenericRepository(ApplicationDbContext context)
+        public GenericRepository(LolocaDbContext context)
         {
             this.context = context;
             this.dbSet = context.Set<TEntity>();

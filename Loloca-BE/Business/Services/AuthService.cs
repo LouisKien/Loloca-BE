@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Loloca_BE.Business.Models;
+using Loloca_BE.Business.Models.AccountsView;
 using Loloca_BE.Data.Repositories;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;

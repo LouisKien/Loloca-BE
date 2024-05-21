@@ -1,4 +1,5 @@
 ﻿using Loloca_BE.Business.Models;
+using Loloca_BE.Business.Models.AccountsView;
 using Loloca_BE.Business.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

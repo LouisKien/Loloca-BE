@@ -1,4 +1,4 @@
-﻿namespace Loloca_BE.Business.Models
+﻿namespace Loloca_BE.Business.Models.AccountsView
 {
     public class AccountsView
     {

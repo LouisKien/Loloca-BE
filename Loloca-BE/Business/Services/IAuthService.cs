@@ -1,4 +1,4 @@
-﻿using Loloca_BE.Business.Models;
+﻿using Loloca_BE.Business.Models.AccountsView;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Common;
