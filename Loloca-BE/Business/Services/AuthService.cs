@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
-using Loloca_BE.Business.Models.AccountsView;
+using Loloca_BE.Business.Models.AccountView;
+using Loloca_BE.Data.Entities;
 using Loloca_BE.Data.Repositories;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
@@ -13,10 +14,6 @@ namespace Loloca_BE.Business.Services
 {
     public class AuthService : IAuthService
     {
-        // Hard data, change it to your own for testing
-        private string email = "louisnamu02@gmail.com";
-        private string password = "string";
-
         private readonly IUnitOfWork _unitOfWork;
         private IConfiguration _configuration;
         private readonly IMapper _mapper;
@@ -32,32 +29,42 @@ namespace Loloca_BE.Business.Services
             _memoryCache = memoryCache;
         }
 
-        public async Task<(string? email, string? code)> AuthenticateUser(AccountsView loginInfo)
+        public async Task<AuthResponse> AuthenticateUser(AuthRequest loginInfo)
         {
-            string? emailReturn = null;
-            string? codeReturn = null;
+            AuthResponse response = new AuthResponse();
+            string hashedPassword = await HashPassword(loginInfo.Password);
+            var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == loginInfo.Email && a.HashedPassword == hashedPassword);
+            if (accounts.Any())
+            {
+                var account = Enumerable.FirstOrDefault(accounts);
+                response.AccountId = account.AccountId;
+                response.Email = account.Email;
+                response.Role = account.Role;
+                response.Status = account.Status;
+                return response;
+            }
+            return null;
+        }
 
+        public async Task<bool> AuthenticateUserAdvanced(AuthResponse authResponse)
+        {
             try
             {
-                //string hashedPassword = await HashPassword(loginInfo.Password);
+                string emailReturn;
+                
+                var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == authResponse.Email);
 
-                var account = new AccountsView
+                if (accounts.Any())
                 {
-                    Email = email,
-                    Password = password,
-                    Role = "Admin"
-                };
-                if (account != null && loginInfo.Email == account.Email && loginInfo.Password == account.Password)
-                {
-                    emailReturn = loginInfo.Email;
-                    codeReturn = GenerateVerificationCode();
-
-                    _memoryCache.Set(loginInfo.Email, codeReturn, TimeSpan.FromMinutes(60));
-
-                    // Send verification email
-                    await _emailService.SendVerificationEmailAsync(loginInfo.Email, codeReturn);
+                    var account = Enumerable.FirstOrDefault(accounts);
+                    if(account != null)
+                    {
+                        emailReturn = authResponse.Email;
+                        await SendVerificationEmail(emailReturn);
+                        return true;
+                    }
                 }
-                return (emailReturn, codeReturn);
+                return false;
             }
             catch (Exception ex)
             {
@@ -65,7 +72,22 @@ namespace Loloca_BE.Business.Services
             }
         }
 
-        private string GenerateVerificationCode()
+        public async Task SendVerificationEmail(string email)
+        {
+            try
+            {
+                // Send verification email
+                string verificationCode;
+                verificationCode = await GenerateVerificationCode();
+                _memoryCache.Set(email, verificationCode, TimeSpan.FromMinutes(60));
+                await _emailService.SendVerificationEmailAsync(email, verificationCode);
+            } catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        private async Task<String> GenerateVerificationCode()
         {
             Random random = new Random();
             return random.Next(100000, 999999).ToString();
@@ -101,47 +123,48 @@ namespace Loloca_BE.Business.Services
             {
                 try
                 {
-                    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-                    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-                    var account = new AccountsView
+                    var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == email);
+                    if (accounts.Any())
                     {
-                        Email = email,
-                        Role = "Admin"
-                    };
+                        var account = accounts.FirstOrDefault();
+                        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-                    var accessClaims = new List<Claim>
-                    {
-                        new Claim("Role", account.Role.ToString()),
-                        new Claim("Email", account.Email.ToString())
-                    };
 
-                    var accessExpiration = DateTime.UtcNow.AddHours(1);
-                    var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
-                    var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
+                        var accessClaims = new List<Claim>
+                        {
+                            new Claim("Role", account.Role.ToString()),
+                            new Claim("Email", account.Email)
+                        };
 
-                    var refreshClaims = new List<Claim>
-                    {
-                        new Claim("Email", account.Email)
-                    };
-                    var refreshExpiration = DateTime.UtcNow.AddDays(14);
-                    var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
-                    var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
+                        var accessExpiration = DateTime.UtcNow.AddHours(1);
+                        var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
+                        var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
 
-                    // Store refresh token in the database
-                    //var token = new Token
-                    //{
-                    //    AccountId = accounts.Id,
-                    //    RefreshToken = refreshToken,
-                    //    ExpiredDate = refreshExpiration
-                    //};
+                        var refreshClaims = new List<Claim>
+                        {
+                            new Claim("Email", account.Email)
+                        };
+                        var refreshExpiration = DateTime.UtcNow.AddDays(14);
+                        var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
+                        var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
 
-                    //_unitOfWork.TokenRepository.Insert(token);
-                    //_unitOfWork.Save();
+                        // Store refresh token in the database
+                        var token = new RefreshToken
+                        {
+                            AccountId = account.AccountId,
+                            Token = refreshToken,
+                            ExpiredDate = refreshExpiration
+                        };
 
-                    _memoryCache.Remove(email);
+                        await _unitOfWork.RefreshTokenRepository.InsertAsync(token);
+                        await _unitOfWork.SaveAsync();
 
-                    return (accessToken, refreshToken);
+                        _memoryCache.Remove(email);
+
+                        return (accessToken, refreshToken);
+                    }
+                    return (null, null);
                 }
                 catch (Exception ex)
                 {
@@ -152,6 +175,225 @@ namespace Loloca_BE.Business.Services
             {
                 // Invalid code or code expired
                 throw new Exception("Invalid verification code.");
+            }
+        }
+
+        public async Task<(string accessToken, string refreshToken)> GenerateTokens(AuthResponse authResponse)
+        {
+            try
+            {
+                var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == authResponse.Email);
+                if (accounts.Any())
+                {
+                    var account = accounts.FirstOrDefault();
+                    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+
+                    var accessClaims = new List<Claim>
+                        {
+                            new Claim("Role", account.Role.ToString()),
+                            new Claim("Email", account.Email),
+                            new Claim("AccountId", account.AccountId.ToString())
+                        };
+
+                    var accessExpiration = DateTime.UtcNow.AddHours(1);
+                    var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
+                    var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
+
+                    var refreshClaims = new List<Claim>
+                        {
+                            new Claim("Email", account.Email)
+                        };
+                    var refreshExpiration = DateTime.UtcNow.AddDays(14);
+                    var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
+                    var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
+
+                    // Store refresh token in the database
+                    var token = new RefreshToken
+                    {
+                        AccountId = account.AccountId,
+                        Token = refreshToken,
+                        ExpiredDate = refreshExpiration
+                    };
+
+                    await _unitOfWork.RefreshTokenRepository.InsertAsync(token);
+                    await _unitOfWork.SaveAsync();
+
+                    return (accessToken, refreshToken);
+                }
+                return (null, null);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<bool> VerifyAccount(string email, string verificationCode)
+        {
+            if (_memoryCache.TryGetValue(email, out string? cachedCode) && cachedCode == verificationCode)
+            {
+                using (var transaction = _unitOfWork.BeginTransaction())
+                {
+                    try
+                    {
+                        var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == email);
+                        if (accounts.Any())
+                        {
+                            var account = accounts.FirstOrDefault();
+                            if (account != null)
+                            {
+                                if (account.Status == 2)
+                                {
+                                    account.Status = 1;
+                                    await _unitOfWork.AccountRepository.UpdateAsync(account);
+                                    await _unitOfWork.SaveAsync();
+                                    if (account.Role == 2)
+                                    {
+                                        var tourGuides = await _unitOfWork.TourGuideRepository.FindAsync(t => t.AccountId == account.AccountId);
+                                        if (tourGuides.Any())
+                                        {
+                                            var tourGuide = tourGuides.FirstOrDefault();
+                                            if (tourGuide != null)
+                                            {
+                                                tourGuide.Status = 1;
+                                                await _unitOfWork.TourGuideRepository.UpdateAsync(tourGuide);
+                                                await _unitOfWork.SaveAsync();
+                                                await transaction.CommitAsync();
+                                            }
+                                        }
+                                        else
+                                        {
+                                            throw new Exception("Cannot verify your account");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("Cannot verify your account");
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception("Cannot verify your account");
+                                }
+                            }
+                            else
+                            {
+                                throw new Exception("Cannot verify your account");
+                            }
+                        }
+                        _memoryCache.Remove(email);
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        await transaction.RollbackAsync();
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> RegisterCustomer(RegisterCustomerRequest registerCustomer)
+        {
+            using (var transaction = _unitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    var account = new Account
+                    {
+                        Email = registerCustomer.Email,
+                        HashedPassword = await HashPassword(registerCustomer.Password),
+                        Status = 2,
+                        Role = 3
+                    };
+                    await _unitOfWork.AccountRepository.InsertAsync(account);
+                    await _unitOfWork.SaveAsync();
+
+                    var customer = new Customer
+                    {
+                        AccountId = account.AccountId,
+                        FirstName = registerCustomer.FirstName,
+                        LastName = registerCustomer.LastName,
+                        PhoneNumber = registerCustomer.PhoneNumber,
+                        Gender = registerCustomer.Gender,
+                        DateOfBirth = registerCustomer.DateOfBirth
+                    };
+
+                    await _unitOfWork.CustomerRepository.InsertAsync(customer);
+                    await _unitOfWork.SaveAsync();
+                    await transaction.CommitAsync();
+
+                    return true;
+                } catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> RegisterTourGuide(RegisterTourGuideRequest registerTourGuide)
+        {
+            using (var transaction = _unitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    var account = new Account
+                    {
+                        Email = registerTourGuide.Email,
+                        HashedPassword = await HashPassword(registerTourGuide.Password),
+                        Status = 2,
+                        Role = 2
+                    };
+                    await _unitOfWork.AccountRepository.InsertAsync(account);
+                    await _unitOfWork.SaveAsync();
+
+                    var tourGuide = new TourGuide
+                    {
+                        AccountId = account.AccountId,
+                        FirstName = registerTourGuide.FirstName,
+                        LastName = registerTourGuide.LastName,
+                        PhoneNumber = registerTourGuide.PhoneNumber,
+                        Gender = registerTourGuide.Gender,
+                        DateOfBirth = registerTourGuide.DateOfBirth,
+                        Address = registerTourGuide.Address,
+                        CityId = registerTourGuide.CityId,
+                        Status = 0
+                    };
+
+                    await _unitOfWork.TourGuideRepository.InsertAsync(tourGuide);
+                    await _unitOfWork.SaveAsync();
+                    await transaction.CommitAsync();
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> CheckExistedEmail(string email)
+        {
+            try
+            {
+                var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == email);
+                if (accounts.Any())
+                {
+                    return true;
+                }
+                return false;
+            } catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
     }

@@ -16,10 +16,10 @@ namespace Loloca_BE.Data.Entities
         public int CustomerId { get; set; }
         public int AccountId { get; set; }
         public string? FirstName { get; set; }
+        public int? Gender { get; set; }
         public string? LastName { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string? PhoneNumber { get; set; }
-        public string? EmailAddress { get; set; }
         public string? AvatarPath { get; set; }
 
         public virtual Account Account { get; set; } = null!;

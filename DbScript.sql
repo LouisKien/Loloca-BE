@@ -14,8 +14,9 @@ CREATE TABLE Accounts (
 CREATE TABLE RefreshTokens (
     RefreshTokenId INT IDENTITY(1,1) PRIMARY KEY,
     AccountId INT  NOT NULL,
-    RefreshToken NVARCHAR(255) NOT NULL,
+    Token NVARCHAR(255) NOT NULL,
     DeviceName NVARCHAR(255),
+	ExpiredDate DATETIME,
     Status BIT NOT NULL,
     CONSTRAINT FK_AccountId FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId)
 );
@@ -53,10 +54,10 @@ CREATE TABLE Customers (
     CustomerId INT IDENTITY(1,1) PRIMARY KEY,
     AccountId INT UNIQUE NOT NULL,
     FirstName NVARCHAR(255),
+	Gender INT,
     LastName NVARCHAR(255),
     DateOfBirth DATETIME,
     PhoneNumber NVARCHAR(255),
-    EmailAddress NVARCHAR(255),
     AvatarPath NVARCHAR(255),
     CONSTRAINT FK_Customers_Accounts FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId)
 );

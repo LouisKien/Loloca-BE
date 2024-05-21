@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -9,7 +8,6 @@ namespace Loloca_BE.Data.Entities
     public partial class LolocaDbContext : DbContext
     {
         private readonly IConfiguration _configuration;
-
         public LolocaDbContext()
         {
         }
@@ -108,14 +106,12 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Customer>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A743727506")
+                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7C779FE70")
                     .IsUnique();
 
                 entity.Property(e => e.AvatarPath).HasMaxLength(255);
 
                 entity.Property(e => e.DateOfBirth).HasColumnType("datetime");
-
-                entity.Property(e => e.EmailAddress).HasMaxLength(255);
 
                 entity.Property(e => e.FirstName).HasMaxLength(255);
 
@@ -160,10 +156,10 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Order>(entity =>
             {
-                entity.HasIndex(e => e.BookingTourRequestsId, "UQ__Orders__7E676DF687273501")
+                entity.HasIndex(e => e.BookingTourRequestsId, "UQ__Orders__7E676DF6708DA8AB")
                     .IsUnique();
 
-                entity.HasIndex(e => e.BookingTourGuideRequestId, "UQ__Orders__DE77BC49C3A1F4AE")
+                entity.HasIndex(e => e.BookingTourGuideRequestId, "UQ__Orders__DE77BC49479A7658")
                     .IsUnique();
 
                 entity.Property(e => e.CreateAt).HasColumnType("datetime");
@@ -195,9 +191,9 @@ namespace Loloca_BE.Data.Entities
             {
                 entity.Property(e => e.DeviceName).HasMaxLength(255);
 
-                entity.Property(e => e.RefreshToken1)
-                    .HasMaxLength(255)
-                    .HasColumnName("RefreshToken");
+                entity.Property(e => e.ExpiredDate).HasColumnType("datetime");
+
+                entity.Property(e => e.Token).HasMaxLength(255);
 
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.RefreshTokens)
@@ -225,10 +221,10 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<TourGuide>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A702C3E004")
+                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A70C7235D7")
                     .IsUnique();
 
-                entity.HasIndex(e => e.CityId, "UQ__TourGuid__F2D21B776EE038DC")
+                entity.HasIndex(e => e.CityId, "UQ__TourGuid__F2D21B777CDF5B1D")
                     .IsUnique();
 
                 entity.Property(e => e.Address).HasMaxLength(255);
@@ -273,7 +269,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourImage>(entity =>
             {
                 entity.HasKey(e => e.ImageId)
-                    .HasName("PK__TourImag__7516F70CA9435C75");
+                    .HasName("PK__TourImag__7516F70C2800D1F1");
 
                 entity.ToTable("TourImage");
 
