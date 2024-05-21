@@ -47,6 +47,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 // Register in-memory caching
 builder.Services.AddMemoryCache();
 
+DotNetEnv.Env.Load();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
