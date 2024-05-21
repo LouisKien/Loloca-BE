@@ -366,4 +366,4 @@ bin
 obj
 
 # Ignore specific credential files
-/credentials.json
+credentials.json
