@@ -366,4 +366,4 @@ bin
 obj
 
 # Ignore specific credential files
-credentials.json
+Loloca-BE/credentials.json
