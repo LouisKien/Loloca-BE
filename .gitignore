@@ -364,3 +364,6 @@ FodyWeavers.xsd
 .vs
 bin
 obj
+
+# Ignore specific credential files
+credentials.json
