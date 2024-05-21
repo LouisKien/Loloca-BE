@@ -1,5 +1,6 @@
 ﻿using Loloca_BE.Business.Models;
 using Loloca_BE.Business.Models.AccountView;
+using Loloca_BE.Business.Models.RefreshTokenView;
 using Loloca_BE.Business.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -88,6 +89,24 @@ namespace Loloca_BE.Presentation.Controllers
             IActionResult response = Unauthorized();
             var token = await _authService.GenerateTokens(body.Email, body.Code);
             response = Ok(new { accessToken = token.accessToken, refreshToken = token.refreshToken });
+            if (token.accessToken.IsNullOrEmpty() || token.refreshToken.IsNullOrEmpty())
+            {
+                response = BadRequest("Something went wrong");
+            }
+            return response;
+        }
+
+        [AllowAnonymous]
+        [HttpPost("/api/v1/auth/refresh")]
+        public async Task<IActionResult> AccessTokenRequest([FromBody] RefreshTokenRequest refreshToken)
+        {
+            IActionResult response = Unauthorized();
+            var token = await _authService.RefreshingAccessToken(refreshToken.RefreshToken);
+            response = Ok(new { accessToken = token.accessToken, refreshToken = token.refreshToken });
+            if (token.accessToken.IsNullOrEmpty() || token.refreshToken.IsNullOrEmpty())
+            {
+                response = BadRequest("Something went wrong");
+            }
             return response;
         }
 

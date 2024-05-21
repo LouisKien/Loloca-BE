@@ -118,64 +118,70 @@ namespace Loloca_BE.Business.Services
 
         public async Task<(string accessToken, string refreshToken)> GenerateTokens(string email, string verificationCode)
         {
-            // Check if the code exists in the cache and is not expired
-            if (_memoryCache.TryGetValue(email, out string? cachedCode) && cachedCode == verificationCode)
+            var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == email);
+            if(accounts.Any())
             {
-                try
+                var account = accounts.FirstOrDefault();
+                if(account != null)
                 {
-                    var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == email);
-                    if (accounts.Any())
+                    // Check if the code exists in the cache and is not expired
+                    if (_memoryCache.TryGetValue(email, out string? cachedCode) && cachedCode == verificationCode && account.Status == 1)
                     {
-                        var account = accounts.FirstOrDefault();
-                        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-                        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+                        try
+                        {
+                            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
 
-                        var accessClaims = new List<Claim>
+                            var accessClaims = new List<Claim>
                         {
                             new Claim("Role", account.Role.ToString()),
                             new Claim("Email", account.Email)
                         };
 
-                        var accessExpiration = DateTime.UtcNow.AddHours(1);
-                        var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
-                        var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
+                            var accessExpiration = DateTime.UtcNow.AddHours(1);
+                            var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
+                            var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
 
-                        var refreshClaims = new List<Claim>
+                            var refreshClaims = new List<Claim>
                         {
                             new Claim("Email", account.Email)
                         };
-                        var refreshExpiration = DateTime.UtcNow.AddDays(14);
-                        var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
-                        var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
+                            var refreshExpiration = DateTime.UtcNow.AddDays(14);
+                            var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
+                            var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
 
-                        // Store refresh token in the database
-                        var token = new RefreshToken
+                            // Store refresh token in the database
+                            var token = new RefreshToken
+                            {
+                                AccountId = account.AccountId,
+                                Token = refreshToken,
+                                ExpiredDate = refreshExpiration,
+                                Status = true,
+                                DeviceName = "Unknown"
+                            };
+
+                            await _unitOfWork.RefreshTokenRepository.InsertAsync(token);
+                            await _unitOfWork.SaveAsync();
+
+                            _memoryCache.Remove(email);
+
+                            return (accessToken, refreshToken);
+                            
+                        }
+                        catch (Exception ex)
                         {
-                            AccountId = account.AccountId,
-                            Token = refreshToken,
-                            ExpiredDate = refreshExpiration
-                        };
-
-                        await _unitOfWork.RefreshTokenRepository.InsertAsync(token);
-                        await _unitOfWork.SaveAsync();
-
-                        _memoryCache.Remove(email);
-
-                        return (accessToken, refreshToken);
+                            throw new Exception(ex.Message);
+                        }
                     }
-                    return (null, null);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(ex.Message);
+                    else
+                    {
+                        _memoryCache.Remove(email);
+                        throw new Exception("Invalid verification code.");
+                    }
                 }
             }
-            else
-            {
-                // Invalid code or code expired
-                throw new Exception("Invalid verification code.");
-            }
+            return (null, null);
         }
 
         public async Task<(string accessToken, string refreshToken)> GenerateTokens(AuthResponse authResponse)
@@ -214,7 +220,9 @@ namespace Loloca_BE.Business.Services
                     {
                         AccountId = account.AccountId,
                         Token = refreshToken,
-                        ExpiredDate = refreshExpiration
+                        ExpiredDate = refreshExpiration,
+                        Status = true,
+                        DeviceName = "Unknown"
                     };
 
                     await _unitOfWork.RefreshTokenRepository.InsertAsync(token);
@@ -267,10 +275,9 @@ namespace Loloca_BE.Business.Services
                                         {
                                             throw new Exception("Cannot verify your account");
                                         }
-                                    }
-                                    else
+                                    } else
                                     {
-                                        throw new Exception("Cannot verify your account");
+                                        await transaction.CommitAsync();
                                     }
                                 }
                                 else
@@ -395,6 +402,61 @@ namespace Loloca_BE.Business.Services
             {
                 throw new Exception(ex.Message);
             }
+        }
+
+        public async Task<(string accessToken, string refreshToken)> RefreshingAccessToken(string oldRefreshToken)
+        {
+            var existRefreshTokens = await _unitOfWork.RefreshTokenRepository.FindAsync(r => r.Token == oldRefreshToken);
+            if (existRefreshTokens.Any())
+            {
+                var existRefreshToken = existRefreshTokens.FirstOrDefault();
+                if (existRefreshToken != null)
+                {
+                    try
+                    {
+                        var account = await _unitOfWork.AccountRepository.GetByIDAsync(existRefreshToken.AccountId);
+                        if (account != null)
+                        {
+                            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+
+                            var accessClaims = new List<Claim>
+                            {
+                            new Claim("Role", account.Role.ToString()),
+                            new Claim("Email", account.Email),
+                            new Claim("AccountId", account.AccountId.ToString())
+                            };
+
+                            var accessExpiration = DateTime.UtcNow.AddHours(1);
+                            var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
+                            var newAccessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
+
+                            var refreshClaims = new List<Claim>
+                            {
+                            new Claim("Email", account.Email)
+                            };
+                            var refreshExpiration = DateTime.UtcNow.AddDays(14);
+                            var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
+                            var newRefreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
+
+                            existRefreshToken.Token = newRefreshToken;
+                            existRefreshToken.ExpiredDate = refreshExpiration;
+
+                            await _unitOfWork.RefreshTokenRepository.UpdateAsync(existRefreshToken);
+                            await _unitOfWork.SaveAsync();
+
+                            return (newAccessToken, newRefreshToken);
+                        }
+                        
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
+                }
+            }
+            return (null, null);
         }
     }
 }

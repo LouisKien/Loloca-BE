@@ -1,4 +1,5 @@
 ﻿using Loloca_BE.Business.Models.AccountView;
+using Loloca_BE.Data.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Common;
@@ -17,5 +18,6 @@ namespace Loloca_BE.Business.Services
         Task<bool> RegisterCustomer(RegisterCustomerRequest registerCustomer);
         Task<bool> RegisterTourGuide(RegisterTourGuideRequest registerTourGuide);
         Task<bool> CheckExistedEmail(string email);
+        Task<(string accessToken, string refreshToken)> RefreshingAccessToken(string oldRefreshToken);
     }
 }
