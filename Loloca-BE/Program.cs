@@ -44,10 +44,25 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.Al
 //Add services to the container
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<ITourGuideService, TourGuideService>();
+builder.Services.AddScoped<IGoogleDriveService, GoogleDriveService>();
 
 // Register in-memory caching
 builder.Services.AddMemoryCache();
 
+// Set policy permission for roles
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAdminRole", policy => policy.RequireClaim("Role", "1"));
+    options.AddPolicy("RequireTourGuideRole", policy => policy.RequireClaim("Role", "2"));
+    options.AddPolicy("RequireCustomerRole", policy => policy.RequireClaim("Role", "3"));
+    options.AddPolicy("RequireAdminOrTourGuideRole", policy => policy.RequireClaim("Role", "1", "2"));
+    options.AddPolicy("RequireAdminOrCustomerRole", policy => policy.RequireClaim("Role", "1", "3"));
+    options.AddPolicy("RequireTourGuideOrCustomerRole", policy => policy.RequireClaim("Role", "2", "3"));
+    options.AddPolicy("RequireAllRoles", policy => policy.RequireClaim("Role", "1", "2", "3"));
+});
+
+// Load .env file
 DotNetEnv.Env.Load();
 
 var app = builder.Build();

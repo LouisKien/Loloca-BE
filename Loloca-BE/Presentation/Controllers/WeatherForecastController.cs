@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Loloca_BE.Presentation.Controllers
 {
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "RequireAllRoles")]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {

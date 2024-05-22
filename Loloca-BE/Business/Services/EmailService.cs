@@ -12,13 +12,11 @@ namespace Loloca_BE.Business.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly IConfiguration _configuration;
         private readonly string _credentialsPath;
         private UserCredential _credential;
 
-        public EmailService(IConfiguration configuration)
+        public EmailService()
         {
-            _configuration = configuration;
             _credentialsPath = Environment.GetEnvironmentVariable("CREDENTIALS_PATH");
         }
 
