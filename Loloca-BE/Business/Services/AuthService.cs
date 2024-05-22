@@ -270,6 +270,10 @@ namespace Loloca_BE.Business.Services
                                                 await _unitOfWork.SaveAsync();
                                                 await transaction.CommitAsync();
                                             }
+                                            else
+                                            {
+                                                throw new Exception("Cannot verify your account");
+                                            }
                                         }
                                         else
                                         {
@@ -295,6 +299,7 @@ namespace Loloca_BE.Business.Services
                     }
                     catch (Exception ex)
                     {
+                        _memoryCache.Remove(email);
                         await transaction.RollbackAsync();
                         return false;
                     }

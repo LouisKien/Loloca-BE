@@ -35,7 +35,7 @@ namespace Loloca_BE.Business.Services
                     GoogleClientSecrets.Load(stream).Secrets,
                     new[] { GmailService.Scope.GmailSend },
                     "user", CancellationToken.None,
-                    new FileDataStore("Token.json", false));
+                    new FileDataStore("Token.json", true));
             }
 
             return _credential;
