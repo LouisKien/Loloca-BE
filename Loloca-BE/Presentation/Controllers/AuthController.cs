@@ -55,7 +55,7 @@ namespace Loloca_BE.Presentation.Controllers
                         }
                         else if(account_.Role == 3)
                         {
-                            var token = await _authService.GenerateTokens(account_);
+                            var token = await _authService.GenerateTokens(account_.Email);
                             if(token.refreshToken.IsNullOrEmpty() || token.accessToken.IsNullOrEmpty())
                             {
                                 return BadRequest("Something went wrong");
@@ -219,8 +219,16 @@ namespace Loloca_BE.Presentation.Controllers
             bool check = await _authService.VerifyAccount(body.Email, body.Code);
             if (check)
             {
-                return Ok("Verified successfully");
-            }else
+                IActionResult response = Unauthorized();
+                var token = await _authService.GenerateTokens(body.Email);
+                response = Ok(new { accessToken = token.accessToken, refreshToken = token.refreshToken });
+                if (token.accessToken.IsNullOrEmpty() || token.refreshToken.IsNullOrEmpty())
+                {
+                    response = BadRequest("Something went wrong");
+                }
+                return response;
+            }
+            else
             {
                 return BadRequest("Invalid verification code, if you don't see it, check your spam");
             }

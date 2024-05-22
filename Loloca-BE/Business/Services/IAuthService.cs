@@ -11,8 +11,8 @@ namespace Loloca_BE.Business.Services
         Task<AuthResponse> AuthenticateUser(AuthRequest loginInfo);
         Task<bool> AuthenticateUserAdvanced(AuthResponse authResponse);
         Task<string?> HashPassword(string password);
-        Task<(string accessToken, string refreshToken)> GenerateTokens(AuthResponse authResponse);
         Task<(string accessToken, string refreshToken)> GenerateTokens(string email, string verificationCode);
+        Task<(string accessToken, string refreshToken)> GenerateTokens(string email);
         Task<bool> VerifyAccount(string email, string verificationCode);
         Task SendVerificationEmail(string email);
         Task<bool> RegisterCustomer(RegisterCustomerRequest registerCustomer);
