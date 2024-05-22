@@ -58,6 +58,7 @@ CREATE TABLE Customers (
     LastName NVARCHAR(255),
     DateOfBirth DATETIME,
     PhoneNumber NVARCHAR(255),
+	AddressCustomer NVARCHAR(255),
     AvatarPath NVARCHAR(255),
     CONSTRAINT FK_Customers_Accounts FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId)
 );
@@ -68,6 +69,7 @@ CREATE TABLE Feedbacks (
     TourGuideId INT  NOT NULL,
     NumOfStars INT  NOT NULL,
     Content NVARCHAR(MAX),
+	TimeFeedback DATETIME,
     Status BIT  NOT NULL,
     CONSTRAINT FK_Feedbacks_Customers FOREIGN KEY (CustomerId) REFERENCES Customers(CustomerId),
     CONSTRAINT FK_Feedbacks_TourGuides FOREIGN KEY (TourGuideId) REFERENCES TourGuides(TourGuideId)
@@ -135,8 +137,8 @@ CREATE TABLE BookingTourRequests (
 CREATE TABLE Orders (
     OrderId INT IDENTITY(1,1) PRIMARY KEY,
     CustomerId INT NOT NULL,
-    BookingTourRequestsId INT UNIQUE,
-    BookingTourGuideRequestId INT UNIQUE,
+    BookingTourRequestsId INT ,
+    BookingTourGuideRequestId INT ,
     OrderCode NVARCHAR(255) NOT NULL,
     OrderPrice FLOAT  NOT NULL,
 	PaymentProvider NVARCHAR(255),

@@ -7,15 +7,13 @@ namespace Loloca_BE.Data.Entities
 {
     public partial class LolocaDbContext : DbContext
     {
-        private readonly IConfiguration _configuration;
         public LolocaDbContext()
         {
         }
 
-        public LolocaDbContext(DbContextOptions<LolocaDbContext> options, IConfiguration configuration)
+        public LolocaDbContext(DbContextOptions<LolocaDbContext> options)
             : base(options)
         {
-            _configuration = configuration;
         }
 
         public virtual DbSet<Account> Accounts { get; set; } = null!;
@@ -35,8 +33,8 @@ namespace Loloca_BE.Data.Entities
         {
             if (!optionsBuilder.IsConfigured)
             {
-                string connectionString = _configuration.GetConnectionString("DefaultConnection");
-                optionsBuilder.UseSqlServer(connectionString);
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Server=(local);Database=LolocaDb;Uid=sa;Pwd=12345;");
             }
         }
 
@@ -106,8 +104,10 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Customer>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7C779FE70")
+                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A70F154221")
                     .IsUnique();
+
+                entity.Property(e => e.AddressCustomer).HasMaxLength(255);
 
                 entity.Property(e => e.AvatarPath).HasMaxLength(255);
 
@@ -128,6 +128,8 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Feedback>(entity =>
             {
+                entity.Property(e => e.TimeFeedback).HasColumnType("datetime");
+
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.Feedbacks)
                     .HasForeignKey(d => d.CustomerId)
@@ -156,12 +158,6 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Order>(entity =>
             {
-                entity.HasIndex(e => e.BookingTourRequestsId, "UQ__Orders__7E676DF6708DA8AB")
-                    .IsUnique();
-
-                entity.HasIndex(e => e.BookingTourGuideRequestId, "UQ__Orders__DE77BC49479A7658")
-                    .IsUnique();
-
                 entity.Property(e => e.CreateAt).HasColumnType("datetime");
 
                 entity.Property(e => e.OrderCode).HasMaxLength(255);
@@ -171,13 +167,13 @@ namespace Loloca_BE.Data.Entities
                 entity.Property(e => e.TransactionCode).HasMaxLength(255);
 
                 entity.HasOne(d => d.BookingTourGuideRequest)
-                    .WithOne(p => p.Order)
-                    .HasForeignKey<Order>(d => d.BookingTourGuideRequestId)
+                    .WithMany(p => p.Orders)
+                    .HasForeignKey(d => d.BookingTourGuideRequestId)
                     .HasConstraintName("FK_Orders_BookingTourGuideRequests");
 
                 entity.HasOne(d => d.BookingTourRequests)
-                    .WithOne(p => p.Order)
-                    .HasForeignKey<Order>(d => d.BookingTourRequestsId)
+                    .WithMany(p => p.Orders)
+                    .HasForeignKey(d => d.BookingTourRequestsId)
                     .HasConstraintName("FK_Orders_BookingTourRequests");
 
                 entity.HasOne(d => d.Customer)
@@ -221,10 +217,10 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<TourGuide>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A70C7235D7")
+                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A72A2E66E6")
                     .IsUnique();
 
-                entity.HasIndex(e => e.CityId, "UQ__TourGuid__F2D21B777CDF5B1D")
+                entity.HasIndex(e => e.CityId, "UQ__TourGuid__F2D21B774988AB6E")
                     .IsUnique();
 
                 entity.Property(e => e.Address).HasMaxLength(255);
@@ -269,7 +265,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourImage>(entity =>
             {
                 entity.HasKey(e => e.ImageId)
-                    .HasName("PK__TourImag__7516F70C2800D1F1");
+                    .HasName("PK__TourImag__7516F70C923FBB27");
 
                 entity.ToTable("TourImage");
 

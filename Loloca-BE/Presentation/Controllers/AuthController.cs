@@ -23,7 +23,7 @@ namespace Loloca_BE.Presentation.Controllers
 
         [AllowAnonymous]
         [HttpPost("/api/v1/auth")]
-        public async Task <IActionResult> Login([FromBody] AuthRequest loginInfo)
+        public async Task<IActionResult> Login([FromBody] AuthRequest loginInfo)
         {
             if (loginInfo.Email.IsNullOrEmpty())
             {
@@ -35,28 +35,29 @@ namespace Loloca_BE.Presentation.Controllers
             }
             IActionResult response = Unauthorized();
             var account_ = await _authService.AuthenticateUser(loginInfo);
-            if(account_ != null)
+            if (account_ != null)
             {
                 switch (account_.Status)
                 {
                     case 0:
                         return BadRequest("Your account is locked by administrator");
                     case 1:
-                        if(account_.Role == 1 || account_.Role == 2)
+                        if (account_.Role == 1 || account_.Role == 2)
                         {
                             bool check = await _authService.AuthenticateUserAdvanced(account_);
                             if (check)
                             {
                                 return Ok("Email has been sent, please check email to verify your account, if you don't see it, check your spam");
-                            } else
+                            }
+                            else
                             {
                                 return BadRequest("Something went wrong");
                             }
                         }
-                        else if(account_.Role == 3)
+                        else if (account_.Role == 3)
                         {
                             var token = await _authService.GenerateTokens(account_.Email);
-                            if(token.refreshToken.IsNullOrEmpty() || token.accessToken.IsNullOrEmpty())
+                            if (token.refreshToken.IsNullOrEmpty() || token.accessToken.IsNullOrEmpty())
                             {
                                 return BadRequest("Something went wrong");
                             }
@@ -78,7 +79,7 @@ namespace Loloca_BE.Presentation.Controllers
         [HttpPost("/api/v1/auth/verify")]
         public async Task<IActionResult> VerifyLogin([FromBody] EmailVerificationView body)
         {
-            if(body.Email.IsNullOrEmpty())
+            if (body.Email.IsNullOrEmpty())
             {
                 return BadRequest("Email cannot be empty");
             }
@@ -118,7 +119,7 @@ namespace Loloca_BE.Presentation.Controllers
             {
                 return BadRequest("Email cannot be empty");
             }
-            if(await _authService.CheckExistedEmail(body.Email))
+            if (await _authService.CheckExistedEmail(body.Email))
             {
                 return BadRequest("Your email has already existed");
             }

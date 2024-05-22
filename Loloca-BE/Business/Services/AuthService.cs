@@ -51,13 +51,13 @@ namespace Loloca_BE.Business.Services
             try
             {
                 string emailReturn;
-                
+
                 var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == authResponse.Email);
 
                 if (accounts.Any())
                 {
                     var account = Enumerable.FirstOrDefault(accounts);
-                    if(account != null)
+                    if (account != null)
                     {
                         emailReturn = authResponse.Email;
                         await SendVerificationEmail(emailReturn);
@@ -81,7 +81,8 @@ namespace Loloca_BE.Business.Services
                 verificationCode = await GenerateVerificationCode();
                 _memoryCache.Set(email, verificationCode, TimeSpan.FromMinutes(60));
                 await _emailService.SendVerificationEmailAsync(email, verificationCode);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -119,12 +120,12 @@ namespace Loloca_BE.Business.Services
         public async Task<(string accessToken, string refreshToken)> GenerateTokens(string email, string verificationCode)
         {
             var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == email);
-            if(accounts.Any())
+            if (accounts.Any())
             {
                 var account = accounts.FirstOrDefault();
-                if(account != null)
+                if (account != null)
                 {
-                    if(account.Status == 1)
+                    if (account.Status == 1)
                     {
                         // Check if the code exists in the cache and is not expired
                         if (_memoryCache.TryGetValue(email, out string? cachedCode) && cachedCode == verificationCode)
@@ -235,7 +236,8 @@ namespace Loloca_BE.Business.Services
                                         {
                                             throw new Exception("Cannot verify your account");
                                         }
-                                    } else
+                                    }
+                                    else
                                     {
                                         await transaction.CommitAsync();
                                     }
@@ -298,7 +300,8 @@ namespace Loloca_BE.Business.Services
                     await transaction.CommitAsync();
 
                     return true;
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
                     return false;
@@ -359,7 +362,8 @@ namespace Loloca_BE.Business.Services
                     return true;
                 }
                 return false;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -409,7 +413,7 @@ namespace Loloca_BE.Business.Services
 
                             return (newAccessToken, newRefreshToken);
                         }
-                        
+
                     }
                     catch (Exception ex)
                     {

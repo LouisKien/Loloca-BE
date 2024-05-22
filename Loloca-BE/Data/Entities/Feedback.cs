@@ -15,6 +15,7 @@ namespace Loloca_BE.Data.Entities
         public int TourGuideId { get; set; }
         public int NumOfStars { get; set; }
         public string? Content { get; set; }
+        public DateTime? TimeFeedback { get; set; }
         public bool Status { get; set; }
 
         public virtual Customer Customer { get; set; } = null!;

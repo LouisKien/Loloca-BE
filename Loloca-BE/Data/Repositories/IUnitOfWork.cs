@@ -8,11 +8,11 @@ namespace Loloca_BE.Data.Repositories
         IDbContextTransaction BeginTransaction();
         Task SaveAsync();
 
-        IGenericRepository<Account> AccountRepository {  get; }
+        IGenericRepository<Account> AccountRepository { get; }
 
-        IGenericRepository<BookingTourGuideRequest> BookingTourGuideRepository { get;}
+        IGenericRepository<BookingTourGuideRequest> BookingTourGuideRepository { get; }
 
-        IGenericRepository<BookingTourRequest> BookingTourRequestRepository { get;}
+        IGenericRepository<BookingTourRequest> BookingTourRequestRepository { get; }
 
         IGenericRepository<City> CityRepository { get; }
 
