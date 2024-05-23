@@ -45,6 +45,7 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.Al
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ITourGuideService, TourGuideService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IGoogleDriveService, GoogleDriveService>();
 
 // Register in-memory caching

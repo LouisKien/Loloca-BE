@@ -104,12 +104,16 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Customer>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A70F154221")
+                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A796674E9E")
                     .IsUnique();
 
                 entity.Property(e => e.AddressCustomer).HasMaxLength(255);
 
                 entity.Property(e => e.AvatarPath).HasMaxLength(255);
+
+                entity.Property(e => e.AvatarUploadTime)
+                    .HasColumnType("datetime")
+                    .HasColumnName("avatarUploadTime");
 
                 entity.Property(e => e.DateOfBirth).HasColumnType("datetime");
 
@@ -217,10 +221,10 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<TourGuide>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A72A2E66E6")
+                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A7B9D242B6")
                     .IsUnique();
 
-                entity.HasIndex(e => e.CityId, "UQ__TourGuid__F2D21B774988AB6E")
+                entity.HasIndex(e => e.CityId, "UQ__TourGuid__F2D21B779F500CC6")
                     .IsUnique();
 
                 entity.Property(e => e.Address).HasMaxLength(255);
@@ -265,7 +269,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourImage>(entity =>
             {
                 entity.HasKey(e => e.ImageId)
-                    .HasName("PK__TourImag__7516F70C923FBB27");
+                    .HasName("PK__TourImag__7516F70C7A1B715D");
 
                 entity.ToTable("TourImage");
 

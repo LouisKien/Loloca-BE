@@ -4,6 +4,8 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Gmail.v1;
 using Google.Apis.Services;
+using Loloca_BE.Business.Models.TourGuideView;
+using Loloca_BE.Data.Entities;
 using Loloca_BE.Data.Repositories;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
@@ -17,13 +19,16 @@ namespace Loloca_BE.Business.Services
         private IConfiguration _configuration;
         private readonly IMapper _mapper;
         private readonly IGoogleDriveService _googleDriveService;
+        private readonly IAuthService _authService;
 
-        public TourGuideService(IConfiguration configuration, IUnitOfWork unitOfWork, IMapper mapper, IGoogleDriveService googleDriveService)
+        public TourGuideService(IConfiguration configuration, IUnitOfWork unitOfWork, IMapper mapper, IGoogleDriveService googleDriveService, IAuthService authService)
         {
             _configuration = configuration;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _googleDriveService = googleDriveService;
+            _authService = authService;
+
         }
 
         public async Task UploadAvatarAsync(IFormFile file, int TourGuideId)
@@ -121,6 +126,63 @@ namespace Loloca_BE.Business.Services
             } catch (Exception ex)
             {
                 throw new Exception("Cannot update cover");
+            }
+        }
+
+        public async Task UpdateTourGuideInfo(int tourguideId, UpdateProfileTourGuide model)
+        {
+            try
+            {
+                var tourguide = await _unitOfWork.TourGuideRepository.GetByIDAsync(tourguideId);
+                if (tourguide == null)
+                {
+                    throw new Exception("Tour guide not found");
+                }
+
+                _mapper.Map(model, tourguide);
+
+                await _unitOfWork.TourGuideRepository.UpdateAsync(tourguide);
+                await _unitOfWork.SaveAsync();
+            }
+            catch (Exception ex)
+            {
+                // Add logging or other error handling as needed
+                throw new Exception("Error updating tour guide info", ex);
+            }
+        }
+
+        public async Task<bool> ChangeTourGuidePassword(int tourguideId, ChangePasswordTourGuide model)
+        {
+            try
+            {
+                var account = await _unitOfWork.AccountRepository.GetByIDAsync(tourguideId);
+                if (account == null)
+                {
+                    throw new Exception("Không tìm thấy hướng dẫn viên");
+                }
+
+                // Kiểm tra vai trò của tài khoản
+                if (account.Role != 2)
+                {
+                    throw new Exception("Không được phép thay đổi mật khẩu");
+                }
+
+                if (!await _authService.VerifyPassword(model.OldPassword, account.HashedPassword))
+                {
+                    throw new Exception("Mật khẩu hiện tại không đúng");
+                }
+
+                account.HashedPassword = await _authService.HashPassword(model.NewPassword);
+
+                await _unitOfWork.AccountRepository.UpdateAsync(account);
+                await _unitOfWork.SaveAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Thêm logging hoặc xử lý lỗi khác nếu cần
+                throw new Exception("Lỗi khi thay đổi mật khẩu hướng dẫn viên", ex);
             }
         }
     }

@@ -19,5 +19,7 @@ namespace Loloca_BE.Business.Services
         Task<bool> RegisterTourGuide(RegisterTourGuideRequest registerTourGuide);
         Task<bool> CheckExistedEmail(string email);
         Task<(string accessToken, string refreshToken)> RefreshingAccessToken(string oldRefreshToken);
+        Task<bool> VerifyPassword(string enteredPassword, string storedHashedPassword);
+
     }
 }

@@ -477,5 +477,11 @@ namespace Loloca_BE.Business.Services
                 throw new Exception(ex.Message);
             }
         }
+
+        public async Task<bool> VerifyPassword(string enteredPassword, string storedHashedPassword)
+        {
+            string hashedEnteredPassword = await HashPassword(enteredPassword);
+            return hashedEnteredPassword == storedHashedPassword;
+        }
     }
 }

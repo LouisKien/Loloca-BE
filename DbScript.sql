@@ -60,6 +60,7 @@ CREATE TABLE Customers (
     PhoneNumber NVARCHAR(255),
 	AddressCustomer NVARCHAR(255),
     AvatarPath NVARCHAR(255),
+	avatarUploadTime DATETIME ,
     CONSTRAINT FK_Customers_Accounts FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId)
 );
 

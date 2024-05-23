@@ -1,4 +1,5 @@
 ﻿using Loloca_BE.Business.Models;
+using Loloca_BE.Business.Models.TourGuideView;
 using Loloca_BE.Business.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -64,6 +65,42 @@ namespace Loloca_BE.Presentation.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("update-info")]
+        public async Task<IActionResult> UpdateTourGuideInfo(int tourGuideId, [FromBody] UpdateProfileTourGuide model)
+        {
+            try
+            {
+                await _tourGuideService.UpdateTourGuideInfo(tourGuideId, model);
+                return Ok("Cập nhật thông tin thành công");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi: {ex.Message}");
+            }
+        }
+
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword(int accountId, [FromBody] ChangePasswordTourGuide model)
+        {
+            try
+            {
+                var success = await _tourGuideService.ChangeTourGuidePassword(accountId, model);
+                if (success)
+                {
+                    return Ok("Đổi mật khẩu thành công");
+                }
+                else
+                {
+                    return BadRequest("Đổi mật khẩu không thành công");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi: {ex.Message}");
             }
         }
     }

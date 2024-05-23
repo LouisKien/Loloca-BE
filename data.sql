@@ -22,9 +22,9 @@ INSERT INTO TourGuides (AccountId, CityId, FirstName, LastName, DateOfBirth, Gen
 (4, 2, 'Jane', 'Smith', '1990-07-20', 2, '987654321', '456 Avenue', 'zalo2', 'fb2', 'ig2', 120.00, 1, 'avatar2.jpg', '2024-01-01', 'cover2.jpg', '2024-01-01')
 
 -- Insert into Customers
-INSERT INTO Customers (AccountId, FirstName, Gender, LastName, DateOfBirth, PhoneNumber, AddressCustomer, AvatarPath) VALUES
-(3, 'Emily', 2, 'Clark', '1993-04-22', '111222333', '321 Street', 'avatar_cust1.jpg'),
-(5, 'Michael', 1, 'Johnson', '1987-11-13', '444555666', '654 Avenue', 'avatar_cust2.jpg')
+INSERT INTO Customers (AccountId, FirstName, Gender, LastName, DateOfBirth, PhoneNumber, AddressCustomer, AvatarPath, avatarUploadTime) VALUES
+(3, 'Emily', 2, 'Clark', '1993-04-22', '111222333', '321 Street', 'avatar_cust1.jpg', '2024-05-23'),
+(5, 'Michael', 1, 'Johnson', '1987-11-13', '444555666', '654 Avenue', 'avatar_cust2.jpg', '2024-05-23');
 
 -- Insert into Feedbacks
 INSERT INTO Feedbacks (CustomerId, TourGuideId, NumOfStars, Content, TimeFeedback, Status) VALUES
