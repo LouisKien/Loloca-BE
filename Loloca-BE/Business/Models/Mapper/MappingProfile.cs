@@ -1,4 +1,5 @@
 ﻿    using AutoMapper;
+using Loloca_BE.Business.Models.CitiesView;
 using Loloca_BE.Business.Models.CustomerView;
 using Loloca_BE.Business.Models.TourGuideView;
 using Loloca_BE.Data.Entities;
@@ -14,6 +15,9 @@ namespace Loloca_BE.Business.Models.Mapper
 
             CreateMap<UpdateProfileTourGuide, TourGuide>();
             CreateMap<ChangePasswordTourGuide, TourGuide>();
+
+            CreateMap<City, CityView>().ReverseMap();
+
         }
     }
     }
