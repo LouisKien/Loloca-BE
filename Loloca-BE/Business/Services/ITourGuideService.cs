@@ -9,5 +9,6 @@ namespace Loloca_BE.Business.Services
 
         Task UpdateTourGuideInfo(int tourguideId, UpdateProfileTourGuide model);
         Task<bool> ChangeTourGuidePassword(int tourguideId, ChangePasswordTourGuide model);
+        Task<GetTourGuideInfo> GetTourGuideInfoAsync(int tourGuideId);
     }
 }

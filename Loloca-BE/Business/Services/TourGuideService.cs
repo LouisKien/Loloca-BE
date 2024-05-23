@@ -20,15 +20,16 @@ namespace Loloca_BE.Business.Services
         private readonly IMapper _mapper;
         private readonly IGoogleDriveService _googleDriveService;
         private readonly IAuthService _authService;
+        private readonly IMemoryCache _cache;
 
-        public TourGuideService(IConfiguration configuration, IUnitOfWork unitOfWork, IMapper mapper, IGoogleDriveService googleDriveService, IAuthService authService)
+        public TourGuideService(IConfiguration configuration, IUnitOfWork unitOfWork, IMapper mapper, IGoogleDriveService googleDriveService, IAuthService authService, IMemoryCache cache)
         {
             _configuration = configuration;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _googleDriveService = googleDriveService;
             _authService = authService;
-
+            _cache = cache;
         }
 
         public async Task UploadAvatarAsync(IFormFile file, int TourGuideId)
@@ -184,6 +185,63 @@ namespace Loloca_BE.Business.Services
                 // Thêm logging hoặc xử lý lỗi khác nếu cần
                 throw new Exception("Lỗi khi thay đổi mật khẩu hướng dẫn viên", ex);
             }
+        }
+
+        public async Task<GetTourGuideInfo> GetTourGuideInfoAsync(int tourGuideId)
+        {
+            var tourGuide = await _unitOfWork.TourGuideRepository.GetByIDAsync(tourGuideId);
+            if (tourGuide == null)
+            {
+                throw new Exception("Tour guide not found.");
+            }
+
+            byte[]? avatarContent = await GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
+            byte[]? coverContent = await GetImageFromCacheOrDriveAsync(tourGuide.CoverPath, "1s642kdPTeuccQ0bcXXPXkEdAVCWDItmH");
+
+            return new GetTourGuideInfo
+            {
+                FirstName = tourGuide.FirstName,
+                LastName = tourGuide.LastName,
+                DateOfBirth = tourGuide.DateOfBirth,
+                Gender = tourGuide.Gender,
+                PhoneNumber = tourGuide.PhoneNumber,
+                Address = tourGuide.Address,
+                ZaloLink = tourGuide.ZaloLink,
+                FacebookLink = tourGuide.FacebookLink,
+                InstagramLink = tourGuide.InstagramLink,
+                PricePerDay = tourGuide.PricePerDay,
+                Avatar = avatarContent,
+                AvatarUploadedTime = tourGuide.AvatarUploadDate,
+                Cover = coverContent,
+                CoverUploadedTime = tourGuide.CoverUploadDate
+            };
+        }
+
+        private async Task<byte[]> GetImageFromCacheOrDriveAsync(string imagePath, string parentFolderId)
+        {
+            if (string.IsNullOrEmpty(imagePath))
+            {
+                return null;
+            }
+
+            string cacheKey = $"{imagePath}";
+            if (!_cache.TryGetValue(cacheKey, out byte[] imageContent))
+            {
+                // Image not in cache, fetch from Google Drive
+                imageContent = await _googleDriveService.GetFileContentAsync(imagePath, parentFolderId);
+
+                if (imageContent != null)
+                {
+                    // Store in cache for 1 hour
+                    var cacheEntryOptions = new MemoryCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
+                    };
+                    _cache.Set(cacheKey, imageContent, cacheEntryOptions);
+                }
+            }
+
+            return imageContent;
         }
     }
 }

@@ -103,5 +103,20 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"Lỗi: {ex.Message}");
             }
         }
+
+        [AllowAnonymous]
+        [HttpGet("/api/v1/tourguide/info/{tourGuideId}")]
+        public async Task<IActionResult> GetTourGuideInfo(int tourGuideId)
+        {
+            try
+            {
+                var tourGuideInfo = await _tourGuideService.GetTourGuideInfoAsync(tourGuideId);
+                return Ok(tourGuideInfo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
