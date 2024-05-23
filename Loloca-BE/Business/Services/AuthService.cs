@@ -88,13 +88,45 @@ namespace Loloca_BE.Business.Services
             }
         }
 
+        public async Task SendRecoveringVerificationEmail(ForgetPasswordRequest body)
+        {
+            try
+            {
+                var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == body.Email);
+                if (accounts.Any())
+                {
+                    var account = accounts.FirstOrDefault();
+                    if(account != null)
+                    {
+                        // Send verification email
+                        string verificationCode;
+                        verificationCode = await GenerateVerificationCode();
+                        _memoryCache.Set($"Recover_{body.Email}", verificationCode, TimeSpan.FromMinutes(60));
+                        await _emailService.SendVerificationEmailAsync(body.Email, verificationCode);
+                    }
+                    else
+                    {
+                        throw new Exception("Your email doesn't match any acount in system");
+                    }
+                }
+                else
+                {
+                    throw new Exception("Your email doesn't match any acount in system");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         private async Task<String> GenerateVerificationCode()
         {
             Random random = new Random();
             return random.Next(100000, 999999).ToString();
         }
 
-        public Task<string?> HashPassword(string password)
+        public async Task<string?> HashPassword(string password)
         {
             try
             {
@@ -108,7 +140,7 @@ namespace Loloca_BE.Business.Services
                         stringBuilder.Append(hashBytes[i].ToString("x2"));
                     }
 
-                    return Task.FromResult<string?>(stringBuilder.ToString());
+                    return await Task.FromResult<string?>(stringBuilder.ToString());
                 }
             }
             catch (Exception ex)
@@ -482,6 +514,147 @@ namespace Loloca_BE.Business.Services
         {
             string hashedEnteredPassword = await HashPassword(enteredPassword);
             return hashedEnteredPassword == storedHashedPassword;
+        }
+
+        public async Task<VerifyForgetPasswordRequest> VerifyRecoverAccount(VerifyForgetPasswordRequest body)
+        {
+            try
+            {
+                if (_memoryCache.TryGetValue($"Recover_{body.Email}", out string? cachedCode) && cachedCode == body.Code)
+                {
+                    var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == body.Email);
+                    if (accounts.Any())
+                    {
+                        var account = accounts == null ? throw new Exception("Cannot find your account") : accounts.FirstOrDefault();
+                        _memoryCache.Remove($"Recover_{body.Email}");
+                        var verificationCode = await GenerateVerificationCode();
+                        _memoryCache.Set($"NewPassword_{body.Email}", verificationCode, TimeSpan.FromMinutes(60));
+                        return new VerifyForgetPasswordRequest { Email = body.Email, Code = verificationCode };
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task ChangeNewPassword(ChangeNewPasswordRequest body)
+        {
+            try
+            {
+                if (_memoryCache.TryGetValue($"NewPassword_{body.Email}", out string? cachedCode) && cachedCode == body.Code)
+                {
+                    var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == body.Email);
+                    if (accounts.Any())
+                    {
+                        var account = accounts == null ? throw new Exception("Cannot find your account") : accounts.FirstOrDefault();
+                        account.HashedPassword = await HashPassword(body.Password);
+                        await _unitOfWork.AccountRepository.UpdateAsync(account);
+                        await _unitOfWork.SaveAsync();
+                        _memoryCache.Remove($"NewPassword_{body.Email}");
+                    }
+                }
+                else
+                {
+                    throw new Exception("Invalid code");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task SendVerificationEmailForRegister(string email)
+        {
+            try
+            {
+                // Send verification email
+                string verificationCode;
+                verificationCode = await GenerateVerificationCode();
+                _memoryCache.Set($"Register_{email}", verificationCode, TimeSpan.FromMinutes(60));
+                await _emailService.SendVerificationEmailAsync(email, verificationCode);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<bool> VerifyRegisteredAccount(string email, string verificationCode)
+        {
+            if (_memoryCache.TryGetValue($"Register_{email}", out string? cachedCode) && cachedCode == verificationCode)
+            {
+                using (var transaction = _unitOfWork.BeginTransaction())
+                {
+                    try
+                    {
+                        var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == email);
+                        if (accounts.Any())
+                        {
+                            var account = accounts.FirstOrDefault();
+                            if (account != null)
+                            {
+                                if (account.Status == 2)
+                                {
+                                    account.Status = 1;
+                                    await _unitOfWork.AccountRepository.UpdateAsync(account);
+                                    await _unitOfWork.SaveAsync();
+                                    if (account.Role == 2)
+                                    {
+                                        var tourGuides = await _unitOfWork.TourGuideRepository.FindAsync(t => t.AccountId == account.AccountId);
+                                        if (tourGuides.Any())
+                                        {
+                                            var tourGuide = tourGuides.FirstOrDefault();
+                                            if (tourGuide != null)
+                                            {
+                                                tourGuide.Status = 1;
+                                                await _unitOfWork.TourGuideRepository.UpdateAsync(tourGuide);
+                                                await _unitOfWork.SaveAsync();
+                                                await transaction.CommitAsync();
+                                            }
+                                            else
+                                            {
+                                                throw new Exception("Cannot verify your account");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            throw new Exception("Cannot verify your account");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        await transaction.CommitAsync();
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception("Cannot verify your account");
+                                }
+                            }
+                            else
+                            {
+                                throw new Exception("Cannot verify your account");
+                            }
+                        }
+                        _memoryCache.Remove($"Register_{email}");
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        _memoryCache.Remove($"Register_{email}");
+                        await transaction.RollbackAsync();
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

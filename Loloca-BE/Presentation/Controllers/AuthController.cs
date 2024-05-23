@@ -150,7 +150,7 @@ namespace Loloca_BE.Presentation.Controllers
             bool check = await _authService.RegisterCustomer(body);
             if (check)
             {
-                await _authService.SendVerificationEmail(body.Email);
+                await _authService.SendVerificationEmailForRegister(body.Email);
                 return Ok("Create success, please check your email to verify your account, if you don't see it, check your spam");
             }
             return BadRequest("Something went wrong");
@@ -199,7 +199,7 @@ namespace Loloca_BE.Presentation.Controllers
             bool check = await _authService.RegisterTourGuide(body);
             if (check)
             {
-                await _authService.SendVerificationEmail(body.Email);
+                await _authService.SendVerificationEmailForRegister(body.Email);
                 return Ok("Create success, please check your email to verify your account, if you don't see it, check your spam");
             }
             return BadRequest("Something went wrong");
@@ -217,7 +217,7 @@ namespace Loloca_BE.Presentation.Controllers
             {
                 return BadRequest("Verification code cannot be empty");
             }
-            bool check = await _authService.VerifyAccount(body.Email, body.Code);
+            bool check = await _authService.VerifyRegisteredAccount(body.Email, body.Code);
             if (check)
             {
                 IActionResult response = Unauthorized();
@@ -232,6 +232,81 @@ namespace Loloca_BE.Presentation.Controllers
             else
             {
                 return BadRequest("Invalid verification code, if you don't see it, check your spam");
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("/api/v1/auth/forget-password")]
+        public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordRequest body)
+        {
+            if (body.Email.IsNullOrEmpty())
+            {
+                return BadRequest("Email cannot be empty");
+            }
+            try
+            {
+                await _authService.SendRecoveringVerificationEmail(body);
+                return Ok("Recover code sent, please check email to verify your account, if you don't see it, check your spam");
+            } catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("/api/v1/auth/forget-password/verify")]
+        public async Task<IActionResult> VerifyForgetAccount([FromBody] VerifyForgetPasswordRequest body)
+        {
+            if (body.Email.IsNullOrEmpty())
+            {
+                return BadRequest("Email cannot be empty");
+            }
+            if (body.Code.IsNullOrEmpty())
+            {
+                return BadRequest("Code cannot be empty");
+            }
+            try
+            {
+                var response = await _authService.VerifyRecoverAccount(body);
+                if(response != null)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest("Invalid verification code");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("/api/v1/auth/forget-password/new-password")]
+        public async Task<IActionResult> ChangeNewPassword([FromBody] ChangeNewPasswordRequest body)
+        {
+            if (body.Email.IsNullOrEmpty())
+            {
+                return BadRequest("Email cannot be empty");
+            }
+            if (body.Code.IsNullOrEmpty())
+            {
+                return BadRequest("Code cannot be empty");
+            }
+            if (body.Password.IsNullOrEmpty())
+            {
+                return BadRequest("Password cannot be empty");
+            }
+            try
+            {
+                await _authService.ChangeNewPassword(body);
+                return Ok("Recover your password success");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
     }

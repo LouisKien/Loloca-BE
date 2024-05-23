@@ -14,12 +14,16 @@ namespace Loloca_BE.Business.Services
         Task<(string accessToken, string refreshToken)> GenerateTokens(string email, string verificationCode);
         Task<(string accessToken, string refreshToken)> GenerateTokens(string email);
         Task<bool> VerifyAccount(string email, string verificationCode);
+        Task<bool> VerifyRegisteredAccount(string email, string verificationCode);
         Task SendVerificationEmail(string email);
+        Task SendVerificationEmailForRegister(string email);
         Task<bool> RegisterCustomer(RegisterCustomerRequest registerCustomer);
         Task<bool> RegisterTourGuide(RegisterTourGuideRequest registerTourGuide);
         Task<bool> CheckExistedEmail(string email);
         Task<(string accessToken, string refreshToken)> RefreshingAccessToken(string oldRefreshToken);
         Task<bool> VerifyPassword(string enteredPassword, string storedHashedPassword);
-
+        Task SendRecoveringVerificationEmail(ForgetPasswordRequest body);
+        Task<VerifyForgetPasswordRequest> VerifyRecoverAccount(VerifyForgetPasswordRequest body);
+        Task ChangeNewPassword(ChangeNewPasswordRequest body);
     }
 }
