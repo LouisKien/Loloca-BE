@@ -106,5 +106,17 @@ namespace Loloca_BE.Data.Repositories
             await dbSet.AddRangeAsync(entities);
             await context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter = null)
+        {
+            IQueryable<TEntity> query = dbSet;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            return await query.ToListAsync();
+        }
     }
 }

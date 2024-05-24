@@ -57,6 +57,13 @@ builder.Services.AddScoped<IGoogleDriveService, GoogleDriveService>();
 
 // Register in-memory caching
 builder.Services.AddMemoryCache();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 // Set policy permission for roles
 builder.Services.AddAuthorization(options =>
@@ -85,6 +92,8 @@ if (app.Environment.IsDevelopment())
 app.UseCors();
 
 app.UseHttpsRedirection();
+
+app.UseSession();
 
 app.UseAuthentication();
 
