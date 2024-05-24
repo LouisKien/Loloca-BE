@@ -6,8 +6,8 @@ namespace Loloca_BE.Business.Services
     {
         Task<IEnumerable<OrderModelView>> GetAllOrdersAsync();
         Task<OrderModelView?> GetOrderByIdAsync(int id);
-        Task<OrderModelView> CreateOrderForBookingTourGuideRequestAsync(OrderModelView orderModel);
-        Task<OrderModelView> CreateOrderForBookingTourRequestAsync(OrderModelView orderModel);
+        Task<OrderForBookingTourGuideView> CreateOrderForBookingTourGuideRequestAsync(OrderForBookingTourGuideView orderModel);
+        Task<OrderForBookingTourView> CreateOrderForBookingTourRequestAsync(OrderForBookingTourView orderModel);
         Task<OrderModelView> UpdateOrderStatusAsync(int id, int status);
     }
 }

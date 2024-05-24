@@ -52,6 +52,7 @@ builder.Services.AddScoped<ITourGuideService, TourGuideService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ICitiesService, CitiesService>();
+//builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<IGoogleDriveService, GoogleDriveService>();
 
 // Register in-memory caching

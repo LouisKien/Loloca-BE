@@ -48,7 +48,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [HttpPost("tourGuide")]
-        public async Task<ActionResult<OrderModelView>> CreateOrderForBookingTourGuideRequestAsync(OrderModelView orderModel)
+        public async Task<ActionResult<OrderForBookingTourGuideView>> CreateOrderForBookingTourGuideRequestAsync(OrderForBookingTourGuideView orderModel)
         {
             try
             {
@@ -74,7 +74,7 @@ namespace Loloca_BE.Presentation.Controllers
 
 
         [HttpPost("tour")]
-        public async Task<ActionResult<OrderModelView>> CreateOrderForBookingTourRequestAsync(OrderModelView orderModel)
+        public async Task<ActionResult<OrderForBookingTourView>> CreateOrderForBookingTourRequestAsync(OrderForBookingTourView orderModel)
         {
             try
             {

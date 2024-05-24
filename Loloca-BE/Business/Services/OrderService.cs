@@ -39,12 +39,10 @@ namespace Loloca_BE.Business.Services
             return _mapper.Map<OrderModelView>(order);
         }
 
-        public async Task<OrderModelView> CreateOrderForBookingTourGuideRequestAsync(OrderModelView orderModel)
+        public async Task<OrderForBookingTourGuideView> CreateOrderForBookingTourGuideRequestAsync(OrderForBookingTourGuideView orderModel)
         {
             try
             {
-                // Set BookingTourRequestsId to null
-                orderModel.BookingTourRequestsId = null;
 
                 var order = _mapper.Map<Order>(orderModel);
 
@@ -59,7 +57,7 @@ namespace Loloca_BE.Business.Services
                     await unitOfWork.CommitAsync();
                 }
 
-                return _mapper.Map<OrderModelView>(order);
+                return _mapper.Map<OrderForBookingTourGuideView>(order);
             }
             catch (Exception ex)
             {
@@ -68,12 +66,10 @@ namespace Loloca_BE.Business.Services
         }
 
 
-        public async Task<OrderModelView> CreateOrderForBookingTourRequestAsync(OrderModelView orderModel)
+        public async Task<OrderForBookingTourView> CreateOrderForBookingTourRequestAsync(OrderForBookingTourView orderModel)
         {
             try
             {
-                // Set BookingTourRequestsId to null
-                orderModel.BookingTourGuideRequestId = null;
 
                 var order = _mapper.Map<Order>(orderModel);
 
@@ -88,7 +84,7 @@ namespace Loloca_BE.Business.Services
                     await unitOfWork.CommitAsync();
                 }
 
-                return _mapper.Map<OrderModelView>(order);
+                return _mapper.Map<OrderForBookingTourView>(order);
             }
             catch (Exception ex)
             {

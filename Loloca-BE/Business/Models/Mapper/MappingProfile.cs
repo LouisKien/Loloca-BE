@@ -20,6 +20,8 @@ namespace Loloca_BE.Business.Models.Mapper
             CreateMap<CityView, City>().ReverseMap();
 
             CreateMap<OrderModelView, Order>().ReverseMap();
+            CreateMap<OrderForBookingTourGuideView, Order>().ReverseMap();
+            CreateMap<OrderForBookingTourView, Order>().ReverseMap();
 
         }
     }
