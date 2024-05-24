@@ -26,5 +26,7 @@ namespace Loloca_BE.Data.Repositories
         Task AddRangeAsync(IEnumerable<TEntity> entities);
         Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter = null);
 
+        Task LoadCollectionAsync(TEntity entity, Expression<Func<TEntity, object>> propertySelector);
+
     }
 }

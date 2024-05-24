@@ -26,6 +26,10 @@ namespace Loloca_BE.Business.Models.Mapper
 
             CreateMap<FeedbackModelView, Feedback>().ReverseMap();
             //CreateMap<FeedbackImageView, Feedback>().ReverseMap();
+            //CreateMap<FeebackView, Feedback>().ReverseMap();
+            //CreateMap<GetFeedBackForCustomerView, Feedback>().ReverseMap();
+            //CreateMap<GetFeedbackForTourGuideView, Feedback>().ReverseMap();
+            
 
 
         }

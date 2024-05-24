@@ -5,10 +5,13 @@ namespace Loloca_BE.Business.Services
 {
     public interface IFeedbackService
     {
-        Task<IEnumerable<FeedbackModelView>> GetAllFeedbacksAsync();
-        Task<FeedbackModelView?> GetFeedbackByIdAsync(int id);
+        Task<FeebackView?> GetFeedbackByIdAsync(int id);
+        Task<IEnumerable<GetFeedBackForCustomerView>> GetFeedbackByCustomerIdAsync(int customerId);
+        Task<IEnumerable<GetFeedbackForTourGuideView>> GetFeedbackByTourGuideIdAsync(int tourGuideId);
+        Task<IEnumerable<FeebackView>> GetAllFeedbacksAsync();
 
         Task UploadFeedbackAsync(FeedbackModelView feedbackModel, List<IFormFile> images);
+        Task<bool> UpdateStatusAsync(int feedbackId, bool newStatus);
 
     }
 }

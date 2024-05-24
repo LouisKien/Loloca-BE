@@ -1,9 +1,12 @@
-﻿//namespace Loloca_BE.Business.Models.FeedbackView
-//{
-//    public class FeedbackImageView
-//    {
-//        public int FeedbackId { get; set; }
-//        public string? ImagePath { get; set; }
+﻿using Loloca_BE.Data.Entities;
 
-//    }
-//}
+namespace Loloca_BE.Business.Models.FeedbackView
+{
+    public class FeedbackImageView
+    {
+        public byte[]? ImagePath { get; set; }
+        public DateTime? UploadDate { get; set; }
+        //public Feedback Feedback { get; set; }
+
+    }
+}

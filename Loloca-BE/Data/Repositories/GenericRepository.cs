@@ -118,5 +118,22 @@ namespace Loloca_BE.Data.Repositories
 
             return await query.ToListAsync();
         }
+
+        public async Task LoadCollectionAsync(TEntity entity, Expression<Func<TEntity, object>> propertySelector)
+        {
+            var propertyName = GetPropertyName(propertySelector);
+            context.Entry(entity).Collection(propertyName).Load();
+        }
+
+        private string GetPropertyName(Expression<Func<TEntity, object>> propertySelector)
+        {
+            var memberExpression = propertySelector.Body as MemberExpression;
+            if (memberExpression == null)
+            {
+                throw new ArgumentException("Invalid property selector");
+            }
+            return memberExpression.Member.Name;
+        }
+
     }
 }

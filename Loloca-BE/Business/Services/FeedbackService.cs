@@ -23,16 +23,227 @@ namespace Loloca_BE.Business.Services
             _cache = cache;
         }
 
-
-        public Task<IEnumerable<FeedbackModelView>> GetAllFeedbacksAsync()
+        private async Task<byte[]> GetImageFromCacheOrDriveAsync(string imagePath, string parentFolderId)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(imagePath))
+            {
+                return null;
+            }
+
+            string cacheKey = $"{imagePath}";
+            if (!_cache.TryGetValue(cacheKey, out byte[] imageContent))
+            {
+                imageContent = await _googleDriveService.GetFileContentAsync(imagePath, parentFolderId);
+
+                if (imageContent != null)
+                {
+                    var cacheEntryOptions = new MemoryCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
+                    };
+                    _cache.Set(cacheKey, imageContent, cacheEntryOptions);
+                }
+            }
+
+            return imageContent;
         }
 
-        public Task<FeedbackModelView?> GetFeedbackByIdAsync(int id)
+        public async Task<IEnumerable<FeebackView>> GetAllFeedbacksAsync()
         {
-            throw new NotImplementedException();
+            try
+            {
+                var feedbacks = await _unitOfWork.FeedbackRepository.GetAsync(includeProperties: "FeedbackImages");
+                var feedbackViews = new List<FeebackView>();
+
+                foreach (var feedback in feedbacks)
+                {
+                    var feedbackView = new FeebackView
+                    {
+                        FeedbackId = feedback.FeedbackId,
+                        CustomerId = feedback.CustomerId,
+                        TourGuideId = feedback.TourGuideId,
+                        NumOfStars = feedback.NumOfStars,
+                        Content = feedback.Content,
+                        Status = feedback.Status,
+                        TimeFeedback = feedback.TimeFeedback,
+
+                    };
+
+                    feedbackView.feedBackImgViewList = new List<FeedbackImageView>();
+
+                    if (feedback.FeedbackImages != null)
+                    {
+                        foreach (var image in feedback.FeedbackImages)
+                        {
+                            var imagePath = await GetImageFromCacheOrDriveAsync(image.ImagePath, "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem");
+                            var feedbackImageView = new FeedbackImageView
+                            {
+                                ImagePath = imagePath,
+                                UploadDate = image.UploadDate
+                            };
+                            feedbackView.feedBackImgViewList.Add(feedbackImageView);
+                        }
+                    }
+
+                    feedbackViews.Add(feedbackView);
+                }
+
+                return feedbackViews;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
+
+        public async Task<IEnumerable<GetFeedBackForCustomerView>> GetFeedbackByCustomerIdAsync(int customerId)
+        {
+            try
+            {
+                var feedbacks = await _unitOfWork.FeedbackRepository.GetAsync(
+                    filter: f => f.CustomerId == customerId && f.Status == true, // Lọc các phản hồi theo customerId
+                    includeProperties: "FeedbackImages"
+                );
+
+                if (feedbacks == null || !feedbacks.Any())
+                {
+                    return null; // Trả về null nếu không có phản hồi nào cho customerId đã cho
+                }
+
+                var feedbackViews = new List<GetFeedBackForCustomerView>();
+
+                foreach (var feedback in feedbacks)
+                {
+                    await _unitOfWork.FeedbackRepository.LoadCollectionAsync(feedback, f => f.FeedbackImages);
+
+                    var feedbackView = new GetFeedBackForCustomerView
+                    {
+                        FeedbackId = feedback.FeedbackId,
+                        CustomerId = feedback.CustomerId,
+                        TourGuideId = feedback.TourGuideId,
+                        NumOfStars = feedback.NumOfStars,
+                        Content = feedback.Content,
+                        Status = feedback.Status ,
+                        TimeFeedback = feedback.TimeFeedback,
+                        feedBackImgViewListForCus = await GetFeedbackImageViewsAsync(feedback.FeedbackImages.ToList())
+                    };
+
+                    feedbackViews.Add(feedbackView);
+                }
+
+
+                return feedbackViews;
+            }
+            catch (Exception ex)
+            {
+                // Xử lý ngoại lệ và ném lại
+                throw new Exception($"Error occurred while fetching feedbacks for tour guide with ID {customerId}: {ex.Message}");
+            }
+        }
+
+        public async Task<FeebackView> GetFeedbackByIdAsync(int feedbackId)
+        {
+            var feedback = await _unitOfWork.FeedbackRepository.GetByIDAsync(feedbackId);
+
+            if (feedback == null)
+            {
+                // Xử lý trường hợp không tìm thấy feedback
+                return null;
+            }
+
+            // Load FeedbackImages explicitly
+            await _unitOfWork.FeedbackRepository.LoadCollectionAsync(feedback, f => f.FeedbackImages);
+
+            var feedbackView = new FeebackView
+            {
+                FeedbackId = feedback.FeedbackId,
+                CustomerId = feedback.CustomerId,
+                TourGuideId = feedback.TourGuideId,
+                NumOfStars = feedback.NumOfStars,
+                Content = feedback.Content,
+                Status = feedback.Status,
+                TimeFeedback = feedback.TimeFeedback,
+            };
+
+            feedbackView.feedBackImgViewList = new List<FeedbackImageView>();
+
+            foreach (var image in feedback.FeedbackImages)
+            {
+                var imageView = new FeedbackImageView
+                {
+                    ImagePath = await GetImageFromCacheOrDriveAsync(image.ImagePath, "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem"),
+                    UploadDate = image.UploadDate
+                };
+
+                feedbackView.feedBackImgViewList.Add(imageView);
+            }
+
+            return feedbackView;
+        }
+        public async Task<IEnumerable<GetFeedbackForTourGuideView>> GetFeedbackByTourGuideIdAsync(int tourGuideId)
+        {
+            try
+            {
+                var feedbacks = await _unitOfWork.FeedbackRepository.GetAsync(
+                    filter: f => f.TourGuideId == tourGuideId && f.Status == true, // Lọc các phản hồi theo TourGuideId
+                    includeProperties: "FeedbackImages"
+                );
+
+                if (feedbacks == null || !feedbacks.Any())
+                {
+                    return null; // Trả về null nếu không có phản hồi nào cho TourGuideId đã cho
+                }
+
+                var feedbackViews = new List<GetFeedbackForTourGuideView>();
+
+                foreach (var feedback in feedbacks)
+                {
+                    await _unitOfWork.FeedbackRepository.LoadCollectionAsync(feedback, f => f.FeedbackImages);
+
+                    var feedbackView = new GetFeedbackForTourGuideView
+                    {
+                        FeedbackId = feedback.FeedbackId,
+                        CustomerId = feedback.CustomerId,
+                        TourGuideId = feedback.TourGuideId,
+                        NumOfStars = feedback.NumOfStars,
+                        Content = feedback.Content,
+                        Status = feedback.Status,
+                        TimeFeedback = feedback.TimeFeedback,
+                        feedBackImgViewListForTourGuide = await GetFeedbackImageViewsAsync(feedback.FeedbackImages.ToList())
+                    };
+
+                    feedbackViews.Add(feedbackView);
+                }
+
+
+                return feedbackViews;
+            }
+            catch (Exception ex)
+            {
+                // Xử lý ngoại lệ và ném lại
+                throw new Exception($"Error occurred while fetching feedbacks for tour guide with ID {tourGuideId}: {ex.Message}");
+            }
+        }
+
+        // Phương thức để lấy danh sách FeedbackImageViews từ danh sách FeedbackImage
+        private async Task<List<FeedbackImageView>> GetFeedbackImageViewsAsync(List<FeedbackImage> feedbackImages)
+        {
+            var imageViewList = new List<FeedbackImageView>();
+
+            foreach (var image in feedbackImages)
+            {
+                var imageView = new FeedbackImageView
+                {
+                    ImagePath = await GetImageFromCacheOrDriveAsync(image.ImagePath, "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem"),
+                    UploadDate = image.UploadDate
+                };
+
+                imageViewList.Add(imageView);
+            }
+
+            return imageViewList;
+        }
+
 
         public async Task UploadFeedbackAsync(FeedbackModelView feedbackModel, List<IFormFile> images)
         {
@@ -43,7 +254,7 @@ namespace Loloca_BE.Business.Services
                 // Create Feedback entity
                 var feedback = _mapper.Map<Feedback>(feedbackModel);
                 feedback.TimeFeedback = DateTime.Now;
-
+                feedback.Status = true;
                 // Save Feedback to database
                 await _unitOfWork.FeedbackRepository.InsertAsync(feedback);
                 await _unitOfWork.SaveAsync();
@@ -96,5 +307,28 @@ namespace Loloca_BE.Business.Services
                 throw new Exception("Cannot upload feedback", ex);
             }
         }
+
+
+        public async Task<bool> UpdateStatusAsync(int feedbackId, bool newStatus)
+        {
+            try
+            {
+                var feedback = await _unitOfWork.FeedbackRepository.GetByIDAsync(feedbackId);
+                if (feedback == null)
+                {
+                    return false; // Phản hồi không tồn tại
+                }
+
+                feedback.Status = newStatus;
+                await _unitOfWork.FeedbackRepository.UpdateAsync(feedback);
+                return true; // Cập nhật thành công
+            }
+            catch (Exception ex)
+            {
+                // Xử lý ngoại lệ và ném lại
+                throw new Exception($"Error occurred while updating status for feedback with ID {feedbackId}: {ex.Message}");
+            }
+        }
+
     }
 }
