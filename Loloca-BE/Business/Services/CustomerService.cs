@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Loloca_BE.Business.Models.CustomerView;
+using Loloca_BE.Data.Entities;
 using Loloca_BE.Data.Repositories;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Threading.Tasks;
 
@@ -12,13 +14,15 @@ namespace Loloca_BE.Business.Services
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         private readonly IAuthService _authService;
+        private readonly IGoogleDriveService _googleDriveService;
 
-        public CustomerService(IUnitOfWork unitOfWork, IConfiguration configuration, IMapper mapper, IAuthService authService)
+        public CustomerService(IUnitOfWork unitOfWork, IConfiguration configuration, IMapper mapper, IAuthService authService, IGoogleDriveService googleDriveService)
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
             _mapper = mapper;
             _authService = authService;
+            _googleDriveService = googleDriveService;
         }
 
         public async Task UpdateCustomerInfo(int customerId, UpdateProfile model)
@@ -78,5 +82,54 @@ namespace Loloca_BE.Business.Services
             }
         }
 
+        public async Task UploadAvatarAsync(IFormFile file, int CustomerId)
+        {
+            string parentFolderId = "1w1JtGcVwuhWnYdpGsXrTKr_dcSnGTG4Z";
+
+            if (!file.ContentType.StartsWith("image/"))
+            {
+                throw new InvalidDataException("Only image files are allowed.");
+            }
+
+            var customer = await _unitOfWork.CustomerRepository.GetByIDAsync(CustomerId);
+            if (customer == null)
+            {
+                throw new Exception($"TourGuide with TourGuideId {CustomerId} doesn't exist");
+            }
+
+            try
+            {
+                // If an avatar exists, delete the old one
+                if (!customer.AvatarPath.IsNullOrEmpty() && customer.AvatarUploadTime.HasValue)
+                {
+                    await _googleDriveService.DeleteFileAsync(customer.AvatarPath, parentFolderId);
+                }
+
+                string fileName = $"Avatar_Customer_{CustomerId}";
+
+                var fileMetadata = new Google.Apis.Drive.v3.Data.File()
+                {
+                    Name = fileName,
+                    Parents = new List<string>() { parentFolderId },
+                    MimeType = file.ContentType
+                };
+
+                // Upload Directly to Google Drive
+                using (var stream = file.OpenReadStream())
+                {
+                    await _googleDriveService.UploadFileAsync(stream, fileMetadata);
+                }
+
+                customer.AvatarPath = fileName;
+                customer.AvatarUploadTime = DateTime.Now;
+
+                await _unitOfWork.CustomerRepository.UpdateAsync(customer);
+                await _unitOfWork.SaveAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Cannot update avatar");
+            }
+        }
     }
 }

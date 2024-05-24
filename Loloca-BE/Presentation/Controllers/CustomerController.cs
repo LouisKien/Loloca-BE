@@ -1,5 +1,6 @@
 ﻿using Loloca_BE.Business.Models.CustomerView;
 using Loloca_BE.Business.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Loloca_BE.Presentation.Controllers
@@ -49,7 +50,30 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [AllowAnonymous]
+        [HttpPost("/api/v1/customer/update-avatar")]
+        public async Task<IActionResult> UpdateAvatar([FromForm] IFormFile file, [FromForm] int CustomerId)
+        {
+            try
+            {
+                if (file == null)
+                {
+                    return BadRequest("No file provided.");
+                }
 
+                await _customerService.UploadAvatarAsync(file, CustomerId);
+
+                return Ok("Avatar uploaded successfully!");
+            }
+            catch (InvalidDataException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
 
     }
 }

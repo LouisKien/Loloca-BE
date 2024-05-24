@@ -6,5 +6,6 @@ namespace Loloca_BE.Business.Services
     {
         Task UpdateCustomerInfo(int customerId, UpdateProfile model);
         Task<bool> ChangeCustomerPassword(int customerId, ChangePassword model);
+        Task UploadAvatarAsync(IFormFile file, int CustomerId);
     }
 }
