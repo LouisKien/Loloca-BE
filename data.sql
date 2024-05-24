@@ -17,14 +17,14 @@ INSERT INTO Cities (Name, Status) VALUES
 ('Hue', 1);
 
 -- Insert into TourGuides
-INSERT INTO TourGuides (AccountId, CityId, FirstName, LastName, DateOfBirth, Gender, PhoneNumber, Address, ZaloLink, FacebookLink, InstagramLink, PricePerDay, Status, AvatarPath, AvatarUploadDate, CoverPath, CoverUploadDate) VALUES
-(2, 1, 'John', 'Doe', '1985-05-15', 1, '123456789', '123 Street', 'zalo1', 'fb1', 'ig1', 100.00, 1, 'avatar1.jpg', '2024-01-01', 'cover1.jpg', '2024-01-01'),
-(4, 2, 'Jane', 'Smith', '1990-07-20', 2, '987654321', '456 Avenue', 'zalo2', 'fb2', 'ig2', 120.00, 1, 'avatar2.jpg', '2024-01-01', 'cover2.jpg', '2024-01-01')
+INSERT INTO TourGuides (AccountId, CityId, FirstName, LastName, DateOfBirth, Gender, PhoneNumber, Address, ZaloLink, FacebookLink, InstagramLink, PricePerDay, Status, AvatarUploadDate, CoverUploadDate) VALUES
+(2, 1, 'John', 'Doe', '1985-05-15', 1, '123456789', '123 Street', 'zalo1', 'fb1', 'ig1', 100.00, 1,  '2024-01-01', '2024-01-01'),
+(4, 2, 'Jane', 'Smith', '1990-07-20', 2, '987654321', '456 Avenue', 'zalo2', 'fb2', 'ig2', 120.00, 1,  '2024-01-01', '2024-01-01')
 
 -- Insert into Customers
-INSERT INTO Customers (AccountId, FirstName, Gender, LastName, DateOfBirth, PhoneNumber, AddressCustomer, AvatarPath, avatarUploadTime) VALUES
-(3, 'Emily', 2, 'Clark', '1993-04-22', '111222333', '321 Street', 'avatar_cust1.jpg', '2024-05-23'),
-(5, 'Michael', 1, 'Johnson', '1987-11-13', '444555666', '654 Avenue', 'avatar_cust2.jpg', '2024-05-23');
+INSERT INTO Customers (AccountId, FirstName, Gender, LastName, DateOfBirth, PhoneNumber, AddressCustomer, avatarUploadTime) VALUES
+(3, 'Emily', 2, 'Clark', '1993-04-22', '111222333', '321 Street', '2024-05-23'),
+(5, 'Michael', 1, 'Johnson', '1987-11-13', '444555666', '654 Avenue', '2024-05-23');
 
 -- Insert into Feedbacks
 INSERT INTO Feedbacks (CustomerId, TourGuideId, NumOfStars, Content, TimeFeedback, Status) VALUES
@@ -35,12 +35,12 @@ INSERT INTO Feedbacks (CustomerId, TourGuideId, NumOfStars, Content, TimeFeedbac
 (1, 2, 4, 'Enjoyed the tour', '2024-05-24', 1);
 
 -- Insert into FeedbackImages
-INSERT INTO FeedbackImages (FeedbackId, ImagePath, UploadDate) VALUES
-(1, 'feedback_img1.jpg', '2024-05-20'),
-(2, 'feedback_img2.jpg', '2024-05-21'),
-(3, 'feedback_img3.jpg', '2024-05-22'),
-(4, 'feedback_img4.jpg', '2024-05-23'),
-(5, 'feedback_img5.jpg', '2024-05-24');
+INSERT INTO FeedbackImages (FeedbackId, UploadDate) VALUES
+(1, '2024-05-20'),
+(2, '2024-05-21'),
+(3, '2024-05-22'),
+(4, '2024-05-23'),
+(5, '2024-05-24');
 
 -- Insert into Tours
 INSERT INTO Tours (CityId, TourGuideId, Name, Description, Duration, Status) VALUES
@@ -51,12 +51,12 @@ INSERT INTO Tours (CityId, TourGuideId, Name, Description, Duration, Status) VAL
 (5, 1, 'Hue Cultural Trip', 'Dive into the culture and history of Hue', 3, 1);
 
 -- Insert into TourImage
-INSERT INTO TourImage (TourId, ImagePath, Caption, UploadDate) VALUES
-(1, 'tour_img1.jpg', 'Beautiful Hanoi', '2024-05-01'),
-(2, 'tour_img2.jpg', 'Exciting Ho Chi Minh', '2024-05-02'),
-(3, 'tour_img3.jpg', 'Stunning Da Nang', '2024-05-03'),
-(4, 'tour_img4.jpg', 'Relaxing Nha Trang', '2024-05-04'),
-(5, 'tour_img5.jpg', 'Historic Hue', '2024-05-05');
+INSERT INTO TourImage (TourId, Caption, UploadDate) VALUES
+(1, 'Beautiful Hanoi', '2024-05-01'),
+(2, 'Exciting Ho Chi Minh', '2024-05-02'),
+(3, 'Stunning Da Nang', '2024-05-03'),
+(4, 'Relaxing Nha Trang', '2024-05-04'),
+(5, 'Historic Hue', '2024-05-05');
 
 -- Insert into BookingTourGuideRequests
 INSERT INTO BookingTourGuideRequests (TourGuideId, CustomerId, RequestDate, RequestTimeOut, StartDate, EndDate, TotalPrice, Note, Status) VALUES

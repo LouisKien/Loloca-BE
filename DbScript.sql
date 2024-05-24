@@ -30,7 +30,7 @@ CREATE TABLE Cities (
 CREATE TABLE TourGuides (
     TourGuideId INT IDENTITY(1,1) PRIMARY KEY,
     AccountId INT UNIQUE  NOT NULL,
-    CityId INT UNIQUE  NOT NULL,
+    CityId INT  NOT NULL,
     FirstName NVARCHAR(255),
     LastName NVARCHAR(255),
     DateOfBirth DATETIME,
