@@ -22,5 +22,7 @@ namespace Loloca_BE.Data.Repositories
         Task UpdateAsync(TEntity entityToUpdate);
 
         Task<int> CountAsync(Expression<Func<TEntity, bool>> filter = null);
+
+        Task AddRangeAsync(IEnumerable<TEntity> entities);
     }
 }

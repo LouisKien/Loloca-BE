@@ -101,5 +101,10 @@ namespace Loloca_BE.Data.Repositories
 
             return await query.CountAsync();
         }
+        public async Task AddRangeAsync(IEnumerable<TEntity> entities) // Add this method
+        {
+            await dbSet.AddRangeAsync(entities);
+            await context.SaveChangesAsync();
+        }
     }
 }
