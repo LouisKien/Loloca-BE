@@ -7,6 +7,7 @@ namespace Loloca_BE.Data.Entities
     {
         public City()
         {
+            TourGuides = new HashSet<TourGuide>();
             Tours = new HashSet<Tour>();
         }
 
@@ -14,7 +15,7 @@ namespace Loloca_BE.Data.Entities
         public string Name { get; set; } = null!;
         public bool Status { get; set; }
 
-        public virtual TourGuide? TourGuide { get; set; }
+        public virtual ICollection<TourGuide> TourGuides { get; set; }
         public virtual ICollection<Tour> Tours { get; set; }
     }
 }

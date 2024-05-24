@@ -205,6 +205,7 @@ namespace Loloca_BE.Business.Services
                 DateOfBirth = tourGuide.DateOfBirth,
                 Gender = tourGuide.Gender,
                 PhoneNumber = tourGuide.PhoneNumber,
+                Description = tourGuide.Description,
                 Address = tourGuide.Address,
                 ZaloLink = tourGuide.ZaloLink,
                 FacebookLink = tourGuide.FacebookLink,

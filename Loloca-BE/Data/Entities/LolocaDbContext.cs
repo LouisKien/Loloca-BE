@@ -104,7 +104,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Customer>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A796674E9E")
+                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A70F4473D2")
                     .IsUnique();
 
                 entity.Property(e => e.AddressCustomer).HasMaxLength(255);
@@ -221,10 +221,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<TourGuide>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A7B9D242B6")
-                    .IsUnique();
-
-                entity.HasIndex(e => e.CityId, "UQ__TourGuid__F2D21B779F500CC6")
+                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A76636DB08")
                     .IsUnique();
 
                 entity.Property(e => e.Address).HasMaxLength(255);
@@ -260,8 +257,8 @@ namespace Loloca_BE.Data.Entities
                     .HasConstraintName("FK_TourGuides_Accounts");
 
                 entity.HasOne(d => d.City)
-                    .WithOne(p => p.TourGuide)
-                    .HasForeignKey<TourGuide>(d => d.CityId)
+                    .WithMany(p => p.TourGuides)
+                    .HasForeignKey(d => d.CityId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_TourGuides_Cities");
             });
@@ -269,7 +266,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourImage>(entity =>
             {
                 entity.HasKey(e => e.ImageId)
-                    .HasName("PK__TourImag__7516F70C7A1B715D");
+                    .HasName("PK__TourImag__7516F70CB9F4E1CA");
 
                 entity.ToTable("TourImage");
 

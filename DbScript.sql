@@ -33,6 +33,7 @@ CREATE TABLE TourGuides (
     CityId INT  NOT NULL,
     FirstName NVARCHAR(255),
     LastName NVARCHAR(255),
+	Description NVARCHAR(MAX),
     DateOfBirth DATETIME,
     Gender INT,
     PhoneNumber NVARCHAR(255),

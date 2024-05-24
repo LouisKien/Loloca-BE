@@ -17,9 +17,9 @@ INSERT INTO Cities (Name, Status) VALUES
 ('Hue', 1);
 
 -- Insert into TourGuides
-INSERT INTO TourGuides (AccountId, CityId, FirstName, LastName, DateOfBirth, Gender, PhoneNumber, Address, ZaloLink, FacebookLink, InstagramLink, PricePerDay, Status, AvatarUploadDate, CoverUploadDate) VALUES
-(2, 1, 'John', 'Doe', '1985-05-15', 1, '123456789', '123 Street', 'zalo1', 'fb1', 'ig1', 100.00, 1,  '2024-01-01', '2024-01-01'),
-(4, 2, 'Jane', 'Smith', '1990-07-20', 2, '987654321', '456 Avenue', 'zalo2', 'fb2', 'ig2', 120.00, 1,  '2024-01-01', '2024-01-01')
+INSERT INTO TourGuides (AccountId, CityId, FirstName, LastName, Description, DateOfBirth, Gender, PhoneNumber, Address, ZaloLink, FacebookLink, InstagramLink, PricePerDay, Status, AvatarUploadDate, CoverUploadDate) VALUES
+(2, 1, 'John', 'Doe','Im so handsome', '1985-05-15', 1, '123456789', '123 Street', 'zalo1', 'fb1', 'ig1', 100.00, 1,  '2024-01-01', '2024-01-01'),
+(4, 2, 'Jane', 'Smith','My name is Dinh Trung Cho', '1990-07-20', 2, '987654321', '456 Avenue', 'zalo2', 'fb2', 'ig2', 120.00, 1,  '2024-01-01', '2024-01-01')
 
 -- Insert into Customers
 INSERT INTO Customers (AccountId, FirstName, Gender, LastName, DateOfBirth, PhoneNumber, AddressCustomer, avatarUploadTime) VALUES

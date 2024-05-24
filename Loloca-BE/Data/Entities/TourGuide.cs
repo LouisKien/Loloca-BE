@@ -17,6 +17,7 @@ namespace Loloca_BE.Data.Entities
         public int CityId { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
+        public string? Description { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public int? Gender { get; set; }
         public string? PhoneNumber { get; set; }
