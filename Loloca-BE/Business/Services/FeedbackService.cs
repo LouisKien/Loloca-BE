@@ -249,64 +249,84 @@ namespace Loloca_BE.Business.Services
         {
             string parentFolderId = "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem";
 
-            try
+            using (var transaction =  _unitOfWork.BeginTransaction())
             {
-                // Create Feedback entity
-                var feedback = _mapper.Map<Feedback>(feedbackModel);
-                feedback.TimeFeedback = DateTime.Now;
-                feedback.Status = true;
-                // Save Feedback to database
-                await _unitOfWork.FeedbackRepository.InsertAsync(feedback);
-                await _unitOfWork.SaveAsync();
-
-                var feedbackId = feedback.FeedbackId;
-                var feedbackImages = new List<FeedbackImage>();
-
-                // Upload each image to Google Drive
-                foreach (var image in images)
+                try
                 {
-                    if (!image.ContentType.StartsWith("image/"))
+                    // Kiểm tra tất cả các file trước khi bắt đầu upload
+                    foreach (var image in images)
                     {
-                        throw new InvalidDataException("Only image files are allowed.");
+                        if (!image.ContentType.StartsWith("image/"))
+                        {
+                            throw new InvalidDataException("Only image files are allowed.");
+                        }
                     }
 
-                    string fileName = $"Feedback_{feedbackId}_{Guid.NewGuid()}";
+                    // Create Feedback entity
+                    var feedback = _mapper.Map<Feedback>(feedbackModel);
+                    feedback.TimeFeedback = DateTime.Now;
+                    feedback.Status = true;
 
-                    var fileMetadata = new Google.Apis.Drive.v3.Data.File()
-                    {
-                        Name = fileName,
-                        Parents = new List<string>() { parentFolderId },
-                        MimeType = image.ContentType
-                    };
-
-                    using (var stream = image.OpenReadStream())
-                    {
-                        await _googleDriveService.UploadFileAsync(stream, fileMetadata);
-                    }
-
-                    // Create FeedbackImage entity
-                    var feedbackImage = new FeedbackImage
-                    {
-                        FeedbackId = feedbackId,
-                        ImagePath = fileName,
-                        UploadDate = DateTime.Now
-                    };
-
-                    feedbackImages.Add(feedbackImage);
-                }
-
-                // Save FeedbackImages to database
-                if (feedbackImages.Count > 0)
-                {
-                    await _unitOfWork.FeedbackImageRepository.AddRangeAsync(feedbackImages);
+                    // Save Feedback to database
+                    await _unitOfWork.FeedbackRepository.InsertAsync(feedback);
                     await _unitOfWork.SaveAsync();
+
+                    var feedbackId = feedback.FeedbackId;
+                    var feedbackImages = new List<FeedbackImage>();
+
+                    // Upload each image to Google Drive
+                    foreach (var image in images)
+                    {
+                        string fileName = $"Feedback_{feedbackId}_{Guid.NewGuid()}";
+
+                        var fileMetadata = new Google.Apis.Drive.v3.Data.File()
+                        {
+                            Name = fileName,
+                            Parents = new List<string>() { parentFolderId },
+                            MimeType = image.ContentType
+                        };
+
+                        using (var stream = image.OpenReadStream())
+                        {
+                            await _googleDriveService.UploadFileAsync(stream, fileMetadata);
+                        }
+
+                        // Create FeedbackImage entity
+                        var feedbackImage = new FeedbackImage
+                        {
+                            FeedbackId = feedbackId,
+                            ImagePath = fileName,
+                            UploadDate = DateTime.Now
+                        };
+
+                        feedbackImages.Add(feedbackImage);
+                    }
+
+                    // Save FeedbackImages to database
+                    if (feedbackImages.Count > 0)
+                    {
+                        await _unitOfWork.FeedbackImageRepository.AddRangeAsync(feedbackImages);
+                        await _unitOfWork.SaveAsync();
+                    }
+
+                    // Commit the transaction
+                    await transaction.CommitAsync();
                 }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Cannot upload feedback", ex);
+                catch (InvalidDataException)
+                {
+                    // Nếu có InvalidDataException, rollback transaction và không upload bất kỳ file nào
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    // Rollback the transaction in case of error
+                    await transaction.RollbackAsync();
+                    throw new Exception("Cannot upload feedback", ex);
+                }
             }
         }
+
 
 
         public async Task<bool> UpdateStatusAsync(int feedbackId, bool newStatus)
