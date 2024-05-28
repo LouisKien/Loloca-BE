@@ -131,5 +131,37 @@ namespace Loloca_BE.Business.Services
                 throw new Exception("Cannot update avatar");
             }
         }
+
+        public async Task<List<GetCustomersView>> GetCustomers(int page, int pageSize)
+        {
+            try
+            {
+                List<GetCustomersView> customersViews = new List<GetCustomersView>();
+                var customers = (await _unitOfWork.CustomerRepository.GetAsync(includeProperties: "Account", pageIndex: page, pageSize: pageSize));
+                foreach (var customer in customers)
+                {
+                    var customerView = new GetCustomersView
+                    {
+                        AccountStatus = customer.Account.Status,
+                        AddressCustomer = customer.AddressCustomer,
+                        Avatar = await _googleDriveService.GetImageFromCacheOrDriveAsync(customer.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+                        AvatarUploadTime = customer.AvatarUploadTime,
+                        CustomerId = customer.CustomerId,
+                        DateOfBirth = customer.DateOfBirth,
+                        Email = customer.Account.Email,
+                        FirstName = customer.FirstName,
+                        Gender = customer.Gender,
+                        LastName = customer.LastName,
+                        PhoneNumber = customer.PhoneNumber
+                    };
+                    customersViews.Add(customerView);
+                }
+                return customersViews;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

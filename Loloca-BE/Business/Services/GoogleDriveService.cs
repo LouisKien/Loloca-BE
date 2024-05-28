@@ -3,16 +3,19 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Loloca_BE.Business.Services
 {
     public class GoogleDriveService : IGoogleDriveService
     {
         private readonly string _credentialsPath;
+        private readonly IMemoryCache _cache;
 
-        public GoogleDriveService()
+        public GoogleDriveService(IMemoryCache cache)
         {
             _credentialsPath = Environment.GetEnvironmentVariable("CREDENTIALS_PATH");
+            _cache = cache;
         }
 
         public async Task DeleteFileAsync(string fileName, string parentFolderId)
@@ -115,6 +118,33 @@ namespace Loloca_BE.Business.Services
                 new FileDataStore("GoogleDriveUploads.json", true)
             ).Result;
             return credential;
+        }
+
+        public async Task<byte[]> GetImageFromCacheOrDriveAsync(string imagePath, string parentFolderId)
+        {
+            if (string.IsNullOrEmpty(imagePath))
+            {
+                return null;
+            }
+
+            string cacheKey = $"{imagePath}";
+            if (!_cache.TryGetValue(cacheKey, out byte[] imageContent))
+            {
+                // Image not in cache, fetch from Google Drive
+                imageContent = await GetFileContentAsync(imagePath, parentFolderId);
+
+                if (imageContent != null)
+                {
+                    // Store in cache for 1 hour
+                    var cacheEntryOptions = new MemoryCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
+                    };
+                    _cache.Set(cacheKey, imageContent, cacheEntryOptions);
+                }
+            }
+
+            return imageContent;
         }
     }
 }

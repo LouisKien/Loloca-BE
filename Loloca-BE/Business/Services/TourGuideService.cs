@@ -197,8 +197,8 @@ namespace Loloca_BE.Business.Services
                 throw new Exception("Tour guide not found.");
             }
 
-            byte[]? avatarContent = await GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
-            byte[]? coverContent = await GetImageFromCacheOrDriveAsync(tourGuide.CoverPath, "1s642kdPTeuccQ0bcXXPXkEdAVCWDItmH");
+            byte[]? avatarContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
+            byte[]? coverContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.CoverPath, "1s642kdPTeuccQ0bcXXPXkEdAVCWDItmH");
 
             return new GetTourGuideInfo
             {
@@ -220,32 +220,7 @@ namespace Loloca_BE.Business.Services
             };
         }
 
-        private async Task<byte[]> GetImageFromCacheOrDriveAsync(string imagePath, string parentFolderId)
-        {
-            if (string.IsNullOrEmpty(imagePath))
-            {
-                return null;
-            }
-
-            string cacheKey = $"{imagePath}";
-            if (!_cache.TryGetValue(cacheKey, out byte[] imageContent))
-            {
-                // Image not in cache, fetch from Google Drive
-                imageContent = await _googleDriveService.GetFileContentAsync(imagePath, parentFolderId);
-
-                if (imageContent != null)
-                {
-                    // Store in cache for 1 hour
-                    var cacheEntryOptions = new MemoryCacheEntryOptions
-                    {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
-                    };
-                    _cache.Set(cacheKey, imageContent, cacheEntryOptions);
-                }
-            }
-
-            return imageContent;
-        }
+        
 
         public async Task<List<GetTourGuide>> GetRandomTourGuidesAsync(string sessionId, int page, int pageSize, int? lastFetchId)
         {
@@ -257,7 +232,7 @@ namespace Loloca_BE.Business.Services
                 List<GetTourGuide> items = new List<GetTourGuide>();
                 foreach (var tourGuide in tourGuides)
                 {
-                    byte[]? avatarContent = await GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
+                    byte[]? avatarContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
                     var item = new GetTourGuide
                     {
                         Avatar = avatarContent,
@@ -283,7 +258,7 @@ namespace Loloca_BE.Business.Services
                 {
                     var item = new GetTourGuide
                     {
-                        Avatar = await GetImageFromCacheOrDriveAsync(newTourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+                        Avatar = await _googleDriveService.GetImageFromCacheOrDriveAsync(newTourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
                         AvatarUploadedTime = newTourGuide.AvatarUploadDate,
                         DateOfBirth = newTourGuide.DateOfBirth,
                         Description = newTourGuide.Description,
@@ -331,7 +306,7 @@ namespace Loloca_BE.Business.Services
                 List<GetTourGuide> items = new List<GetTourGuide>();
                 foreach (var tourGuide in tourGuides)
                 {
-                    byte[]? avatarContent = await GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
+                    byte[]? avatarContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
                     var item = new GetTourGuide
                     {
                         Avatar = avatarContent,
@@ -357,7 +332,7 @@ namespace Loloca_BE.Business.Services
                 {
                     var item = new GetTourGuide
                     {
-                        Avatar = await GetImageFromCacheOrDriveAsync(newTourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+                        Avatar = await _googleDriveService.GetImageFromCacheOrDriveAsync(newTourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
                         AvatarUploadedTime = newTourGuide.AvatarUploadDate,
                         DateOfBirth = newTourGuide.DateOfBirth,
                         Description = newTourGuide.Description,
@@ -393,6 +368,25 @@ namespace Loloca_BE.Business.Services
             var items = await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1 && t.CityId == CityId); // Await the task to get the result
             var lastItem = items.OrderByDescending(i => i.TourGuideId).FirstOrDefault(); // Assuming you have a CreatedDate property
             return lastItem?.TourGuideId;
+        }
+
+        public async Task<int> GetTotalPage(int pageSize, int? cityId)
+        {
+            try
+            {
+                int total;
+                if(cityId == null)
+                {
+                    total = await _unitOfWork.TourGuideRepository.CountAsync();
+                } else
+                {
+                    total = await _unitOfWork.TourGuideRepository.CountAsync(filter: t => t.CityId == cityId);
+                }
+                return (int)Math.Ceiling(total / (double)pageSize);
+            } catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

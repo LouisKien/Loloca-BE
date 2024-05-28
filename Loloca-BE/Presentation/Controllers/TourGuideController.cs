@@ -1,6 +1,7 @@
 ﻿using Loloca_BE.Business.Models;
 using Loloca_BE.Business.Models.TourGuideView;
 using Loloca_BE.Business.Services;
+using Loloca_BE.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -145,10 +146,15 @@ namespace Loloca_BE.Presentation.Controllers
                 lastFetchId = null;
             }
 
+            var totalPage = await _tourGuideService.GetTotalPage(pageSize, null);
+            if (page > totalPage)
+            {
+                return NotFound("This page does not exist.");
+            }
             var tourGuides = await _tourGuideService.GetRandomTourGuidesAsync(sessionId, page, pageSize, lastFetchId);
             var lastTourGuideAddedId = await _tourGuideService.GetLastTourGuideAddedIdAsync();
             HttpContext.Session.SetString("LastFetchIdCity", lastTourGuideAddedId.ToString());
-            return Ok(tourGuides);
+            return Ok(new { tourGuides, totalPage});
         }
 
         [HttpGet("/api/v1/tourguide/city")]
@@ -176,11 +182,15 @@ namespace Loloca_BE.Presentation.Controllers
             {
                 lastFetchId = null;
             }
-
+            var totalPage = await _tourGuideService.GetTotalPage(pageSize, CityId);
+            if(page > totalPage)
+            {
+                return NotFound("This page does not exist.");
+            }
             var tourGuides = await _tourGuideService.GetRandomTourGuidesInCityAsync(sessionId, CityId, page, pageSize, lastFetchId);
             var lastTourGuideAddedIdInCity = await _tourGuideService.GetLastTourGuideAddedIdInCityAsync(CityId);
             HttpContext.Session.SetString("LastFetchId", lastTourGuideAddedIdInCity.ToString());
-            return Ok(tourGuides);
+            return Ok(new { tourGuides, totalPage });
         }
     }
 }

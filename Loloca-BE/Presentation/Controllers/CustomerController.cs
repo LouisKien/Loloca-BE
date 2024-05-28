@@ -75,5 +75,19 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [AllowAnonymous]
+        [HttpGet("/api/v1/customer")]
+        public async Task<IActionResult> GetListCustomers([FromQuery] int page, [FromQuery] int pageSize)
+        {
+            try
+            {
+                var customersView = _customerService.GetCustomers(page, pageSize);
+                return Ok(customersView);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
+            }
+        }
     }
 }

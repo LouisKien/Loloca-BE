@@ -23,31 +23,6 @@ namespace Loloca_BE.Business.Services
             _cache = cache;
         }
 
-        private async Task<byte[]> GetImageFromCacheOrDriveAsync(string imagePath, string parentFolderId)
-        {
-            if (string.IsNullOrEmpty(imagePath))
-            {
-                return null;
-            }
-
-            string cacheKey = $"{imagePath}";
-            if (!_cache.TryGetValue(cacheKey, out byte[] imageContent))
-            {
-                imageContent = await _googleDriveService.GetFileContentAsync(imagePath, parentFolderId);
-
-                if (imageContent != null)
-                {
-                    var cacheEntryOptions = new MemoryCacheEntryOptions
-                    {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
-                    };
-                    _cache.Set(cacheKey, imageContent, cacheEntryOptions);
-                }
-            }
-
-            return imageContent;
-        }
-
         public async Task<IEnumerable<FeebackView>> GetAllFeedbacksAsync()
         {
             try
@@ -75,7 +50,7 @@ namespace Loloca_BE.Business.Services
                     {
                         foreach (var image in feedback.FeedbackImages)
                         {
-                            var imagePath = await GetImageFromCacheOrDriveAsync(image.ImagePath, "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem");
+                            var imagePath = await _googleDriveService.GetImageFromCacheOrDriveAsync(image.ImagePath, "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem");
                             var feedbackImageView = new FeedbackImageView
                             {
                                 ImagePath = imagePath,
@@ -171,7 +146,7 @@ namespace Loloca_BE.Business.Services
             {
                 var imageView = new FeedbackImageView
                 {
-                    ImagePath = await GetImageFromCacheOrDriveAsync(image.ImagePath, "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem"),
+                    ImagePath = await _googleDriveService.GetImageFromCacheOrDriveAsync(image.ImagePath, "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem"),
                     UploadDate = image.UploadDate
                 };
 
@@ -234,7 +209,7 @@ namespace Loloca_BE.Business.Services
             {
                 var imageView = new FeedbackImageView
                 {
-                    ImagePath = await GetImageFromCacheOrDriveAsync(image.ImagePath, "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem"),
+                    ImagePath = await _googleDriveService.GetImageFromCacheOrDriveAsync(image.ImagePath, "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem"),
                     UploadDate = image.UploadDate
                 };
 

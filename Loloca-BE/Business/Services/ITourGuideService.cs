@@ -15,5 +15,6 @@ namespace Loloca_BE.Business.Services
         Task<int?> GetLastTourGuideAddedIdAsync();
         Task<List<GetTourGuide>> GetRandomTourGuidesInCityAsync(string sessionId, int CityId, int page, int pageSize, int? lastFetchId);
         Task<int?> GetLastTourGuideAddedIdInCityAsync(int CityId);
+        Task<int> GetTotalPage(int pageSize, int? cityId);
     }
 }
