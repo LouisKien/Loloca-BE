@@ -2,8 +2,10 @@
 using Loloca_BE.Business.Models.CustomerView;
 using Loloca_BE.Data.Entities;
 using Loloca_BE.Data.Repositories;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Drawing.Printing;
 using System.Threading.Tasks;
 
 namespace Loloca_BE.Business.Services
@@ -137,14 +139,14 @@ namespace Loloca_BE.Business.Services
             try
             {
                 List<GetCustomersView> customersViews = new List<GetCustomersView>();
-                var customers = (await _unitOfWork.CustomerRepository.GetAsync(includeProperties: "Account", pageIndex: page, pageSize: pageSize));
+                var customers = await _unitOfWork.CustomerRepository.GetAsync(includeProperties: "Account", pageIndex: page, pageSize: pageSize);
                 foreach (var customer in customers)
                 {
                     var customerView = new GetCustomersView
                     {
                         AccountStatus = customer.Account.Status,
                         AddressCustomer = customer.AddressCustomer,
-                        Avatar = await _googleDriveService.GetImageFromCacheOrDriveAsync(customer.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+                        Avatar = await _googleDriveService.GetImageFromCacheOrDriveAsync(customer.AvatarPath, "1w1JtGcVwuhWnYdpGsXrTKr_dcSnGTG4Z"),
                         AvatarUploadTime = customer.AvatarUploadTime,
                         CustomerId = customer.CustomerId,
                         DateOfBirth = customer.DateOfBirth,
@@ -157,6 +159,51 @@ namespace Loloca_BE.Business.Services
                     customersViews.Add(customerView);
                 }
                 return customersViews;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<int> GetTotalPage(int pageSize)
+        {
+            try
+            {
+                int total;
+                total = await _unitOfWork.CustomerRepository.CountAsync();
+                return (int)Math.Ceiling(total / (double)pageSize);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<GetCustomersView> GetCustomerById(int customerId)
+        {
+            try
+            {
+                var customer = (await _unitOfWork.CustomerRepository.GetAsync(filter: c => c.CustomerId == customerId, includeProperties: "Account")).FirstOrDefault();
+                if(customer != null)
+                {
+                    var customerView = new GetCustomersView
+                    {
+                        AccountStatus = customer.Account.Status,
+                        AddressCustomer = customer.AddressCustomer,
+                        Avatar = await _googleDriveService.GetImageFromCacheOrDriveAsync(customer.AvatarPath, "1w1JtGcVwuhWnYdpGsXrTKr_dcSnGTG4Z"),
+                        AvatarUploadTime = customer.AvatarUploadTime,
+                        CustomerId = customer.CustomerId,
+                        DateOfBirth = customer.DateOfBirth,
+                        Email = customer.Account.Email,
+                        FirstName = customer.FirstName,
+                        Gender = customer.Gender,
+                        LastName = customer.LastName,
+                        PhoneNumber = customer.PhoneNumber
+                    };
+                    return customerView;
+                }
+                return null;            
             }
             catch (Exception ex)
             {

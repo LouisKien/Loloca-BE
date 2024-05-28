@@ -118,42 +118,48 @@ namespace Loloca_BE.Business.Services
 
         public async Task<FeebackView> GetFeedbackByIdAsync(int feedbackId)
         {
-            var feedback = await _unitOfWork.FeedbackRepository.GetByIDAsync(feedbackId);
-
-            if (feedback == null)
+            try
             {
-                // Xử lý trường hợp không tìm thấy feedback
-                return null;
-            }
+                var feedback = await _unitOfWork.FeedbackRepository.GetByIDAsync(feedbackId);
 
-            // Load FeedbackImages explicitly
-            await _unitOfWork.FeedbackRepository.LoadCollectionAsync(feedback, f => f.FeedbackImages);
-
-            var feedbackView = new FeebackView
-            {
-                FeedbackId = feedback.FeedbackId,
-                CustomerId = feedback.CustomerId,
-                TourGuideId = feedback.TourGuideId,
-                NumOfStars = feedback.NumOfStars,
-                Content = feedback.Content,
-                Status = feedback.Status,
-                TimeFeedback = feedback.TimeFeedback,
-            };
-
-            feedbackView.feedBackImgViewList = new List<FeedbackImageView>();
-
-            foreach (var image in feedback.FeedbackImages)
-            {
-                var imageView = new FeedbackImageView
+                if (feedback == null)
                 {
-                    ImagePath = await _googleDriveService.GetImageFromCacheOrDriveAsync(image.ImagePath, "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem"),
-                    UploadDate = image.UploadDate
+                    // Xử lý trường hợp không tìm thấy feedback
+                    return null;
+                }
+
+                // Load FeedbackImages explicitly
+                await _unitOfWork.FeedbackRepository.LoadCollectionAsync(feedback, f => f.FeedbackImages);
+
+                var feedbackView = new FeebackView
+                {
+                    FeedbackId = feedback.FeedbackId,
+                    CustomerId = feedback.CustomerId,
+                    TourGuideId = feedback.TourGuideId,
+                    NumOfStars = feedback.NumOfStars,
+                    Content = feedback.Content,
+                    Status = feedback.Status,
+                    TimeFeedback = feedback.TimeFeedback,
                 };
 
-                feedbackView.feedBackImgViewList.Add(imageView);
-            }
+                feedbackView.feedBackImgViewList = new List<FeedbackImageView>();
 
-            return feedbackView;
+                foreach (var image in feedback.FeedbackImages)
+                {
+                    var imageView = new FeedbackImageView
+                    {
+                        ImagePath = await _googleDriveService.GetImageFromCacheOrDriveAsync(image.ImagePath, "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem"),
+                        UploadDate = image.UploadDate
+                    };
+
+                    feedbackView.feedBackImgViewList.Add(imageView);
+                }
+
+                return feedbackView;
+            } catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
         public async Task<IEnumerable<GetFeedbackForTourGuideView>> GetFeedbackByTourGuideIdAsync(int tourGuideId)
         {

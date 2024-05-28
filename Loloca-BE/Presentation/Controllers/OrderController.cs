@@ -25,7 +25,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
 
@@ -43,7 +43,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
 
@@ -67,7 +67,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
 
@@ -93,7 +93,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
 
@@ -111,7 +111,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
     }

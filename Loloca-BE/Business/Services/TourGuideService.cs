@@ -191,183 +191,214 @@ namespace Loloca_BE.Business.Services
 
         public async Task<GetTourGuideInfo> GetTourGuideInfoAsync(int tourGuideId)
         {
-            var tourGuide = await _unitOfWork.TourGuideRepository.GetByIDAsync(tourGuideId);
-            if (tourGuide == null)
+            try
             {
-                throw new Exception("Tour guide not found.");
+                var tourGuide = await _unitOfWork.TourGuideRepository.GetByIDAsync(tourGuideId);
+                if (tourGuide == null)
+                {
+                    throw new Exception("Tour guide not found.");
+                }
+
+                byte[]? avatarContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
+                byte[]? coverContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.CoverPath, "1s642kdPTeuccQ0bcXXPXkEdAVCWDItmH");
+
+                return new GetTourGuideInfo
+                {
+                    FirstName = tourGuide.FirstName,
+                    LastName = tourGuide.LastName,
+                    DateOfBirth = tourGuide.DateOfBirth,
+                    Gender = tourGuide.Gender,
+                    PhoneNumber = tourGuide.PhoneNumber,
+                    Description = tourGuide.Description,
+                    Address = tourGuide.Address,
+                    ZaloLink = tourGuide.ZaloLink,
+                    FacebookLink = tourGuide.FacebookLink,
+                    InstagramLink = tourGuide.InstagramLink,
+                    PricePerDay = tourGuide.PricePerDay,
+                    Avatar = avatarContent,
+                    AvatarUploadedTime = tourGuide.AvatarUploadDate,
+                    Cover = coverContent,
+                    CoverUploadedTime = tourGuide.CoverUploadDate
+                };
+            } catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
-
-            byte[]? avatarContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
-            byte[]? coverContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.CoverPath, "1s642kdPTeuccQ0bcXXPXkEdAVCWDItmH");
-
-            return new GetTourGuideInfo
-            {
-                FirstName = tourGuide.FirstName,
-                LastName = tourGuide.LastName,
-                DateOfBirth = tourGuide.DateOfBirth,
-                Gender = tourGuide.Gender,
-                PhoneNumber = tourGuide.PhoneNumber,
-                Description = tourGuide.Description,
-                Address = tourGuide.Address,
-                ZaloLink = tourGuide.ZaloLink,
-                FacebookLink = tourGuide.FacebookLink,
-                InstagramLink = tourGuide.InstagramLink,
-                PricePerDay = tourGuide.PricePerDay,
-                Avatar = avatarContent,
-                AvatarUploadedTime = tourGuide.AvatarUploadDate,
-                Cover = coverContent,
-                CoverUploadedTime = tourGuide.CoverUploadDate
-            };
         }
 
         
 
         public async Task<List<GetTourGuide>> GetRandomTourGuidesAsync(string sessionId, int page, int pageSize, int? lastFetchId)
         {
-            var lastTourGuideAddedId = await GetLastTourGuideAddedIdAsync();
-            var cacheKey = $"TourGuide_{sessionId}";
-            if (!_cache.TryGetValue(cacheKey, out List<GetTourGuide> shuffledItems))
+            try
             {
-                var tourGuides = (await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1)).ToList();
-                List<GetTourGuide> items = new List<GetTourGuide>();
-                foreach (var tourGuide in tourGuides)
+                var lastTourGuideAddedId = await GetLastTourGuideAddedIdAsync();
+                var cacheKey = $"TourGuide_{sessionId}";
+                if (!_cache.TryGetValue(cacheKey, out List<GetTourGuide> shuffledItems))
                 {
-                    byte[]? avatarContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
-                    var item = new GetTourGuide
+                    var tourGuides = (await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1)).ToList();
+                    List<GetTourGuide> items = new List<GetTourGuide>();
+                    foreach (var tourGuide in tourGuides)
                     {
-                        Avatar = avatarContent,
-                        AvatarUploadedTime = tourGuide.AvatarUploadDate,
-                        DateOfBirth = tourGuide.DateOfBirth,
-                        Description = tourGuide.Description,
-                        FirstName = tourGuide.FirstName,
-                        Gender = tourGuide.Gender,
-                        Id = tourGuide.TourGuideId,
-                        LastName = tourGuide.LastName,
-                        PricePerDay = tourGuide.PricePerDay
-                    };
-                    items.Add(item);
+                        byte[]? avatarContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
+                        var item = new GetTourGuide
+                        {
+                            Avatar = avatarContent,
+                            AvatarUploadedTime = tourGuide.AvatarUploadDate,
+                            DateOfBirth = tourGuide.DateOfBirth,
+                            Description = tourGuide.Description,
+                            FirstName = tourGuide.FirstName,
+                            Gender = tourGuide.Gender,
+                            Id = tourGuide.TourGuideId,
+                            LastName = tourGuide.LastName,
+                            PricePerDay = tourGuide.PricePerDay
+                        };
+                        items.Add(item);
+                    }
+                    shuffledItems = items.OrderBy(x => _random.Next()).ToList();
+                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(30)); // Cache for 30 minutes
                 }
-                shuffledItems = items.OrderBy(x => _random.Next()).ToList();
-                _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(30)); // Cache for 30 minutes
-            }
-            else if (lastFetchId == null || lastTourGuideAddedId > lastFetchId)
-            {
-                var newTourGuides = await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1);
-                var newTourGuide = newTourGuides.FirstOrDefault(i => i.TourGuideId > lastFetchId);
-                if (newTourGuide != null)
+                else if (lastFetchId == null || lastTourGuideAddedId > lastFetchId)
                 {
-                    var item = new GetTourGuide
+                    var newTourGuides = await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1);
+                    var newTourGuide = newTourGuides.FirstOrDefault(i => i.TourGuideId > lastFetchId);
+                    if (newTourGuide != null)
                     {
-                        Avatar = await _googleDriveService.GetImageFromCacheOrDriveAsync(newTourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
-                        AvatarUploadedTime = newTourGuide.AvatarUploadDate,
-                        DateOfBirth = newTourGuide.DateOfBirth,
-                        Description = newTourGuide.Description,
-                        FirstName = newTourGuide.FirstName,
-                        Gender = newTourGuide.Gender,
-                        Id = newTourGuide.TourGuideId,
-                        LastName = newTourGuide.LastName,
-                        PricePerDay = newTourGuide.PricePerDay
-                    };
-                    shuffledItems.Add(item); // Add the new item to the existing shuffled list
-                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(30));
+                        var item = new GetTourGuide
+                        {
+                            Avatar = await _googleDriveService.GetImageFromCacheOrDriveAsync(newTourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+                            AvatarUploadedTime = newTourGuide.AvatarUploadDate,
+                            DateOfBirth = newTourGuide.DateOfBirth,
+                            Description = newTourGuide.Description,
+                            FirstName = newTourGuide.FirstName,
+                            Gender = newTourGuide.Gender,
+                            Id = newTourGuide.TourGuideId,
+                            LastName = newTourGuide.LastName,
+                            PricePerDay = newTourGuide.PricePerDay
+                        };
+                        shuffledItems.Add(item); // Add the new item to the existing shuffled list
+                        _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(30));
+                    }
                 }
-            }
 
-            var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+                var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-            return pagedItems.Select(item => new GetTourGuide
+                return pagedItems.Select(item => new GetTourGuide
+                {
+                    Avatar = item.Avatar,
+                    AvatarUploadedTime = item.AvatarUploadedTime,
+                    DateOfBirth = item.DateOfBirth,
+                    Description = item.Description,
+                    FirstName = item.FirstName,
+                    Gender = item.Gender,
+                    Id = item.Id,
+                    LastName = item.LastName,
+                    PricePerDay = item.PricePerDay
+                }).ToList();
+            } catch (Exception ex)
             {
-                Avatar = item.Avatar,
-                AvatarUploadedTime = item.AvatarUploadedTime,
-                DateOfBirth = item.DateOfBirth,
-                Description = item.Description,
-                FirstName = item.FirstName,
-                Gender = item.Gender,
-                Id = item.Id,
-                LastName = item.LastName,
-                PricePerDay = item.PricePerDay
-            }).ToList();
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task<int?> GetLastTourGuideAddedIdAsync()
         {
-            var items = await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1); // Await the task to get the result
-            var lastItem = items.OrderByDescending(i => i.TourGuideId).FirstOrDefault(); // Assuming you have a CreatedDate property
-            return lastItem?.TourGuideId;
+            try
+            {
+                var items = await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1); // Await the task to get the result
+                var lastItem = items.OrderByDescending(i => i.TourGuideId).FirstOrDefault(); // Assuming you have a CreatedDate property
+                return lastItem?.TourGuideId;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task<List<GetTourGuide>> GetRandomTourGuidesInCityAsync(string sessionId, int CityId, int page, int pageSize, int? lastFetchId)
         {
-            var lastTourGuideAddedId = await GetLastTourGuideAddedIdInCityAsync(CityId);
-            var cacheKey = $"City_{CityId}_TourGuide_{sessionId}";
-            if (!_cache.TryGetValue(cacheKey, out List<GetTourGuide> shuffledItems))
+            try
             {
-                var tourGuides = (await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1 && t.CityId == CityId)).ToList();
-                List<GetTourGuide> items = new List<GetTourGuide>();
-                foreach (var tourGuide in tourGuides)
+                var lastTourGuideAddedId = await GetLastTourGuideAddedIdInCityAsync(CityId);
+                var cacheKey = $"City_{CityId}_TourGuide_{sessionId}";
+                if (!_cache.TryGetValue(cacheKey, out List<GetTourGuide> shuffledItems))
                 {
-                    byte[]? avatarContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
-                    var item = new GetTourGuide
+                    var tourGuides = (await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1 && t.CityId == CityId)).ToList();
+                    List<GetTourGuide> items = new List<GetTourGuide>();
+                    foreach (var tourGuide in tourGuides)
                     {
-                        Avatar = avatarContent,
-                        AvatarUploadedTime = tourGuide.AvatarUploadDate,
-                        DateOfBirth = tourGuide.DateOfBirth,
-                        Description = tourGuide.Description,
-                        FirstName = tourGuide.FirstName,
-                        Gender = tourGuide.Gender,
-                        Id = tourGuide.TourGuideId,
-                        LastName = tourGuide.LastName,
-                        PricePerDay = tourGuide.PricePerDay
-                    };
-                    items.Add(item);
+                        byte[]? avatarContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
+                        var item = new GetTourGuide
+                        {
+                            Avatar = avatarContent,
+                            AvatarUploadedTime = tourGuide.AvatarUploadDate,
+                            DateOfBirth = tourGuide.DateOfBirth,
+                            Description = tourGuide.Description,
+                            FirstName = tourGuide.FirstName,
+                            Gender = tourGuide.Gender,
+                            Id = tourGuide.TourGuideId,
+                            LastName = tourGuide.LastName,
+                            PricePerDay = tourGuide.PricePerDay
+                        };
+                        items.Add(item);
+                    }
+                    shuffledItems = items.OrderBy(x => _random.Next()).ToList();
+                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(30)); // Cache for 30 minutes
                 }
-                shuffledItems = items.OrderBy(x => _random.Next()).ToList();
-                _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(30)); // Cache for 30 minutes
-            }
-            else if (lastFetchId == null || lastTourGuideAddedId > lastFetchId)
-            {
-                var newTourGuides = await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1 && t.CityId == CityId);
-                var newTourGuide = newTourGuides.FirstOrDefault(i => i.TourGuideId > lastFetchId);
-                if (newTourGuide != null)
+                else if (lastFetchId == null || lastTourGuideAddedId > lastFetchId)
                 {
-                    var item = new GetTourGuide
+                    var newTourGuides = await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1 && t.CityId == CityId);
+                    var newTourGuide = newTourGuides.FirstOrDefault(i => i.TourGuideId > lastFetchId);
+                    if (newTourGuide != null)
                     {
-                        Avatar = await _googleDriveService.GetImageFromCacheOrDriveAsync(newTourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
-                        AvatarUploadedTime = newTourGuide.AvatarUploadDate,
-                        DateOfBirth = newTourGuide.DateOfBirth,
-                        Description = newTourGuide.Description,
-                        FirstName = newTourGuide.FirstName,
-                        Gender = newTourGuide.Gender,
-                        Id = newTourGuide.TourGuideId,
-                        LastName = newTourGuide.LastName,
-                        PricePerDay = newTourGuide.PricePerDay
-                    };
-                    shuffledItems.Add(item); // Add the new item to the existing shuffled list
-                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(30));
+                        var item = new GetTourGuide
+                        {
+                            Avatar = await _googleDriveService.GetImageFromCacheOrDriveAsync(newTourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+                            AvatarUploadedTime = newTourGuide.AvatarUploadDate,
+                            DateOfBirth = newTourGuide.DateOfBirth,
+                            Description = newTourGuide.Description,
+                            FirstName = newTourGuide.FirstName,
+                            Gender = newTourGuide.Gender,
+                            Id = newTourGuide.TourGuideId,
+                            LastName = newTourGuide.LastName,
+                            PricePerDay = newTourGuide.PricePerDay
+                        };
+                        shuffledItems.Add(item); // Add the new item to the existing shuffled list
+                        _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(30));
+                    }
                 }
-            }
 
-            var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+                var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-            return pagedItems.Select(item => new GetTourGuide
+                return pagedItems.Select(item => new GetTourGuide
+                {
+                    Avatar = item.Avatar,
+                    AvatarUploadedTime = item.AvatarUploadedTime,
+                    DateOfBirth = item.DateOfBirth,
+                    Description = item.Description,
+                    FirstName = item.FirstName,
+                    Gender = item.Gender,
+                    Id = item.Id,
+                    LastName = item.LastName,
+                    PricePerDay = item.PricePerDay
+                }).ToList();
+            } catch (Exception ex)
             {
-                Avatar = item.Avatar,
-                AvatarUploadedTime = item.AvatarUploadedTime,
-                DateOfBirth = item.DateOfBirth,
-                Description = item.Description,
-                FirstName = item.FirstName,
-                Gender = item.Gender,
-                Id = item.Id,
-                LastName = item.LastName,
-                PricePerDay = item.PricePerDay
-            }).ToList();
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task<int?> GetLastTourGuideAddedIdInCityAsync(int CityId)
         {
-            var items = await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1 && t.CityId == CityId); // Await the task to get the result
-            var lastItem = items.OrderByDescending(i => i.TourGuideId).FirstOrDefault(); // Assuming you have a CreatedDate property
-            return lastItem?.TourGuideId;
+            try
+            {
+                var items = await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1 && t.CityId == CityId); // Await the task to get the result
+                var lastItem = items.OrderByDescending(i => i.TourGuideId).FirstOrDefault(); // Assuming you have a CreatedDate property
+                return lastItem?.TourGuideId;
+            } catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task<int> GetTotalPage(int pageSize, int? cityId)

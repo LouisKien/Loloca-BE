@@ -35,8 +35,14 @@ namespace Loloca_BE.Business.Services
 
         public async Task<OrderModelView?> GetOrderByIdAsync(int id)
         {
-            var order = await _unitOfWork.OrderRepository.GetByIDAsync(id);
-            return _mapper.Map<OrderModelView>(order);
+            try
+            {
+                var order = await _unitOfWork.OrderRepository.GetByIDAsync(id);
+                return _mapper.Map<OrderModelView>(order);
+            } catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task<OrderForBookingTourGuideView> CreateOrderForBookingTourGuideRequestAsync(OrderForBookingTourGuideView orderModel)

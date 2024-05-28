@@ -8,5 +8,7 @@ namespace Loloca_BE.Business.Services
         Task<bool> ChangeCustomerPassword(int customerId, ChangePassword model);
         Task UploadAvatarAsync(IFormFile file, int CustomerId);
         Task<List<GetCustomersView>> GetCustomers(int page, int pageSize);
+        Task<int> GetTotalPage(int pageSize);
+        Task<GetCustomersView> GetCustomerById(int customerId);
     }
 }

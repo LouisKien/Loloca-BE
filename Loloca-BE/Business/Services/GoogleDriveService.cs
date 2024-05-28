@@ -91,60 +91,79 @@ namespace Loloca_BE.Business.Services
 
         public async Task UploadFileAsync(Stream fileStream, Google.Apis.Drive.v3.Data.File fileMetadata)
         {
-            // 1. Authenticate with Google Drive API
-            var credentials = await GetCredentialsAsync();
-
-            // Create the DriveService instance
-            var service = new DriveService(new BaseClientService.Initializer()
+            try
             {
-                HttpClientInitializer = credentials,
-                ApplicationName = "Loloca",
-            });
+                // 1. Authenticate with Google Drive API
+                var credentials = await GetCredentialsAsync();
 
-            // Upload the file using the stream
-            var file = await service.Files.Create(fileMetadata, fileStream, fileMetadata.MimeType)
-                .UploadAsync();
+                // Create the DriveService instance
+                var service = new DriveService(new BaseClientService.Initializer()
+                {
+                    HttpClientInitializer = credentials,
+                    ApplicationName = "Loloca",
+                });
+
+                // Upload the file using the stream
+                var file = await service.Files.Create(fileMetadata, fileStream, fileMetadata.MimeType)
+                    .UploadAsync();
+            } catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         private async Task<UserCredential> GetCredentialsAsync()
         {
-            // Set up the flow and the data store
-            using var stream = new FileStream(_credentialsPath, FileMode.Open, FileAccess.Read);
-            var credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                GoogleClientSecrets.Load(stream).Secrets,
-                new[] { DriveService.Scope.DriveFile },
-                "user",
-                CancellationToken.None,
-                new FileDataStore("GoogleDriveUploads.json", true)
-            ).Result;
-            return credential;
+            try
+            {
+                // Set up the flow and the data store
+                using var stream = new FileStream(_credentialsPath, FileMode.Open, FileAccess.Read);
+                var credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    GoogleClientSecrets.Load(stream).Secrets,
+                    new[] { DriveService.Scope.DriveFile },
+                    "user",
+                    CancellationToken.None,
+                    new FileDataStore("GoogleDriveUploads.json", true)
+                ).Result;
+                return credential;
+            } catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task<byte[]> GetImageFromCacheOrDriveAsync(string imagePath, string parentFolderId)
         {
-            if (string.IsNullOrEmpty(imagePath))
+            try
             {
-                return null;
-            }
-
-            string cacheKey = $"{imagePath}";
-            if (!_cache.TryGetValue(cacheKey, out byte[] imageContent))
-            {
-                // Image not in cache, fetch from Google Drive
-                imageContent = await GetFileContentAsync(imagePath, parentFolderId);
-
-                if (imageContent != null)
+                if (string.IsNullOrEmpty(imagePath))
                 {
-                    // Store in cache for 1 hour
-                    var cacheEntryOptions = new MemoryCacheEntryOptions
-                    {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
-                    };
-                    _cache.Set(cacheKey, imageContent, cacheEntryOptions);
+                    return null;
                 }
-            }
 
-            return imageContent;
+                string cacheKey = $"{imagePath}";
+                if (!_cache.TryGetValue(cacheKey, out byte[] imageContent))
+                {
+                    // Image not in cache, fetch from Google Drive
+                    imageContent = await GetFileContentAsync(imagePath, parentFolderId);
+
+                    if (imageContent != null)
+                    {
+                        // Store in cache for 1 hour
+                        var cacheEntryOptions = new MemoryCacheEntryOptions
+                        {
+                            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
+                        };
+                        _cache.Set(cacheKey, imageContent, cacheEntryOptions);
+                    }
+                }
+
+                return imageContent;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

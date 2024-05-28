@@ -22,48 +22,60 @@ namespace Loloca_BE.Business.Services
 
         private async Task<UserCredential> GetCredentialAsync()
         {
-            if (_credential != null && !_credential.Token.IsExpired(_credential.Flow.Clock))
+            try
             {
+                if (_credential != null && !_credential.Token.IsExpired(_credential.Flow.Clock))
+                {
+                    return _credential;
+                }
+
+                using (var stream = new FileStream(_credentialsPath, FileMode.Open, FileAccess.Read))
+                {
+                    _credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                        GoogleClientSecrets.Load(stream).Secrets,
+                        new[] { GmailService.Scope.GmailSend },
+                        "user", CancellationToken.None,
+                        new FileDataStore("Token.json", true));
+                }
+
                 return _credential;
-            }
-
-            using (var stream = new FileStream(_credentialsPath, FileMode.Open, FileAccess.Read))
+            } catch (Exception ex)
             {
-                _credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    new[] { GmailService.Scope.GmailSend },
-                    "user", CancellationToken.None,
-                    new FileDataStore("Token.json", true));
+                throw new Exception(ex.Message);
             }
-
-            return _credential;
         }
 
         public async Task SendVerificationEmailAsync(string email, string verificationCode)
         {
-            var credential = await GetCredentialAsync();
-
-            var service = new GmailService(new BaseClientService.Initializer()
+            try
             {
-                ApplicationName = "LOLOCA",
-                HttpClientInitializer = credential
-            });
+                var credential = await GetCredentialAsync();
 
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("LOLOCA", "louisnamu2002@gmail.com"));
-            message.To.Add(new MailboxAddress("", email));
-            message.Subject = "LOLOCA: Email Verification Code";
-            message.Body = new TextPart("plain")
+                var service = new GmailService(new BaseClientService.Initializer()
+                {
+                    ApplicationName = "LOLOCA",
+                    HttpClientInitializer = credential
+                });
+
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("LOLOCA", "louisnamu2002@gmail.com"));
+                message.To.Add(new MailboxAddress("", email));
+                message.Subject = "LOLOCA: Email Verification Code";
+                message.Body = new TextPart("plain")
+                {
+                    Text = $"Your verification code is: {verificationCode}.\nPlease enter this code to verify, it will be expired after 1 hour.\n\nBest regards\nLOLOCA Team"
+                };
+
+                var gmailMessage = new Message
+                {
+                    Raw = Base64UrlEncoder.Encode(message.ToString())
+                };
+
+                await service.Users.Messages.Send(gmailMessage, "me").ExecuteAsync();
+            } catch (Exception ex)
             {
-                Text = $"Your verification code is: {verificationCode}.\nPlease enter this code to verify, it will be expired after 1 hour.\n\nBest regards\nLOLOCA Team"
-            };
-
-            var gmailMessage = new Message
-            {
-                Raw = Base64UrlEncoder.Encode(message.ToString())
-            };
-
-            await service.Users.Messages.Send(gmailMessage, "me").ExecuteAsync();
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

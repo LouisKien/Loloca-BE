@@ -31,7 +31,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Lỗi: {ex.Message}");
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
     }

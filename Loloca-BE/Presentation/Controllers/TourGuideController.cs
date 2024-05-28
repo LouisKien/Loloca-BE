@@ -36,11 +36,11 @@ namespace Loloca_BE.Presentation.Controllers
             }
             catch (InvalidDataException ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
 
@@ -61,11 +61,11 @@ namespace Loloca_BE.Presentation.Controllers
             }
             catch (InvalidDataException ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
 
@@ -79,7 +79,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Lỗi: {ex.Message}");
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
 
@@ -101,7 +101,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Lỗi: {ex.Message}");
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
 
@@ -116,81 +116,93 @@ namespace Loloca_BE.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
 
         [HttpGet("/api/v1/tourguide")]
         public async Task<IActionResult> GetRandomTourGuides([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            string sessionId;
-            int? lastFetchId = null;
+            try
+            {
+                string sessionId;
+                int? lastFetchId = null;
 
-            if (HttpContext.Session.GetString("SessionId") == null)
-            {
-                sessionId = Guid.NewGuid().ToString();
-                HttpContext.Session.SetString("SessionId", sessionId);
-            }
-            else
-            {
-                sessionId = HttpContext.Session.GetString("SessionId");
-            }
+                if (HttpContext.Session.GetString("SessionId") == null)
+                {
+                    sessionId = Guid.NewGuid().ToString();
+                    HttpContext.Session.SetString("SessionId", sessionId);
+                }
+                else
+                {
+                    sessionId = HttpContext.Session.GetString("SessionId");
+                }
 
-            var lastFetchIdString = HttpContext.Session.GetString("LastFetchIdCity");
-            if (lastFetchIdString != null && int.TryParse(lastFetchIdString, out var parsedLastFetchId))
-            {
-                lastFetchId = parsedLastFetchId;
-            }
-            else
-            {
-                lastFetchId = null;
-            }
+                var lastFetchIdString = HttpContext.Session.GetString("LastFetchIdCity");
+                if (lastFetchIdString != null && int.TryParse(lastFetchIdString, out var parsedLastFetchId))
+                {
+                    lastFetchId = parsedLastFetchId;
+                }
+                else
+                {
+                    lastFetchId = null;
+                }
 
-            var totalPage = await _tourGuideService.GetTotalPage(pageSize, null);
-            if (page > totalPage)
+                var totalPage = await _tourGuideService.GetTotalPage(pageSize, null);
+                if (page > totalPage)
+                {
+                    return NotFound("This page does not exist.");
+                }
+                var tourGuides = await _tourGuideService.GetRandomTourGuidesAsync(sessionId, page, pageSize, lastFetchId);
+                var lastTourGuideAddedId = await _tourGuideService.GetLastTourGuideAddedIdAsync();
+                HttpContext.Session.SetString("LastFetchIdCity", lastTourGuideAddedId.ToString());
+                return Ok(new { tourGuides, totalPage });
+            } catch (Exception ex)
             {
-                return NotFound("This page does not exist.");
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
-            var tourGuides = await _tourGuideService.GetRandomTourGuidesAsync(sessionId, page, pageSize, lastFetchId);
-            var lastTourGuideAddedId = await _tourGuideService.GetLastTourGuideAddedIdAsync();
-            HttpContext.Session.SetString("LastFetchIdCity", lastTourGuideAddedId.ToString());
-            return Ok(new { tourGuides, totalPage});
         }
 
         [HttpGet("/api/v1/tourguide/city")]
         public async Task<IActionResult> GetRandomTourGuidesInCity([FromQuery] int CityId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            string sessionId;
-            int? lastFetchId = null;
+            try
+            {
+                string sessionId;
+                int? lastFetchId = null;
 
-            if (HttpContext.Session.GetString("SessionId") == null)
-            {
-                sessionId = Guid.NewGuid().ToString();
-                HttpContext.Session.SetString("SessionId", sessionId);
-            }
-            else
-            {
-                sessionId = HttpContext.Session.GetString("SessionId");
-            }
+                if (HttpContext.Session.GetString("SessionId") == null)
+                {
+                    sessionId = Guid.NewGuid().ToString();
+                    HttpContext.Session.SetString("SessionId", sessionId);
+                }
+                else
+                {
+                    sessionId = HttpContext.Session.GetString("SessionId");
+                }
 
-            var lastFetchIdString = HttpContext.Session.GetString("LastFetchId");
-            if (lastFetchIdString != null && int.TryParse(lastFetchIdString, out var parsedLastFetchId))
+                var lastFetchIdString = HttpContext.Session.GetString("LastFetchId");
+                if (lastFetchIdString != null && int.TryParse(lastFetchIdString, out var parsedLastFetchId))
+                {
+                    lastFetchId = parsedLastFetchId;
+                }
+                else
+                {
+                    lastFetchId = null;
+                }
+                var totalPage = await _tourGuideService.GetTotalPage(pageSize, CityId);
+                if (page > totalPage)
+                {
+                    return NotFound("This page does not exist.");
+                }
+                var tourGuides = await _tourGuideService.GetRandomTourGuidesInCityAsync(sessionId, CityId, page, pageSize, lastFetchId);
+                var lastTourGuideAddedIdInCity = await _tourGuideService.GetLastTourGuideAddedIdInCityAsync(CityId);
+                HttpContext.Session.SetString("LastFetchId", lastTourGuideAddedIdInCity.ToString());
+                return Ok(new { tourGuides, totalPage });
+            } catch (Exception ex)
             {
-                lastFetchId = parsedLastFetchId;
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
-            else
-            {
-                lastFetchId = null;
-            }
-            var totalPage = await _tourGuideService.GetTotalPage(pageSize, CityId);
-            if(page > totalPage)
-            {
-                return NotFound("This page does not exist.");
-            }
-            var tourGuides = await _tourGuideService.GetRandomTourGuidesInCityAsync(sessionId, CityId, page, pageSize, lastFetchId);
-            var lastTourGuideAddedIdInCity = await _tourGuideService.GetLastTourGuideAddedIdInCityAsync(CityId);
-            HttpContext.Session.SetString("LastFetchId", lastTourGuideAddedIdInCity.ToString());
-            return Ok(new { tourGuides, totalPage });
         }
     }
 }

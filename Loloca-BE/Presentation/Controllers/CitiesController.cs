@@ -19,66 +19,96 @@ namespace Loloca_BE.Presentation.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllCities()
         {
-            var cities = await _citiesService.GetAllCitiesAsync();
-            return Ok(cities);
+            try
+            {
+                var cities = await _citiesService.GetAllCitiesAsync();
+                return Ok(cities);
+            } catch (Exception ex)
+            {
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCityById(int id)
         {
-            var city = await _citiesService.GetCityByIdAsync(id);
-            if (city == null)
+            try
             {
-                return NotFound();
+                var city = await _citiesService.GetCityByIdAsync(id);
+                if (city == null)
+                {
+                    return NotFound();
+                }
+                return Ok(city);
+            } catch (Exception ex)
+            {
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
-            return Ok(city);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateCity([FromBody] CityView cityView)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-            var createdCity = await _citiesService.AddCityAsync(cityView);
-            if (createdCity == null)
+                var createdCity = await _citiesService.AddCityAsync(cityView);
+                if (createdCity == null)
+                {
+                    return BadRequest("Failed to create city.");
+                }
+
+                return Ok(createdCity); // Return the created city with HTTP status 200 (OK)
+            } catch (Exception ex)
             {
-                return BadRequest("Failed to create city.");
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
-
-            return Ok(createdCity); // Return the created city with HTTP status 200 (OK)
         }
 
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCity(int id, [FromBody] CityView cityView)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-            var updatedCity = await _citiesService.UpdateCityAsync(id, cityView);
-            if (updatedCity == null)
+                var updatedCity = await _citiesService.UpdateCityAsync(id, cityView);
+                if (updatedCity == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok("Cập nhật thành công");
+            } catch (Exception ex)
             {
-                return NotFound();
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
-
-            return Ok("Cập nhật thành công");
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCity(int id)
         {
-            var success = await _citiesService.DeleteCityAsync(id);
-            if (!success)
+            try
             {
-                return NotFound();
-            }
+                var success = await _citiesService.DeleteCityAsync(id);
+                if (!success)
+                {
+                    return NotFound();
+                }
 
-            return Ok("Xóa thành công");
+                return Ok("Xóa thành công");
+            } catch(Exception ex)
+            {
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
+            }
         }
     }
 }
