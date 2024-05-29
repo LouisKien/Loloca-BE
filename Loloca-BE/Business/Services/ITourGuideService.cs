@@ -11,10 +11,8 @@ namespace Loloca_BE.Business.Services
         Task UpdateTourGuideInfo(int tourguideId, UpdateProfileTourGuide model);
         Task<bool> ChangeTourGuidePassword(int tourguideId, ChangePasswordTourGuide model);
         Task<GetTourGuideInfo> GetTourGuideInfoAsync(int tourGuideId);
-        Task<List<GetTourGuide>> GetRandomTourGuidesAsync(string sessionId, int page, int pageSize, int? lastFetchId);
-        Task<int?> GetLastTourGuideAddedIdAsync();
-        Task<List<GetTourGuide>> GetRandomTourGuidesInCityAsync(string sessionId, int CityId, int page, int pageSize, int? lastFetchId);
-        Task<int?> GetLastTourGuideAddedIdInCityAsync(int CityId);
-        Task<int> GetTotalPage(int pageSize, int? cityId);
+        Task<List<GetTourGuide>> GetRandomTourGuidesAsync(string sessionId, int page, int pageSize);
+        Task<List<GetTourGuide>> GetRandomTourGuidesInCityAsync(string sessionId, int CityId, int page, int pageSize);
+        Task<int> GetTotalPage(int pageSize, int? cityId, string sessionId);
     }
 }

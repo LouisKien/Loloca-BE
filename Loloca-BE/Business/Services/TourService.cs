@@ -220,7 +220,7 @@ namespace Loloca_BE.Business.Services
             }
         }
 
-        public async Task<List<AllToursView>> GetRandomToursAsync(string sessionId, int page, int pageSize, int? lastFetchId)
+        public async Task<List<AllToursView>> GetRandomToursAsync(string sessionId, int page, int pageSize)
         {
             try
             {
@@ -256,7 +256,6 @@ namespace Loloca_BE.Business.Services
         public async Task RefreshTourCache()
         {
             var latestTours = await _unitOfWork.TourRepository.GetAllAsync(filter: t => t.Status == 1, includeProperties: "TourGuide,City");
-
             List<AllToursView> items = new List<AllToursView>();
             foreach (var tour in latestTours)
             {
@@ -278,14 +277,10 @@ namespace Loloca_BE.Business.Services
 
             var activeSessionIds = _cache.Get<List<string>>("ActiveSessions") ?? new List<string>();
 
-            // Update the cache for each active session
             foreach (var sessionId in activeSessionIds)
             {
                 var cacheKey = $"Tour_{sessionId}";
-
-                // Shuffle the list for each user 
                 var shuffledItems = items.OrderBy(x => _random.Next()).ToList();
-
                 _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(2));
             }
         }

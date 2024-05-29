@@ -107,7 +107,8 @@ namespace Loloca_BE.Business.Services
                     await _googleDriveService.DeleteFileAsync(customer.AvatarPath, parentFolderId);
                 }
 
-                string fileName = $"Avatar_Customer_{CustomerId}";
+                string guid = Guid.NewGuid().ToString();
+                string fileName = $"Avatar_Customer_{CustomerId}_{guid}";
 
                 var fileMetadata = new Google.Apis.Drive.v3.Data.File()
                 {

@@ -83,7 +83,6 @@ namespace Loloca_BE.Presentation.Controllers
             try
             {
                 string sessionId;
-                int? lastFetchId = null;
 
                 if (HttpContext.Session.GetString("SessionId") == null)
                 {
@@ -99,7 +98,7 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     return NotFound("This page does not exist.");
                 }
-                var tours = await _tourService.GetRandomToursAsync(sessionId, page, pageSize, lastFetchId);
+                var tours = await _tourService.GetRandomToursAsync(sessionId, page, pageSize);
                 return Ok(new { tours, totalPage });
             }
             catch (Exception ex)

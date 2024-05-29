@@ -5,6 +5,7 @@ using Loloca_BE.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Loloca_BE.Presentation.Controllers
 {
@@ -14,7 +15,7 @@ namespace Loloca_BE.Presentation.Controllers
     {
         private readonly ITourGuideService _tourGuideService;
 
-        public TourGuideController(ITourGuideService tourGuideService)
+        public TourGuideController(ITourGuideService tourGuideService, IMemoryCache cache)
         {
             _tourGuideService = tourGuideService;
         }
@@ -126,7 +127,6 @@ namespace Loloca_BE.Presentation.Controllers
             try
             {
                 string sessionId;
-                int? lastFetchId = null;
 
                 if (HttpContext.Session.GetString("SessionId") == null)
                 {
@@ -137,25 +137,12 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     sessionId = HttpContext.Session.GetString("SessionId");
                 }
-
-                var lastFetchIdString = HttpContext.Session.GetString("LastFetchIdCity");
-                if (lastFetchIdString != null && int.TryParse(lastFetchIdString, out var parsedLastFetchId))
-                {
-                    lastFetchId = parsedLastFetchId;
-                }
-                else
-                {
-                    lastFetchId = null;
-                }
-
-                var totalPage = await _tourGuideService.GetTotalPage(pageSize, null);
+                var tourGuides = await _tourGuideService.GetRandomTourGuidesAsync(sessionId, page, pageSize);
+                var totalPage = await _tourGuideService.GetTotalPage(pageSize, null, sessionId);
                 if (page > totalPage)
                 {
                     return NotFound("This page does not exist.");
                 }
-                var tourGuides = await _tourGuideService.GetRandomTourGuidesAsync(sessionId, page, pageSize, lastFetchId);
-                var lastTourGuideAddedId = await _tourGuideService.GetLastTourGuideAddedIdAsync();
-                HttpContext.Session.SetString("LastFetchIdCity", lastTourGuideAddedId.ToString());
                 return Ok(new { tourGuides, totalPage });
             } catch (Exception ex)
             {
@@ -169,7 +156,6 @@ namespace Loloca_BE.Presentation.Controllers
             try
             {
                 string sessionId;
-                int? lastFetchId = null;
 
                 if (HttpContext.Session.GetString("SessionId") == null)
                 {
@@ -180,24 +166,12 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     sessionId = HttpContext.Session.GetString("SessionId");
                 }
-
-                var lastFetchIdString = HttpContext.Session.GetString("LastFetchId");
-                if (lastFetchIdString != null && int.TryParse(lastFetchIdString, out var parsedLastFetchId))
-                {
-                    lastFetchId = parsedLastFetchId;
-                }
-                else
-                {
-                    lastFetchId = null;
-                }
-                var totalPage = await _tourGuideService.GetTotalPage(pageSize, CityId);
+                var tourGuides = await _tourGuideService.GetRandomTourGuidesInCityAsync(sessionId, CityId, page, pageSize);
+                var totalPage = await _tourGuideService.GetTotalPage(pageSize, CityId, sessionId);
                 if (page > totalPage)
                 {
                     return NotFound("This page does not exist.");
                 }
-                var tourGuides = await _tourGuideService.GetRandomTourGuidesInCityAsync(sessionId, CityId, page, pageSize, lastFetchId);
-                var lastTourGuideAddedIdInCity = await _tourGuideService.GetLastTourGuideAddedIdInCityAsync(CityId);
-                HttpContext.Session.SetString("LastFetchId", lastTourGuideAddedIdInCity.ToString());
                 return Ok(new { tourGuides, totalPage });
             } catch (Exception ex)
             {

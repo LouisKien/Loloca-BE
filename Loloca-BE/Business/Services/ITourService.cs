@@ -12,7 +12,7 @@ namespace Loloca_BE.Business.Services
         Task UpdateTourStatusAsync(int tourId, TourStatusView tourModel);
 
         Task DeleteTourAsync(int tourId);
-        Task<List<AllToursView>> GetRandomToursAsync(string sessionId, int page, int pageSize, int? lastFetchId);
+        Task<List<AllToursView>> GetRandomToursAsync(string sessionId, int page, int pageSize);
         Task<int> GetTotalPage(int pageSize);
     }
 }
