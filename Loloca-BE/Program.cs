@@ -1,3 +1,4 @@
+using Hangfire;
 using Loloca_BE.Business.Models.Mapper;
 using Loloca_BE.Business.Services;
 using Loloca_BE.Data.Entities;
@@ -29,6 +30,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // Add connection string
 builder.Services.AddDbContext<LolocaDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Scoped);
+
+// Add Hangfire services.
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add the processing server as IHostedService
+builder.Services.AddHangfireServer();
 
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -94,6 +105,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseHangfireDashboard();
 
 app.UseCors();
 

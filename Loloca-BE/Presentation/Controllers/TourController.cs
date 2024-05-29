@@ -94,25 +94,12 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     sessionId = HttpContext.Session.GetString("SessionId");
                 }
-
-                var lastFetchIdString = HttpContext.Session.GetString("LastFetchIdTour");
-                if (lastFetchIdString != null && int.TryParse(lastFetchIdString, out var parsedLastFetchId))
-                {
-                    lastFetchId = parsedLastFetchId;
-                }
-                else
-                {
-                    lastFetchId = null;
-                }
-
                 var totalPage = await _tourService.GetTotalPage(pageSize);
                 if (page > totalPage)
                 {
                     return NotFound("This page does not exist.");
                 }
                 var tours = await _tourService.GetRandomToursAsync(sessionId, page, pageSize, lastFetchId);
-                var lastTourAddedId = await _tourService.GetLastTourAddedIdAsync();
-                HttpContext.Session.SetString("LastFetchIdTour", lastTourAddedId.ToString());
                 return Ok(new { tours, totalPage });
             }
             catch (Exception ex)

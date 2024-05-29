@@ -14,6 +14,5 @@ namespace Loloca_BE.Business.Services
         Task DeleteTourAsync(int tourId);
         Task<List<AllToursView>> GetRandomToursAsync(string sessionId, int page, int pageSize, int? lastFetchId);
         Task<int> GetTotalPage(int pageSize);
-        Task<int?> GetLastTourAddedIdAsync();
     }
 }
