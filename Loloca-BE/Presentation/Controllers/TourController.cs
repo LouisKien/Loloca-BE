@@ -1,6 +1,7 @@
 ﻿using Loloca_BE.Business.Models.FeedbackView;
 using Loloca_BE.Business.Models.TourView;
 using Loloca_BE.Business.Services;
+using Loloca_BE.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Loloca_BE.Presentation.Controllers
@@ -93,12 +94,42 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     sessionId = HttpContext.Session.GetString("SessionId");
                 }
-                var totalPage = await _tourService.GetTotalPage(pageSize);
+                var tours = await _tourService.GetRandomToursAsync(sessionId, page, pageSize);
+                var totalPage = await _tourService.GetTotalPage(pageSize, null, sessionId);
                 if (page > totalPage)
                 {
                     return NotFound("This page does not exist.");
                 }
-                var tours = await _tourService.GetRandomToursAsync(sessionId, page, pageSize);
+                return Ok(new { tours, totalPage });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("/api/v1/tour/city")]
+        public async Task<IActionResult> GetRandomToursInCity([FromQuery] int CityId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                string sessionId;
+
+                if (HttpContext.Session.GetString("SessionId") == null)
+                {
+                    sessionId = Guid.NewGuid().ToString();
+                    HttpContext.Session.SetString("SessionId", sessionId);
+                }
+                else
+                {
+                    sessionId = HttpContext.Session.GetString("SessionId");
+                }
+                var tours = await _tourService.GetRandomToursInCityAsync(sessionId, CityId, page, pageSize);
+                var totalPage = await _tourService.GetTotalPage(pageSize, CityId, sessionId);
+                if (page > totalPage)
+                {
+                    return NotFound("This page does not exist.");
+                }
                 return Ok(new { tours, totalPage });
             }
             catch (Exception ex)

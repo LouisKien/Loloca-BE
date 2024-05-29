@@ -38,11 +38,11 @@ namespace Loloca_BE.Business.Services
 
             RecurringJob.AddOrUpdate<TourGuideService>(
                 x => x.RefreshTourGuideCache(),
-                Cron.MinuteInterval(1)
+                Cron.MinuteInterval(2)
             );
             RecurringJob.AddOrUpdate<TourGuideService>(
                 x => x.RefreshTourGuideInCityCache(),
-                Cron.MinuteInterval(1)
+                Cron.MinuteInterval(2)
             );
         }
 
@@ -250,7 +250,7 @@ namespace Loloca_BE.Business.Services
                 {
                     var tourGuides = (await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1)).ToList();
                     shuffledItems = await GenerateShuffledTourList(tourGuides);
-                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(1));
+                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(2));
                 }
 
                 var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
@@ -283,7 +283,7 @@ namespace Loloca_BE.Business.Services
                 {
                     var tourGuides = (await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1 && t.CityId == CityId)).ToList();
                     shuffledItems = await GenerateShuffledTourList(tourGuides);
-                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(1));
+                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(2));
                 }
 
                 var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
@@ -363,7 +363,7 @@ namespace Loloca_BE.Business.Services
             {
                 var cacheKey = $"TourGuide_{sessionId}";
                 var shuffledItems = items.OrderBy(x => _random.Next()).ToList();
-                _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(1));
+                _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(2));
             }
         }
 
@@ -382,7 +382,7 @@ namespace Loloca_BE.Business.Services
 
                     var cacheKey = $"TourGuide_CityId:{cityId}_{sessionId}";
                     var shuffledItems = await GenerateShuffledTourList(tourGuidesInCity);
-                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(1));
+                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(2));
                 }
             }
         }

@@ -34,6 +34,10 @@ namespace Loloca_BE.Business.Services
                 x => x.RefreshTourCache(),
                 Cron.MinuteInterval(2)
             );
+            RecurringJob.AddOrUpdate<TourService>(
+                x => x.RefreshTourInCityCache(),
+                Cron.MinuteInterval(2)
+            );
         }
 
         public async Task UploadTourImageAsync(TourModelView tourModel, List<IFormFile> images)
@@ -253,10 +257,44 @@ namespace Loloca_BE.Business.Services
             }
         }
 
+        public async Task<List<AllToursView>> GetRandomToursInCityAsync(string sessionId, int CityId, int page, int pageSize)
+        {
+            try
+            {
+                var cacheKey = $"Tour_CityId:{CityId}_{sessionId}";
+
+                if (!_cache.TryGetValue(cacheKey, out List<AllToursView> shuffledItems))
+                {
+                    var tours = (await _unitOfWork.TourRepository.GetAllAsync(filter: t => t.Status == 1 && t.CityId == CityId, includeProperties: "TourGuide,City")).ToList();
+                    shuffledItems = await GenerateShuffledTourList(tours);
+                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(2));
+                }
+
+                var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+                return pagedItems.Select(item => new AllToursView
+                {
+                    CityName = item.CityName,
+                    Description = item.Description,
+                    Duration = item.Duration,
+                    Name = item.Name,
+                    ThumbnailTourImage = item.ThumbnailTourImage,
+                    CityId = item.CityId,
+                    TourGuideId = item.TourGuideId,
+                    TourId = item.TourId,
+                    TourGuideName = item.Name
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         public async Task RefreshTourCache()
         {
             var latestTours = await _unitOfWork.TourRepository.GetAllAsync(filter: t => t.Status == 1, includeProperties: "TourGuide,City");
-            List<AllToursView> items = new List<AllToursView>();
+            var items = new List<AllToursView>();
             foreach (var tour in latestTours)
             {
                 var tourImage = (await _unitOfWork.TourImageRepository.FindAsync(t => t.TourId == tour.TourId)).FirstOrDefault();
@@ -282,6 +320,26 @@ namespace Loloca_BE.Business.Services
                 var cacheKey = $"Tour_{sessionId}";
                 var shuffledItems = items.OrderBy(x => _random.Next()).ToList();
                 _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(2));
+            }
+        }
+
+        public async Task RefreshTourInCityCache()
+        {
+            var latestTours = await _unitOfWork.TourRepository.GetAllAsync(filter: t => t.Status == 1, includeProperties: "TourGuide,City");
+            var toursByCity = latestTours.GroupBy(t => t.CityId).ToDictionary(g => g.Key, g => g.ToList());
+
+            var activeSessionIds = _cache.Get<List<string>>("ActiveSessions") ?? new List<string>();
+            foreach (var sessionId in activeSessionIds)
+            {
+                foreach (var cityGroup in toursByCity)
+                {
+                    var cityId = cityGroup.Key;
+                    var toursInCity = cityGroup.Value;
+
+                    var cacheKey = $"Tour_CityId:{cityId}_{sessionId}";
+                    var shuffledItems = await GenerateShuffledTourList(toursInCity);
+                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(2));
+                }
             }
         }
 
@@ -312,12 +370,29 @@ namespace Loloca_BE.Business.Services
             return items.OrderBy(x => _random.Next()).ToList();
         }
 
-        public async Task<int> GetTotalPage(int pageSize)
+        public async Task<int> GetTotalPage(int pageSize, int? cityId, string sessionId)
         {
             try
             {
-                var total = await _unitOfWork.TourRepository.CountAsync(filter: t => t.Status == 1);
-                return (int)Math.Ceiling(total / (double)pageSize);
+                string cacheKey;
+                if (cityId == null)
+                {
+                    cacheKey = $"Tour_{sessionId}";
+                }
+                else
+                {
+                    cacheKey = $"Tour_CityId:{cityId}_{sessionId}";
+                }
+
+                if (_cache.TryGetValue(cacheKey, out List<AllToursView> shuffledItems))
+                {
+                    int totalPages = (int)Math.Ceiling(shuffledItems.Count / (double)pageSize);
+                    return totalPages;
+                }
+                else
+                {
+                    return 1;
+                }
             }
             catch (Exception ex)
             {
