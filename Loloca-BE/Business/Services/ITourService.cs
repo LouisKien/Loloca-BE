@@ -10,5 +10,7 @@ namespace Loloca_BE.Business.Services
 
         Task UpdateTourStatusAsync(int tourId, TourStatusView tourModel);
 
+        Task DeleteTourAsync(int tourId);
+
     }
 }

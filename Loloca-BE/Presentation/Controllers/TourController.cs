@@ -62,6 +62,20 @@ namespace Loloca_BE.Presentation.Controllers
 
             }
         }
+
+        [HttpDelete("{tourId}")]
+        public async Task<IActionResult> DeleteTour(int tourId)
+        {
+            try
+            {
+                await _tourService.DeleteTourAsync(tourId);
+                return Ok("Tour deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 
 }

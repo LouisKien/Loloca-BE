@@ -27,6 +27,7 @@ namespace Loloca_BE.Data.Repositories
         Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter = null);
 
         Task LoadCollectionAsync(TEntity entity, Expression<Func<TEntity, object>> propertySelector);
+        Task DeleteRangeAsync(IEnumerable<TEntity> entities);
 
     }
 }

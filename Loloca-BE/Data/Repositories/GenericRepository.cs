@@ -1,5 +1,6 @@
 ﻿using Loloca_BE.Data.Entities;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1;
 using System.Linq.Expressions;
 
 namespace Loloca_BE.Data.Repositories
@@ -135,5 +136,10 @@ namespace Loloca_BE.Data.Repositories
             return memberExpression.Member.Name;
         }
 
+        public async Task DeleteRangeAsync(IEnumerable<TEntity> entities)
+        {
+            dbSet.RemoveRange(entities);
+            await context.SaveChangesAsync();
+        }
     }
 }

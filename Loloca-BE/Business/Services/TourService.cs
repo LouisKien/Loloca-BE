@@ -166,6 +166,46 @@ namespace Loloca_BE.Business.Services
             }
         }
 
+        public async Task DeleteTourAsync(int tourId)
+        {
+            using (var transaction = _unitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    var tour = await _unitOfWork.TourRepository.GetByIDAsync(tourId);
+                    if (tour == null)
+                    {
+                        throw new Exception($"Tour with ID {tourId} not found");
+                    }
 
+                    // Lấy tất cả các ảnh liên quan đến tour
+                    var tourImages = await _unitOfWork.TourImageRepository.GetAllAsync(ti => ti.TourId == tourId);
+
+                    // Xóa các ảnh từ Google Drive
+                    foreach (var tourImage in tourImages)
+                    {
+                        await _googleDriveService.DeleteFileAsync(tourImage.ImagePath, "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o"); // Thay thế bằng parentFolderId thực tế
+                    }
+
+                    // Xóa các bản ghi TourImage từ cơ sở dữ liệu
+                    await _unitOfWork.TourImageRepository.DeleteRangeAsync(tourImages);
+
+                    // Xóa tour từ cơ sở dữ liệu
+                    await _unitOfWork.TourRepository.DeleteAsync(tour);
+
+                    // Lưu các thay đổi vào cơ sở dữ liệu
+                    await _unitOfWork.SaveAsync();
+
+                    // Commit transaction
+                    await transaction.CommitAsync();
+                }
+                catch (Exception ex)
+                {
+                    // Rollback transaction nếu có lỗi
+                    await transaction.RollbackAsync();
+                    throw new Exception("Cannot delete tour", ex);
+                }
+            }
+        }
     }
 }
