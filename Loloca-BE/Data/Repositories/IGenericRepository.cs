@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using Loloca_BE.Data.Entities;
+using System.Linq.Expressions;
 
 namespace Loloca_BE.Data.Repositories
 {
@@ -24,7 +25,7 @@ namespace Loloca_BE.Data.Repositories
         Task<int> CountAsync(Expression<Func<TEntity, bool>> filter = null);
 
         Task AddRangeAsync(IEnumerable<TEntity> entities);
-        Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter = null);
+        Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null, string includeProperties = "");
 
         Task LoadCollectionAsync(TEntity entity, Expression<Func<TEntity, object>> propertySelector);
         Task DeleteRangeAsync(IEnumerable<TEntity> entities);

@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
+using Google.Apis.Gmail.v1.Data;
+using Loloca_BE.Business.Models.TourGuideView;
 using Loloca_BE.Business.Models.TourView;
 using Loloca_BE.Data.Entities;
 using Loloca_BE.Data.Repositories;
 using Microsoft.Extensions.Caching.Memory;
+using System;
 using System.Transactions;
 
 namespace Loloca_BE.Business.Services
@@ -14,6 +17,7 @@ namespace Loloca_BE.Business.Services
         private readonly IMapper _mapper;
         private readonly IGoogleDriveService _googleDriveService;
         private readonly IMemoryCache _cache;
+        private static readonly Random _random = new Random();
 
         public TourService(IConfiguration configuration, IUnitOfWork unitOfWork, IMapper mapper, IGoogleDriveService googleDriveService, IMemoryCache cache)
         {
@@ -205,6 +209,109 @@ namespace Loloca_BE.Business.Services
                     await transaction.RollbackAsync();
                     throw new Exception("Cannot delete tour", ex);
                 }
+            }
+        }
+
+        public async Task<List<AllToursView>> GetRandomToursAsync(string sessionId, int page, int pageSize, int? lastFetchId)
+        {
+            try
+            {
+                var lastTourGuideAddedId = await GetLastTourAddedIdAsync();
+                var cacheKey = $"Tour_{sessionId}";
+                if (!_cache.TryGetValue(cacheKey, out List<AllToursView> shuffledItems))
+                {
+                    var tours = (await _unitOfWork.TourRepository.GetAllAsync(filter: t => t.Status == 1, includeProperties: "TourGuide,City")).ToList();
+                    List<AllToursView> items = new List<AllToursView>();
+                    foreach (var tour in tours)
+                    {
+                        var tourImage = (await _unitOfWork.TourImageRepository.FindAsync(t => t.TourId == tour.TourId)).FirstOrDefault();
+                        var item = new AllToursView
+                        {
+                            CityName = tour.City.Name,
+                            Description = tour.Description,
+                            Duration = tour.Duration,
+                            Name = tour.Name,
+                            ThumbnailTourImage = tourImage == null ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourImage.ImagePath, "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o"),
+                            CityId = tour.CityId,
+                            TourGuideId = tour.TourGuideId,
+                            TourId = tour.TourId,
+                            TourGuideName = $"{tour.TourGuide.LastName} {tour.TourGuide.FirstName}"
+                        };
+                        items.Add(item);
+                    }
+                    shuffledItems = items.OrderBy(x => _random.Next()).ToList();
+                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(30));
+                }
+                else if (lastFetchId == null || lastTourGuideAddedId > lastFetchId)
+                {
+                    var newTour = (await _unitOfWork.TourRepository.GetAllAsync(filter: t => t.Status == 1 && t.TourId > lastFetchId, includeProperties: "TourGuide,City"));
+                    if (newTour != null && newTour.Any())
+                    {
+                        foreach (var item in newTour)
+                        {
+                            var tourImage = (await _unitOfWork.TourImageRepository.FindAsync(t => t.TourId == item.TourId)).FirstOrDefault();
+                            var newItem = new AllToursView
+                            {
+                                CityName = item.City.Name,
+                                Description = item.Description,
+                                Duration = item.Duration,
+                                Name = item.Name,
+                                ThumbnailTourImage = tourImage == null ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourImage.ImagePath, "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o"),
+                                CityId = item.CityId,
+                                TourGuideId = item.TourGuideId,
+                                TourId = item.TourId,
+                                TourGuideName = $"{item.TourGuide.LastName} {item.TourGuide.FirstName}"
+                            };
+                            shuffledItems.Add(newItem); // Add the new item to the existing shuffled list
+                            _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(30));
+                        }
+                    }
+                }
+
+                var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+                return pagedItems.Select(item => new AllToursView
+                {
+                    CityName = item.CityName,
+                    Description = item.Description,
+                    Duration = item.Duration,
+                    Name = item.Name,
+                    ThumbnailTourImage = item.ThumbnailTourImage,
+                    CityId = item.CityId,
+                    TourGuideId = item.TourGuideId,
+                    TourId = item.TourId,
+                    TourGuideName = item.Name
+                }).ToList();
+            } catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<int> GetTotalPage(int pageSize)
+        {
+            try
+            {
+                var total = await _unitOfWork.TourRepository.CountAsync(filter: t => t.Status == 1);
+                return (int)Math.Ceiling(total / (double)pageSize);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<int?> GetLastTourAddedIdAsync()
+        {
+            try
+            {
+                var items = await _unitOfWork.TourRepository.GetAllAsync(filter: c => c.Status == 1);
+                var lastItem = items.OrderByDescending(i => i.TourId).FirstOrDefault();
+                return lastItem?.TourId;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
     }

@@ -240,11 +240,10 @@ namespace Loloca_BE.Business.Services
                     List<GetTourGuide> items = new List<GetTourGuide>();
                     foreach (var tourGuide in tourGuides)
                     {
-                        byte[]? avatarContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
                         var item = new GetTourGuide
                         {
-                            Avatar = avatarContent,
-                            AvatarUploadedTime = tourGuide.AvatarUploadDate,
+                            Avatar = String.IsNullOrEmpty(tourGuide.AvatarPath) ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+                            AvatarUploadedTime = String.IsNullOrEmpty(tourGuide.AvatarPath) ? null : tourGuide.AvatarUploadDate,
                             DateOfBirth = tourGuide.DateOfBirth,
                             Description = tourGuide.Description,
                             FirstName = tourGuide.FirstName,
@@ -256,28 +255,30 @@ namespace Loloca_BE.Business.Services
                         items.Add(item);
                     }
                     shuffledItems = items.OrderBy(x => _random.Next()).ToList();
-                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(30)); // Cache for 30 minutes
+                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(10)); // Cache for 30 minutes
                 }
                 else if (lastFetchId == null || lastTourGuideAddedId > lastFetchId)
                 {
-                    var newTourGuides = await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1);
-                    var newTourGuide = newTourGuides.FirstOrDefault(i => i.TourGuideId > lastFetchId);
-                    if (newTourGuide != null)
+                    var newTourGuides = (await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1 && t.TourGuideId > lastFetchId));
+                    if(newTourGuides.Any() && newTourGuides != null)
                     {
-                        var item = new GetTourGuide
+                        foreach(var item in newTourGuides)
                         {
-                            Avatar = await _googleDriveService.GetImageFromCacheOrDriveAsync(newTourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
-                            AvatarUploadedTime = newTourGuide.AvatarUploadDate,
-                            DateOfBirth = newTourGuide.DateOfBirth,
-                            Description = newTourGuide.Description,
-                            FirstName = newTourGuide.FirstName,
-                            Gender = newTourGuide.Gender,
-                            Id = newTourGuide.TourGuideId,
-                            LastName = newTourGuide.LastName,
-                            PricePerDay = newTourGuide.PricePerDay
-                        };
-                        shuffledItems.Add(item); // Add the new item to the existing shuffled list
-                        _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(30));
+                            var newItem = new GetTourGuide
+                            {
+                                Avatar = String.IsNullOrEmpty(item.AvatarPath) ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(item.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+                                AvatarUploadedTime = String.IsNullOrEmpty(item.AvatarPath) ? null : item.AvatarUploadDate,
+                                DateOfBirth = item.DateOfBirth,
+                                Description = item.Description,
+                                FirstName = item.FirstName,
+                                Gender = item.Gender,
+                                Id = item.TourGuideId,
+                                LastName = item.LastName,
+                                PricePerDay = item.PricePerDay
+                            };
+                            shuffledItems.Add(newItem);
+                            _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(30));
+                        }
                     }
                 }
 
@@ -327,11 +328,10 @@ namespace Loloca_BE.Business.Services
                     List<GetTourGuide> items = new List<GetTourGuide>();
                     foreach (var tourGuide in tourGuides)
                     {
-                        byte[]? avatarContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
                         var item = new GetTourGuide
                         {
-                            Avatar = avatarContent,
-                            AvatarUploadedTime = tourGuide.AvatarUploadDate,
+                            Avatar = String.IsNullOrEmpty(tourGuide.AvatarPath) ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+                            AvatarUploadedTime = String.IsNullOrEmpty(tourGuide.AvatarPath) ? null : tourGuide.AvatarUploadDate,
                             DateOfBirth = tourGuide.DateOfBirth,
                             Description = tourGuide.Description,
                             FirstName = tourGuide.FirstName,
@@ -343,7 +343,7 @@ namespace Loloca_BE.Business.Services
                         items.Add(item);
                     }
                     shuffledItems = items.OrderBy(x => _random.Next()).ToList();
-                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(30)); // Cache for 30 minutes
+                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(10)); // Cache for 30 minutes
                 }
                 else if (lastFetchId == null || lastTourGuideAddedId > lastFetchId)
                 {
@@ -353,8 +353,8 @@ namespace Loloca_BE.Business.Services
                     {
                         var item = new GetTourGuide
                         {
-                            Avatar = await _googleDriveService.GetImageFromCacheOrDriveAsync(newTourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
-                            AvatarUploadedTime = newTourGuide.AvatarUploadDate,
+                            Avatar = String.IsNullOrEmpty(newTourGuide.AvatarPath) ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(newTourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+                            AvatarUploadedTime = String.IsNullOrEmpty(newTourGuide.AvatarPath) ? null : newTourGuide.AvatarUploadDate,
                             DateOfBirth = newTourGuide.DateOfBirth,
                             Description = newTourGuide.Description,
                             FirstName = newTourGuide.FirstName,
@@ -408,10 +408,10 @@ namespace Loloca_BE.Business.Services
                 int total;
                 if(cityId == null)
                 {
-                    total = await _unitOfWork.TourGuideRepository.CountAsync();
+                    total = await _unitOfWork.TourGuideRepository.CountAsync(filter: t => t.Status == 1);
                 } else
                 {
-                    total = await _unitOfWork.TourGuideRepository.CountAsync(filter: t => t.CityId == cityId);
+                    total = await _unitOfWork.TourGuideRepository.CountAsync(filter: t => t.CityId == cityId && t.Status == 1);
                 }
                 return (int)Math.Ceiling(total / (double)pageSize);
             } catch (Exception ex)
