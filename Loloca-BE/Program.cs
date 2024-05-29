@@ -33,10 +33,10 @@ builder.Services.AddDbContext<LolocaDbContext>(options => options.UseSqlServer(b
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-builder.Services.AddControllersWithViews()
-    .AddNewtonsoftJson(options =>
-    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-);
+//builder.Services.AddControllersWithViews()
+//    .AddNewtonsoftJson(options =>
+//    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+//);
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program), typeof(MappingProfile));
@@ -58,6 +58,7 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ICitiesService, CitiesService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+builder.Services.AddScoped<ITourService, TourService>();
 builder.Services.AddScoped<IGoogleDriveService, GoogleDriveService>();
 
 // Register in-memory caching
