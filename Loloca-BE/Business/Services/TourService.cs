@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Google.Apis.Gmail.v1.Data;
 using Hangfire;
+using Loloca_BE.Business.Models.FeedbackView;
 using Loloca_BE.Business.Models.TourGuideView;
 using Loloca_BE.Business.Models.TourView;
 using Loloca_BE.Data.Entities;
@@ -397,6 +398,168 @@ namespace Loloca_BE.Business.Services
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<int> GetTotalPageTourGuide(int pageSize, int? tourId, string sessionId)
+        {
+            try
+            {
+                string cacheKey;
+                if (tourId == null)
+                {
+                    cacheKey = $"Tour_{sessionId}";
+                }
+                else
+                {
+                    cacheKey = $"Tour_TourGuideId:{tourId}_{sessionId}";
+                }
+
+                if (_cache.TryGetValue(cacheKey, out List<AllToursView> shuffledItems))
+                {
+                    int totalPages = (int)Math.Ceiling(shuffledItems.Count / (double)pageSize);
+                    return totalPages;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<GetTourByIdView?> GetTourByIdAsync(int tourId)
+        {
+            try
+            {
+                var tour = await _unitOfWork.TourRepository.GetByIDAsync(tourId);
+
+                if (tour == null)
+                {
+                    // Xử lý trường hợp không tìm thấy tour
+                    return null;
+                }
+
+                // Load TourImages explicitly
+                await _unitOfWork.TourRepository.LoadCollectionAsync(tour, f => f.TourImages);
+
+                var tourView = new GetTourByIdView
+                {
+                    TourId = tour.TourId,
+                    CityId = tour.CityId,
+                    TourGuideId = tour.TourGuideId,
+                    Name = tour.Name,
+                    Description = tour.Description,
+                    Duration = tour.Duration,
+                    Status = tour.Status,
+                };
+
+                tourView.tourImgViewList = new List<TourImageView>();
+
+                foreach (var image in tour.TourImages)
+                {
+                    var imageView = new TourImageView
+                    {
+                        ImagePath = await _googleDriveService.GetImageFromCacheOrDriveAsync(image.ImagePath, "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o"),
+                        UploadDate = image.UploadDate
+                    };
+
+                    tourView.tourImgViewList.Add(imageView);
+                }
+
+                return tourView;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<AllToursView>> GetRandomToursByTourGuideAsync(string sessionId, int TourGuideId, int page, int pageSize)
+        {
+            try
+            {
+                var cacheKey = $"Tour_TourGuideId:{TourGuideId}_{sessionId}";
+
+                if (!_cache.TryGetValue(cacheKey, out List<AllToursView> shuffledItems))
+                {
+                    var tours = (await _unitOfWork.TourRepository.GetAllAsync(filter: t => t.Status == 1 && t.TourGuideId == TourGuideId, includeProperties: "TourGuide,City")).ToList();
+                    shuffledItems = await GenerateShuffledTourList(tours);
+                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(1));
+                }
+
+                var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+                return pagedItems.Select(item => new AllToursView
+                {
+                    CityName = item.CityName,
+                    Description = item.Description,
+                    Duration = item.Duration,
+                    Name = item.Name,
+                    ThumbnailTourImage = item.ThumbnailTourImage,
+                    CityId = item.CityId,
+                    TourGuideId = item.TourGuideId,
+                    TourId = item.TourId,
+                    TourGuideName = item.Name
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<GetTourByStatusView>> GetToursByStatusAsync(int status)
+        {
+            try
+            {
+                // Lấy danh sách tour dựa trên trạng thái
+                var tours = await _unitOfWork.TourRepository.GetAllAsync(
+                    filter: t => t.Status == status,
+                    includeProperties: "TourGuide,City,TourImages"
+                );
+
+                var tourViews = new List<GetTourByStatusView>();
+
+                foreach (var tour in tours)
+                {
+                    var tourView = new GetTourByStatusView
+                    {
+                        TourId = tour.TourId,
+                        CityId = tour.CityId,
+                        CityName = tour.City?.Name,
+                        TourGuideId = tour.TourGuideId,
+                        TourGuideName = tour.TourGuide != null ? $"{tour.TourGuide.LastName} {tour.TourGuide.FirstName}" : string.Empty,
+                        Name = tour.Name,
+                        Description = tour.Description,
+                        Duration = tour.Duration,
+                        Status = tour.Status,
+                        tourImgViewList = new List<TourImageView>()
+                    };
+
+                    foreach (var image in tour.TourImages)
+                    {
+                        var imageView = new TourImageView
+                        {
+                            ImagePath = await _googleDriveService.GetImageFromCacheOrDriveAsync(image.ImagePath, "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o"),
+                            UploadDate = image.UploadDate
+                        };
+
+                        tourView.tourImgViewList.Add(imageView);
+                    }
+
+                    // Thêm tour vào danh sách
+                    tourViews.Add(tourView);
+                }
+
+                return tourViews;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Cannot get tours by status", ex);
             }
         }
     }

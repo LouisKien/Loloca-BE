@@ -30,6 +30,7 @@ namespace Loloca_BE.Business.Models.Mapper
             CreateMap<TourModelView, Tour>().ReverseMap();
             CreateMap<TourInfoView, Tour>().ReverseMap();
             CreateMap<TourImageView, TourImage>().ReverseMap();
+            CreateMap<TourStatusView, Tour>().ReverseMap();
 
             //CreateMap<FeedbackImageView, Feedback>().ReverseMap();
             //CreateMap<FeebackView, Feedback>().ReverseMap();

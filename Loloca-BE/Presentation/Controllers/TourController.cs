@@ -78,6 +78,24 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [HttpGet("{tourId}")]
+        public async Task<IActionResult> GetTourByIdAsync(int tourId)
+        {
+            try
+            {
+                var tour = await _tourService.GetTourByIdAsync(tourId);
+                if (tour == null)
+                {
+                    return NotFound();
+                }
+                return Ok(tour);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
         [HttpGet("/api/v1/tour")]
         public async Task<IActionResult> GetRandomTours([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
@@ -135,6 +153,54 @@ namespace Loloca_BE.Presentation.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $" Internal Server Error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("/api/v1/tour/tourGuide")]
+        public async Task<IActionResult> GetRandomToursByTourGuide([FromQuery] int TourGuideId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                string sessionId;
+
+                if (HttpContext.Session.GetString("SessionId") == null)
+                {
+                    sessionId = Guid.NewGuid().ToString();
+                    HttpContext.Session.SetString("SessionId", sessionId);
+                }
+                else
+                {
+                    sessionId = HttpContext.Session.GetString("SessionId");
+                }
+                var tours = await _tourService.GetRandomToursByTourGuideAsync(sessionId, TourGuideId, page, pageSize);
+                var totalPage = await _tourService.GetTotalPageTourGuide(pageSize, TourGuideId, sessionId);
+                if (page > totalPage)
+                {
+                    return NotFound("This page does not exist.");
+                }
+                return Ok(new { tours, totalPage });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("status/{status}")]
+        public async Task<IActionResult> GetToursByStatusAsync(int status)
+        {
+            try
+            {
+                var tours = await _tourService.GetToursByStatusAsync(status);
+                if (tours == null || tours.Count == 0)
+                {
+                    return NotFound("No tours found with the given status.");
+                }
+                return Ok(tours);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
     }
