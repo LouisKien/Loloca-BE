@@ -7,6 +7,7 @@ namespace Loloca_BE.Data.Entities
     {
         public Account()
         {
+            PaymentRequests = new HashSet<PaymentRequest>();
             RefreshTokens = new HashSet<RefreshToken>();
         }
 
@@ -18,6 +19,7 @@ namespace Loloca_BE.Data.Entities
 
         public virtual Customer? Customer { get; set; }
         public virtual TourGuide? TourGuide { get; set; }
+        public virtual ICollection<PaymentRequest> PaymentRequests { get; set; }
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; }
     }
 }

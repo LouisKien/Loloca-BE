@@ -7,15 +7,13 @@ namespace Loloca_BE.Data.Entities
 {
     public partial class LolocaDbContext : DbContext
     {
-        private readonly IConfiguration _configuration;
         public LolocaDbContext()
         {
         }
 
-        public LolocaDbContext(DbContextOptions<LolocaDbContext> options, IConfiguration configuration)
+        public LolocaDbContext(DbContextOptions<LolocaDbContext> options)
             : base(options)
         {
-            _configuration = configuration;
         }
 
         public virtual DbSet<Account> Accounts { get; set; } = null!;
@@ -25,7 +23,9 @@ namespace Loloca_BE.Data.Entities
         public virtual DbSet<Customer> Customers { get; set; } = null!;
         public virtual DbSet<Feedback> Feedbacks { get; set; } = null!;
         public virtual DbSet<FeedbackImage> FeedbackImages { get; set; } = null!;
+        public virtual DbSet<Notification> Notifications { get; set; } = null!;
         public virtual DbSet<Order> Orders { get; set; } = null!;
+        public virtual DbSet<PaymentRequest> PaymentRequests { get; set; } = null!;
         public virtual DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         public virtual DbSet<Tour> Tours { get; set; } = null!;
         public virtual DbSet<TourGuide> TourGuides { get; set; } = null!;
@@ -35,7 +35,8 @@ namespace Loloca_BE.Data.Entities
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer(_configuration.GetConnectionString("LolocaDbConnection"));
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Server=(local);Database=LolocaDb;Uid=sa;Pwd=12345;");
             }
         }
 
@@ -105,7 +106,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Customer>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A70F4473D2")
+                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7B6ED4496")
                     .IsUnique();
 
                 entity.Property(e => e.AddressCustomer).HasMaxLength(255);
@@ -161,6 +162,17 @@ namespace Loloca_BE.Data.Entities
                     .HasConstraintName("FK_FeedbackImage_Feedbacks");
             });
 
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Title).HasMaxLength(255);
+
+                entity.Property(e => e.UserType).HasMaxLength(50);
+            });
+
             modelBuilder.Entity<Order>(entity =>
             {
                 entity.Property(e => e.CreateAt).HasColumnType("datetime");
@@ -186,6 +198,26 @@ namespace Loloca_BE.Data.Entities
                     .HasForeignKey(d => d.CustomerId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Orders_Customers");
+            });
+
+            modelBuilder.Entity<PaymentRequest>(entity =>
+            {
+                entity.HasKey(e => e.PaymentId)
+                    .HasName("PK__PaymentR__9B556A38709BE277");
+
+                entity.Property(e => e.Bank).HasMaxLength(255);
+
+                entity.Property(e => e.BankAccount).HasMaxLength(255);
+
+                entity.Property(e => e.RequestDate).HasColumnType("datetime");
+
+                entity.Property(e => e.TransactionCode).HasMaxLength(255);
+
+                entity.HasOne(d => d.Account)
+                    .WithMany(p => p.PaymentRequests)
+                    .HasForeignKey(d => d.AccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_AccountId_PaymentRequests");
             });
 
             modelBuilder.Entity<RefreshToken>(entity =>
@@ -222,7 +254,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<TourGuide>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A76636DB08")
+                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A78918C79C")
                     .IsUnique();
 
                 entity.Property(e => e.Address).HasMaxLength(255);
@@ -267,7 +299,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourImage>(entity =>
             {
                 entity.HasKey(e => e.ImageId)
-                    .HasName("PK__TourImag__7516F70CB9F4E1CA");
+                    .HasName("PK__TourImag__7516F70CD3B74BE6");
 
                 entity.ToTable("TourImage");
 

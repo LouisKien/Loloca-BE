@@ -31,6 +31,7 @@ namespace Loloca_BE.Data.Entities
         public DateTime? AvatarUploadDate { get; set; }
         public string? CoverPath { get; set; }
         public DateTime? CoverUploadDate { get; set; }
+        public int? Balance { get; set; }
 
         public virtual Account Account { get; set; } = null!;
         public virtual City City { get; set; } = null!;

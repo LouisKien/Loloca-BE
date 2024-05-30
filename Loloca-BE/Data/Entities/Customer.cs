@@ -23,6 +23,7 @@ namespace Loloca_BE.Data.Entities
         public string? AddressCustomer { get; set; }
         public string? AvatarPath { get; set; }
         public DateTime? AvatarUploadTime { get; set; }
+        public int? Balance { get; set; }
 
         public virtual Account Account { get; set; } = null!;
         public virtual ICollection<BookingTourGuideRequest> BookingTourGuideRequests { get; set; }
