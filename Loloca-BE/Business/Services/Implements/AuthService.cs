@@ -339,7 +339,8 @@ namespace Loloca_BE.Business.Services.Implements
                         LastName = registerCustomer.LastName,
                         PhoneNumber = registerCustomer.PhoneNumber,
                         Gender = registerCustomer.Gender,
-                        DateOfBirth = registerCustomer.DateOfBirth
+                        DateOfBirth = registerCustomer.DateOfBirth,
+                        Balance = 0
                     };
 
                     await _unitOfWork.CustomerRepository.InsertAsync(customer);
@@ -382,7 +383,8 @@ namespace Loloca_BE.Business.Services.Implements
                         DateOfBirth = registerTourGuide.DateOfBirth,
                         Address = registerTourGuide.Address,
                         CityId = registerTourGuide.CityId,
-                        Status = 0
+                        Status = 0,
+                        Balance = 0
                     };
 
                     await _unitOfWork.TourGuideRepository.InsertAsync(tourGuide);
