@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Loloca_BE.Business.Models.CitiesView;
+using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
-using Loloca_BE.Data.Repositories;
+using Loloca_BE.Data.Repositories.Interfaces;
 
-namespace Loloca_BE.Business.Services
+namespace Loloca_BE.Business.Services.Implements
 {
     public class CitiesService : ICitiesService
     {

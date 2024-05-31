@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using Loloca_BE.Business.Models.CitiesView;
 using Loloca_BE.Business.Models.OrderView;
+using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
-using Loloca_BE.Data.Repositories;
+using Loloca_BE.Data.Repositories.Interfaces;
 
-namespace Loloca_BE.Business.Services
+namespace Loloca_BE.Business.Services.Implements
 {
     public class OrderService : IOrderService
     {
@@ -39,7 +40,8 @@ namespace Loloca_BE.Business.Services
             {
                 var order = await _unitOfWork.OrderRepository.GetByIDAsync(id);
                 return _mapper.Map<OrderModelView>(order);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -116,7 +118,7 @@ namespace Loloca_BE.Business.Services
                     // Set UpdatedAt to DateTime.Now
                     order.CreateAt = DateTime.Now;
 
-                   await _unitOfWork.OrderRepository.UpdateAsync(order);
+                    await _unitOfWork.OrderRepository.UpdateAsync(order);
                     await _unitOfWork.SaveAsync();
 
                     await transaction.CommitAsync();

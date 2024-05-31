@@ -1,7 +1,7 @@
 ﻿using Google.Apis.Auth.OAuth2;
 using System.Threading.Tasks;
 
-namespace Loloca_BE.Business.Services
+namespace Loloca_BE.Business.Services.Interfaces
 {
     public interface IEmailService
     {

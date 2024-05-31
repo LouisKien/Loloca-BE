@@ -7,11 +7,12 @@ namespace Loloca_BE.Data.Entities
     {
         public int PaymentId { get; set; }
         public int AccountId { get; set; }
-        public double? Amount { get; set; }
+        public decimal Amount { get; set; }
+        public int Type { get; set; }
         public string? TransactionCode { get; set; }
         public string? BankAccount { get; set; }
         public string? Bank { get; set; }
-        public DateTime? RequestDate { get; set; }
+        public DateTime RequestDate { get; set; }
         public int Status { get; set; }
 
         public virtual Account Account { get; set; } = null!;

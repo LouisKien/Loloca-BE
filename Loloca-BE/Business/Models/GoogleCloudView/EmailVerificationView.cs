@@ -1,4 +1,4 @@
-﻿namespace Loloca_BE.Business.Models
+﻿namespace Loloca_BE.Business.Models.GoogleCloudView
 {
     public class EmailVerificationView
     {

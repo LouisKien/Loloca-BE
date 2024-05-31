@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Hangfire.Storage.Monitoring;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -7,13 +8,15 @@ namespace Loloca_BE.Data.Entities
 {
     public partial class LolocaDbContext : DbContext
     {
+        private readonly IConfiguration _configuration;
         public LolocaDbContext()
         {
         }
 
-        public LolocaDbContext(DbContextOptions<LolocaDbContext> options)
+        public LolocaDbContext(DbContextOptions<LolocaDbContext> options, IConfiguration configuration)
             : base(options)
         {
+            _configuration = configuration;
         }
 
         public virtual DbSet<Account> Accounts { get; set; } = null!;
@@ -35,8 +38,8 @@ namespace Loloca_BE.Data.Entities
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=(local);Database=LolocaDb;Uid=sa;Pwd=12345;");
+                string connectionString = _configuration.GetConnectionString("DefaultConnection");
+                optionsBuilder.UseSqlServer(connectionString);
             }
         }
 
@@ -106,7 +109,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Customer>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7B6ED4496")
+                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A793DDBFE7")
                     .IsUnique();
 
                 entity.Property(e => e.AddressCustomer).HasMaxLength(255);
@@ -116,6 +119,8 @@ namespace Loloca_BE.Data.Entities
                 entity.Property(e => e.AvatarUploadTime)
                     .HasColumnType("datetime")
                     .HasColumnName("avatarUploadTime");
+
+                entity.Property(e => e.Balance).HasColumnType("decimal(13, 2)");
 
                 entity.Property(e => e.DateOfBirth).HasColumnType("datetime");
 
@@ -179,6 +184,8 @@ namespace Loloca_BE.Data.Entities
 
                 entity.Property(e => e.OrderCode).HasMaxLength(255);
 
+                entity.Property(e => e.OrderPrice).HasColumnType("decimal(13, 2)");
+
                 entity.Property(e => e.PaymentProvider).HasMaxLength(255);
 
                 entity.Property(e => e.TransactionCode).HasMaxLength(255);
@@ -203,7 +210,9 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<PaymentRequest>(entity =>
             {
                 entity.HasKey(e => e.PaymentId)
-                    .HasName("PK__PaymentR__9B556A38709BE277");
+                    .HasName("PK__PaymentR__9B556A38A8C93C21");
+
+                entity.Property(e => e.Amount).HasColumnType("decimal(13, 2)");
 
                 entity.Property(e => e.Bank).HasMaxLength(255);
 
@@ -254,7 +263,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<TourGuide>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A78918C79C")
+                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A79B2CA613")
                     .IsUnique();
 
                 entity.Property(e => e.Address).HasMaxLength(255);
@@ -262,6 +271,8 @@ namespace Loloca_BE.Data.Entities
                 entity.Property(e => e.AvatarPath).HasMaxLength(255);
 
                 entity.Property(e => e.AvatarUploadDate).HasColumnType("datetime");
+
+                entity.Property(e => e.Balance).HasColumnType("decimal(13, 2)");
 
                 entity.Property(e => e.CoverPath).HasMaxLength(255);
 
@@ -299,7 +310,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourImage>(entity =>
             {
                 entity.HasKey(e => e.ImageId)
-                    .HasName("PK__TourImag__7516F70CD3B74BE6");
+                    .HasName("PK__TourImag__7516F70CA3D3AD02");
 
                 entity.ToTable("TourImage");
 

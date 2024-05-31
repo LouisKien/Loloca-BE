@@ -26,14 +26,20 @@ GO
 
 CREATE TABLE PaymentRequests (
     PaymentId INT IDENTITY(1,1) PRIMARY KEY,
-    AccountId INT  NOT NULL,
-    Amount FLOAT,
+    AccountId INT NOT NULL,
+    Amount DECIMAL(13,2) NOT NULL CHECK (Amount >= 0),
+    Type INT NOT NULL,
     TransactionCode NVARCHAR(255),
-BankAccount NVARCHAR(255),
-Bank NVARCHAR(255),
-RequestDate DATETIME,
+    BankAccount NVARCHAR(255),
+    Bank NVARCHAR(255),
+    RequestDate DATETIME NOT NULL,
     Status INT NOT NULL,
-    CONSTRAINT FK_AccountId_PaymentRequests FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId)
+    CONSTRAINT FK_AccountId_PaymentRequests FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId),
+    CONSTRAINT CK_Type1_Rules CHECK (
+        (Type = 1 AND TransactionCode IS NOT NULL AND BankAccount IS NULL AND Bank IS NULL)
+        OR
+        (Type = 2 AND TransactionCode IS NULL AND BankAccount IS NOT NULL AND Bank IS NOT NULL)
+    )
 );
 GO
 
@@ -58,13 +64,13 @@ CREATE TABLE TourGuides (
     ZaloLink NVARCHAR(255),
     FacebookLink NVARCHAR(255),
     InstagramLink NVARCHAR(255),
-    PricePerDay DECIMAL(13,2),
+    PricePerDay DECIMAL(13,2) CHECK (PricePerDay >= 0),
     Status INT NOT NULL,
     AvatarPath NVARCHAR(255),
     AvatarUploadDate DATETIME,
     CoverPath NVARCHAR(255),
     CoverUploadDate DATETIME,
-    Balance INT,
+    Balance DECIMAL(13,2) CHECK (Balance >= 0),
     CONSTRAINT FK_TourGuides_Accounts FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId),
     CONSTRAINT FK_TourGuides_Cities FOREIGN KEY (CityId) REFERENCES Cities(CityId)
 );
@@ -81,7 +87,7 @@ CREATE TABLE Customers (
     AddressCustomer NVARCHAR(255),
     AvatarPath NVARCHAR(255),
     avatarUploadTime DATETIME,
-    Balance INT,
+    Balance DECIMAL(13,2) CHECK (Balance >= 0),
     CONSTRAINT FK_Customers_Accounts FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId)
 );
 GO
@@ -169,7 +175,7 @@ CREATE TABLE Orders (
     BookingTourRequestsId INT,
     BookingTourGuideRequestId INT,
     OrderCode NVARCHAR(255) NOT NULL,
-    OrderPrice FLOAT NOT NULL,
+    OrderPrice DECIMAL(13,2) NOT NULL CHECK (OrderPrice >= 0),
     PaymentProvider NVARCHAR(255),
     TransactionCode NVARCHAR(255),
     Status INT NOT NULL,

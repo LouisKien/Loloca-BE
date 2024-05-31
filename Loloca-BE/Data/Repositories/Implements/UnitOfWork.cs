@@ -1,8 +1,9 @@
 ﻿using Loloca_BE.Data.Entities;
+using Loloca_BE.Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Drawing.Drawing2D;
 
-namespace Loloca_BE.Data.Repositories
+namespace Loloca_BE.Data.Repositories.Implements
 {
     public class UnitOfWork : IUnitOfWork
     {

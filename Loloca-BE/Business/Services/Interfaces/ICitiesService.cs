@@ -1,7 +1,7 @@
 ﻿using Loloca_BE.Business.Models.CitiesView;
 using Loloca_BE.Data.Entities;
 
-namespace Loloca_BE.Business.Services
+namespace Loloca_BE.Business.Services.Interfaces
 {
     public interface ICitiesService
     {

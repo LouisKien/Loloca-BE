@@ -1,7 +1,7 @@
 ﻿using Loloca_BE.Data.Entities;
 using System.Linq.Expressions;
 
-namespace Loloca_BE.Data.Repositories
+namespace Loloca_BE.Data.Repositories.Interfaces
 {
     public interface IGenericRepository<TEntity> where TEntity : class
     {

@@ -1,7 +1,7 @@
 ﻿using Loloca_BE.Data.Entities;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Loloca_BE.Data.Repositories
+namespace Loloca_BE.Data.Repositories.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {

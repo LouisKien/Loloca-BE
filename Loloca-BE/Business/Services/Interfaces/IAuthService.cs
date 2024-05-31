@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Common;
 
-namespace Loloca_BE.Business.Services
+namespace Loloca_BE.Business.Services.Interfaces
 {
     public interface IAuthService
     {

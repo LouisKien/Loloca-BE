@@ -1,6 +1,6 @@
 ﻿using Loloca_BE.Business.Models.CustomerView;
 
-namespace Loloca_BE.Business.Services
+namespace Loloca_BE.Business.Services.Interfaces
 {
     public interface ICustomerService
     {

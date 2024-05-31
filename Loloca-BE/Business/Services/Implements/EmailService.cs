@@ -3,12 +3,13 @@ using Google.Apis.Gmail.v1;
 using Google.Apis.Gmail.v1.Data;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
+using Loloca_BE.Business.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 using MimeKit;
 using System.Net;
 using System.Net.Mail;
 
-namespace Loloca_BE.Business.Services
+namespace Loloca_BE.Business.Services.Implements
 {
     public class EmailService : IEmailService
     {
@@ -39,7 +40,8 @@ namespace Loloca_BE.Business.Services
                 }
 
                 return _credential;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -72,7 +74,8 @@ namespace Loloca_BE.Business.Services
                 };
 
                 await service.Users.Messages.Send(gmailMessage, "me").ExecuteAsync();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }

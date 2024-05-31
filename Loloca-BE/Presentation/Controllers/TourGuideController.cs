@@ -1,6 +1,6 @@
 ﻿using Loloca_BE.Business.Models;
 using Loloca_BE.Business.Models.TourGuideView;
-using Loloca_BE.Business.Services;
+using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

@@ -4,13 +4,14 @@ using Hangfire;
 using Loloca_BE.Business.Models.FeedbackView;
 using Loloca_BE.Business.Models.TourGuideView;
 using Loloca_BE.Business.Models.TourView;
+using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
-using Loloca_BE.Data.Repositories;
+using Loloca_BE.Data.Repositories.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Transactions;
 
-namespace Loloca_BE.Business.Services
+namespace Loloca_BE.Business.Services.Implements
 {
     public class TourService : ITourService
     {
@@ -28,7 +29,7 @@ namespace Loloca_BE.Business.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _googleDriveService = googleDriveService;
-            _cache = cache; 
+            _cache = cache;
             _backgroundJobs = backgroundJobs;
 
             RecurringJob.AddOrUpdate<TourService>(
@@ -122,7 +123,7 @@ namespace Loloca_BE.Business.Services
                 }
             }
         }
-        
+
 
         public async Task UpdateTourAsync(int tourId, TourInfoView tourModel)
         {
@@ -165,7 +166,7 @@ namespace Loloca_BE.Business.Services
                 try
                 {
                     var tour = await _unitOfWork.TourRepository.GetByIDAsync(tourId);
-                    if(tour == null)
+                    if (tour == null)
                     {
                         throw new Exception($"Tour with ID {tourId} not found");
                     }
@@ -175,7 +176,8 @@ namespace Loloca_BE.Business.Services
                     await _unitOfWork.TourRepository.UpdateAsync(tour);
                     await _unitOfWork.SaveAsync();
                     await transaction.CommitAsync();
-                }catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
                     throw new Exception("Cannot update status tour", ex);
@@ -252,7 +254,8 @@ namespace Loloca_BE.Business.Services
                     TourId = item.TourId,
                     TourGuideName = item.Name
                 }).ToList();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }

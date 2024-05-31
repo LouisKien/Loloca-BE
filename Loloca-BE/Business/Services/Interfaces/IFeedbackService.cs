@@ -1,7 +1,7 @@
 ﻿using Loloca_BE.Business.Models.FeedbackView;
 using Loloca_BE.Business.Models.OrderView;
 
-namespace Loloca_BE.Business.Services
+namespace Loloca_BE.Business.Services.Interfaces
 {
     public interface IFeedbackService
     {

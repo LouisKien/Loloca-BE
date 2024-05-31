@@ -1,7 +1,7 @@
-﻿using Loloca_BE.Business.Models;
-using Loloca_BE.Business.Models.AccountView;
+﻿using Loloca_BE.Business.Models.AccountView;
+using Loloca_BE.Business.Models.GoogleCloudView;
 using Loloca_BE.Business.Models.RefreshTokenView;
-using Loloca_BE.Business.Services;
+using Loloca_BE.Business.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

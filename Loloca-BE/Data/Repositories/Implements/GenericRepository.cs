@@ -1,9 +1,10 @@
 ﻿using Loloca_BE.Data.Entities;
+using Loloca_BE.Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1;
 using System.Linq.Expressions;
 
-namespace Loloca_BE.Data.Repositories
+namespace Loloca_BE.Data.Repositories.Implements
 {
     public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : class
     {
@@ -13,7 +14,7 @@ namespace Loloca_BE.Data.Repositories
         public GenericRepository(LolocaDbContext context)
         {
             this.context = context;
-            this.dbSet = context.Set<TEntity>();
+            dbSet = context.Set<TEntity>();
         }
 
         public async Task DeleteAsync(object id)

@@ -7,14 +7,15 @@ using Google.Apis.Services;
 using Hangfire;
 using Loloca_BE.Business.Models.TourGuideView;
 using Loloca_BE.Business.Models.TourView;
+using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
-using Loloca_BE.Data.Repositories;
+using Loloca_BE.Data.Repositories.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Threading.Tasks;
 
-namespace Loloca_BE.Business.Services
+namespace Loloca_BE.Business.Services.Implements
 {
     public class TourGuideService : ITourGuideService
     {
@@ -90,7 +91,8 @@ namespace Loloca_BE.Business.Services
 
                 await _unitOfWork.TourGuideRepository.UpdateAsync(tourGuide);
                 await _unitOfWork.SaveAsync();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception("Cannot update avatar");
             }
@@ -140,7 +142,8 @@ namespace Loloca_BE.Business.Services
 
                 await _unitOfWork.TourGuideRepository.UpdateAsync(tourGuide);
                 await _unitOfWork.SaveAsync();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception("Cannot update cover");
             }
@@ -234,7 +237,8 @@ namespace Loloca_BE.Business.Services
                     Cover = coverContent,
                     CoverUploadedTime = tourGuide.CoverUploadDate
                 };
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -267,7 +271,8 @@ namespace Loloca_BE.Business.Services
                     LastName = item.LastName,
                     PricePerDay = item.PricePerDay
                 }).ToList();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -300,7 +305,8 @@ namespace Loloca_BE.Business.Services
                     LastName = item.LastName,
                     PricePerDay = item.PricePerDay
                 }).ToList();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -344,8 +350,8 @@ namespace Loloca_BE.Business.Services
             {
                 var item = new GetTourGuide
                 {
-                    Avatar = String.IsNullOrEmpty(tourGuide.AvatarPath) ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
-                    AvatarUploadedTime = String.IsNullOrEmpty(tourGuide.AvatarPath) ? null : tourGuide.AvatarUploadDate,
+                    Avatar = string.IsNullOrEmpty(tourGuide.AvatarPath) ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+                    AvatarUploadedTime = string.IsNullOrEmpty(tourGuide.AvatarPath) ? null : tourGuide.AvatarUploadDate,
                     DateOfBirth = tourGuide.DateOfBirth,
                     Description = tourGuide.Description,
                     FirstName = tourGuide.FirstName,
@@ -396,8 +402,8 @@ namespace Loloca_BE.Business.Services
 
                 var item = new GetTourGuide
                 {
-                    Avatar = String.IsNullOrEmpty(tourGuide.AvatarPath) ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
-                    AvatarUploadedTime = String.IsNullOrEmpty(tourGuide.AvatarPath) ? null : tourGuide.AvatarUploadDate,
+                    Avatar = string.IsNullOrEmpty(tourGuide.AvatarPath) ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+                    AvatarUploadedTime = string.IsNullOrEmpty(tourGuide.AvatarPath) ? null : tourGuide.AvatarUploadDate,
                     DateOfBirth = tourGuide.DateOfBirth,
                     Description = tourGuide.Description,
                     FirstName = tourGuide.FirstName,

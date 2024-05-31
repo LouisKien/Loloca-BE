@@ -1,8 +1,10 @@
 using Hangfire;
 using Loloca_BE.Business.Models.Mapper;
-using Loloca_BE.Business.Services;
+using Loloca_BE.Business.Services.Implements;
+using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
-using Loloca_BE.Data.Repositories;
+using Loloca_BE.Data.Repositories.Implements;
+using Loloca_BE.Data.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;

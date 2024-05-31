@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using Loloca_BE.Business.Models.FeedbackView;
+using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
-using Loloca_BE.Data.Repositories;
+using Loloca_BE.Data.Repositories.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Loloca_BE.Business.Services
+namespace Loloca_BE.Business.Services.Implements
 {
     public class FeedbackService : IFeedbackService
     {
@@ -98,7 +99,7 @@ namespace Loloca_BE.Business.Services
                         TourGuideId = feedback.TourGuideId,
                         NumOfStars = feedback.NumOfStars,
                         Content = feedback.Content,
-                        Status = feedback.Status ,
+                        Status = feedback.Status,
                         TimeFeedback = feedback.TimeFeedback,
                         feedBackImgViewListForCus = await GetFeedbackImageViewsAsync(feedback.FeedbackImages.ToList())
                     };
@@ -156,7 +157,8 @@ namespace Loloca_BE.Business.Services
                 }
 
                 return feedbackView;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -230,7 +232,7 @@ namespace Loloca_BE.Business.Services
         {
             string parentFolderId = "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem";
 
-            using (var transaction =  _unitOfWork.BeginTransaction())
+            using (var transaction = _unitOfWork.BeginTransaction())
             {
                 try
                 {

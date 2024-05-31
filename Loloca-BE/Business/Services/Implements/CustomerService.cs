@@ -1,14 +1,15 @@
 ﻿using AutoMapper;
 using Loloca_BE.Business.Models.CustomerView;
+using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
-using Loloca_BE.Data.Repositories;
+using Loloca_BE.Data.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Drawing.Printing;
 using System.Threading.Tasks;
 
-namespace Loloca_BE.Business.Services
+namespace Loloca_BE.Business.Services.Implements
 {
     public class CustomerService : ICustomerService
     {
@@ -186,7 +187,7 @@ namespace Loloca_BE.Business.Services
             try
             {
                 var customer = (await _unitOfWork.CustomerRepository.GetAsync(filter: c => c.CustomerId == customerId, includeProperties: "Account")).FirstOrDefault();
-                if(customer != null)
+                if (customer != null)
                 {
                     var customerView = new GetCustomersView
                     {
@@ -204,7 +205,7 @@ namespace Loloca_BE.Business.Services
                     };
                     return customerView;
                 }
-                return null;            
+                return null;
             }
             catch (Exception ex)
             {

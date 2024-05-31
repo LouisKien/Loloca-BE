@@ -3,9 +3,10 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
+using Loloca_BE.Business.Services.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Loloca_BE.Business.Services
+namespace Loloca_BE.Business.Services.Implements
 {
     public class GoogleDriveService : IGoogleDriveService
     {
@@ -106,7 +107,8 @@ namespace Loloca_BE.Business.Services
                 // Upload the file using the stream
                 var file = await service.Files.Create(fileMetadata, fileStream, fileMetadata.MimeType)
                     .UploadAsync();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -126,7 +128,8 @@ namespace Loloca_BE.Business.Services
                     new FileDataStore("GoogleDriveUploads.json", true)
                 ).Result;
                 return credential;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }

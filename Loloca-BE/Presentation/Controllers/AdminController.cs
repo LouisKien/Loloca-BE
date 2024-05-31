@@ -1,4 +1,4 @@
-﻿using Loloca_BE.Business.Services;
+﻿using Loloca_BE.Business.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Loloca_BE.Presentation.Controllers

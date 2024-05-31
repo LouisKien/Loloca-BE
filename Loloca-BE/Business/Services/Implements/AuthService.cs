@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
 using Loloca_BE.Business.Models.AccountView;
+using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
-using Loloca_BE.Data.Repositories;
+using Loloca_BE.Data.Repositories.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Common;
@@ -10,7 +11,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Loloca_BE.Business.Services
+namespace Loloca_BE.Business.Services.Implements
 {
     public class AuthService : IAuthService
     {
@@ -38,7 +39,7 @@ namespace Loloca_BE.Business.Services
                 var accounts = await _unitOfWork.AccountRepository.FindAsync(a => a.Email == loginInfo.Email && a.HashedPassword == hashedPassword);
                 if (accounts.Any())
                 {
-                    var account = Enumerable.FirstOrDefault(accounts);
+                    var account = accounts.FirstOrDefault();
                     response.AccountId = account.AccountId;
                     response.Email = account.Email;
                     response.Role = account.Role;
@@ -46,7 +47,8 @@ namespace Loloca_BE.Business.Services
                     return response;
                 }
                 return null;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -62,7 +64,7 @@ namespace Loloca_BE.Business.Services
 
                 if (accounts.Any())
                 {
-                    var account = Enumerable.FirstOrDefault(accounts);
+                    var account = accounts.FirstOrDefault();
                     if (account != null)
                     {
                         emailReturn = authResponse.Email;
@@ -102,7 +104,7 @@ namespace Loloca_BE.Business.Services
                 if (accounts.Any())
                 {
                     var account = accounts.FirstOrDefault();
-                    if(account != null)
+                    if (account != null)
                     {
                         // Send verification email
                         string verificationCode;
@@ -126,7 +128,7 @@ namespace Loloca_BE.Business.Services
             }
         }
 
-        private async Task<String> GenerateVerificationCode()
+        private async Task<string> GenerateVerificationCode()
         {
             Random random = new Random();
             return random.Next(100000, 999999).ToString();
@@ -232,7 +234,8 @@ namespace Loloca_BE.Business.Services
                         }
                     }
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }

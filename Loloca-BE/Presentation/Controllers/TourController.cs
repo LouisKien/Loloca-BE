@@ -1,6 +1,6 @@
 ﻿using Loloca_BE.Business.Models.FeedbackView;
 using Loloca_BE.Business.Models.TourView;
-using Loloca_BE.Business.Services;
+using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 
