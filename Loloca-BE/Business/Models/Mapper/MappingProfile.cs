@@ -1,4 +1,6 @@
 ﻿    using AutoMapper;
+using Loloca_BE.Business.Models.BookingTourGuideRequestModelView;
+using Loloca_BE.Business.Models.BookingTourRequestModelView;
 using Loloca_BE.Business.Models.CitiesView;
 using Loloca_BE.Business.Models.CustomerView;
 using Loloca_BE.Business.Models.FeedbackView;
@@ -31,6 +33,10 @@ namespace Loloca_BE.Business.Models.Mapper
             CreateMap<TourInfoView, Tour>().ReverseMap();
             CreateMap<TourImageView, TourImage>().ReverseMap();
             CreateMap<TourStatusView, Tour>().ReverseMap();
+            CreateMap<BookingTourGuideRequestView, BookingTourGuideRequest>().ReverseMap();
+            CreateMap<GetBookingTourGuideRequestView, BookingTourGuideRequest>().ReverseMap();
+            CreateMap<BookingTourRequestView, BookingTourRequest>().ReverseMap();
+            CreateMap<GetBookingTourRequestView, BookingTourRequest>().ReverseMap();
 
             //CreateMap<FeedbackImageView, Feedback>().ReverseMap();
             //CreateMap<FeebackView, Feedback>().ReverseMap();

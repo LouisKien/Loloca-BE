@@ -46,7 +46,7 @@ namespace Loloca_BE.Business.Services.Implements
         {
             string parentFolderId = "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o";
 
-            using (var transaction = _unitOfWork.BeginTransaction())
+            using (var transaction =  _unitOfWork.BeginTransaction())
             {
                 try
                 {
@@ -92,17 +92,35 @@ namespace Loloca_BE.Business.Services.Implements
                         {
                             TourId = tourId,
                             ImagePath = fileName,
-
                             UploadDate = DateTime.Now
                         };
 
                         tourImages.Add(tourImage);
                     }
 
-                    // Save FeedbackImages to database
+                    // Save TourImages to database
                     if (tourImages.Count > 0)
                     {
                         await _unitOfWork.TourImageRepository.AddRangeAsync(tourImages);
+                        await _unitOfWork.SaveAsync();
+                    }
+
+                    // Create and save notifications for admins
+                    var adminAccounts = await _unitOfWork.AccountRepository.GetAllAsync(a => a.Role == 1 && a.Status == 1);
+
+                    var notifications = adminAccounts.Select(admin => new Notification
+                    {
+                        UserId = admin.AccountId,
+                        UserType = "Admin",
+                        Title = "Tour mới đã được tạo",
+                        Message = $"Chuyến đi mới đã được tạo chờ bạn xác nhận tên chuyến đi: {tour.Name}.",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    }).ToList();
+
+                    if (notifications.Any())
+                    {
+                        await _unitOfWork.NotificationRepository.AddRangeAsync(notifications);
                         await _unitOfWork.SaveAsync();
                     }
 
@@ -123,6 +141,7 @@ namespace Loloca_BE.Business.Services.Implements
                 }
             }
         }
+
 
 
         public async Task UpdateTourAsync(int tourId, TourInfoView tourModel)

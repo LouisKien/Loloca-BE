@@ -7,7 +7,7 @@ namespace Loloca_BE.Data.Repositories.Interfaces
     {
         IDbContextTransaction BeginTransaction();
         Task SaveAsync();
-
+        IGenericRepository<Notification> NotificationRepository { get; }
         IGenericRepository<Account> AccountRepository { get; }
 
         IGenericRepository<BookingTourGuideRequest> BookingTourGuideRepository { get; }

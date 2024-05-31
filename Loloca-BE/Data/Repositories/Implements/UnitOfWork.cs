@@ -9,6 +9,7 @@ namespace Loloca_BE.Data.Repositories.Implements
     {
         private LolocaDbContext _dbContext;
 
+        private GenericRepository<Notification> _notificationRepository;
         private GenericRepository<Account> _accountRepository;
         private GenericRepository<BookingTourGuideRequest> _bookingTourGuideRequestRepository;
         private GenericRepository<BookingTourRequest> _bookingTourRequestRepository;
@@ -42,6 +43,7 @@ namespace Loloca_BE.Data.Repositories.Implements
         {
             return _dbContext.Database.BeginTransaction();
         }
+        public IGenericRepository<Notification> NotificationRepository => _notificationRepository ??= new GenericRepository<Notification>(_dbContext);
 
         public IGenericRepository<Account> AccountRepository => _accountRepository ??= new GenericRepository<Account>(_dbContext);
 

@@ -417,5 +417,192 @@ namespace Loloca_BE.Business.Services.Implements
 
             return items.OrderBy(x => _random.Next()).ToList();
         }
+        public async Task<bool> AcceptRequestBookingTourGuideRequest(int bookingRequestId)
+        {
+            using (var transaction = _unitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    var bookingRequest = await _unitOfWork.BookingTourGuideRepository.GetByIDAsync(bookingRequestId);
+                    if (bookingRequest == null)
+                    {
+                        throw new Exception($"Booking request with ID {bookingRequestId} does not exist.");
+                    }
+
+                    // Kiểm tra xem BookingTourGuideRequest có trạng thái là 1 không (đã gửi yêu cầu)
+                    if (bookingRequest.Status != 1)
+                    {
+                        throw new Exception("Booking request is not in pending status.");
+                    }
+
+                    // Cập nhật trạng thái của BookingTourGuideRequest thành đã chấp nhận
+                    bookingRequest.Status = 2;
+                    await _unitOfWork.BookingTourGuideRepository.UpdateAsync(bookingRequest);
+                    await _unitOfWork.SaveAsync();
+
+                    // Tạo thông báo cho khách hàng
+                    var notificationToCustomer = new Notification
+                    {
+                        UserId = bookingRequest.CustomerId,
+                        UserType = "Customer",
+                        Title = "Yêu cầu booking đã được chấp nhận",
+                        Message = "Your booking request has been accepted by the tour guide.",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    };
+                    await _unitOfWork.NotificationRepository.InsertAsync(notificationToCustomer);
+
+                    await _unitOfWork.SaveAsync();
+                    await transaction.CommitAsync();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    throw new Exception($"Error accepting booking request: {ex.Message}");
+                }
+            }
+        }
+
+        public async Task<bool> RejectRequestBookingTourGuideRequest(int bookingRequestId)
+        {
+            using (var transaction = _unitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    var bookingRequest = await _unitOfWork.BookingTourGuideRepository.GetByIDAsync(bookingRequestId);
+                    if (bookingRequest == null)
+                    {
+                        throw new Exception($"Booking request with ID {bookingRequestId} does not exist.");
+                    }
+
+                    // Kiểm tra xem BookingTourGuideRequest có trạng thái là 1 không (đã gửi yêu cầu)
+                    if (bookingRequest.Status != 1)
+                    {
+                        throw new Exception("Booking request is not in pending status.");
+                    }
+
+                    // Cập nhật trạng thái của BookingTourGuideRequest thành đã từ chối
+                    bookingRequest.Status = 3;
+                    await _unitOfWork.BookingTourGuideRepository.UpdateAsync(bookingRequest);
+                    await _unitOfWork.SaveAsync();
+
+                    // Tạo thông báo cho khách hàng
+                    var notificationToCustomer = new Notification
+                    {
+                        UserId = bookingRequest.CustomerId,
+                        UserType = "Customer",
+                        Title = "Yêu cầu booking đã bị hủy",
+                        Message = "Your booking request has been rejected by the tour guide.",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    };
+                    await _unitOfWork.NotificationRepository.InsertAsync(notificationToCustomer);
+
+                    await _unitOfWork.SaveAsync();
+                    await transaction.CommitAsync();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    throw new Exception($"Error accepting booking request: {ex.Message}");
+                }
+            }
+        }
+
+        public async Task<bool> AcceptRequestBookingTourRequest(int bookingTourRequestId)
+        {
+            using (var transaction = _unitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    var bookingRequest = await _unitOfWork.BookingTourRequestRepository.GetByIDAsync(bookingTourRequestId);
+                    if (bookingRequest == null)
+                    {
+                        throw new Exception($"Booking request with ID {bookingTourRequestId} does not exist.");
+                    }
+
+                    // Kiểm tra xem BookingTourRequest có trạng thái là 1 không (đã gửi yêu cầu)
+                    if (bookingRequest.Status != 1)
+                    {
+                        throw new Exception("Booking request is not in pending status.");
+                    }
+
+                    // Cập nhật trạng thái của BookingTourRequest thành đã chấp nhận
+                    bookingRequest.Status = 2;
+                    await _unitOfWork.BookingTourRequestRepository.UpdateAsync(bookingRequest);
+                    await _unitOfWork.SaveAsync();
+
+                    // Tạo thông báo cho khách hàng
+                    var notificationToCustomer = new Notification
+                    {
+                        UserId = bookingRequest.CustomerId,
+                        UserType = "Customer",
+                        Title = "Yêu cầu booking đã được chấp nhận",
+                        Message = "Your booking request has been accepted by the tour guide.",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    };
+                    await _unitOfWork.NotificationRepository.InsertAsync(notificationToCustomer);
+
+                    await _unitOfWork.SaveAsync();
+                    await transaction.CommitAsync();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    throw new Exception($"Error accepting booking request: {ex.Message}");
+                }
+            }
+        }
+
+        public async Task<bool> RejectRequestBookingTourRequest(int bookingTourRequestId)
+        {
+            using (var transaction = _unitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    var bookingRequest = await _unitOfWork.BookingTourRequestRepository.GetByIDAsync(bookingTourRequestId);
+                    if (bookingRequest == null)
+                    {
+                        throw new Exception($"Booking request with ID {bookingTourRequestId} does not exist.");
+                    }
+
+                    // Kiểm tra xem BookingTourGuideRequest có trạng thái là 1 không (đã gửi yêu cầu)
+                    if (bookingRequest.Status != 1)
+                    {
+                        throw new Exception("Booking request is not in pending status.");
+                    }
+
+                    // Cập nhật trạng thái của BookingTourGuideRequest thành đã từ chối
+                    bookingRequest.Status = 3;
+                    await _unitOfWork.BookingTourRequestRepository.UpdateAsync(bookingRequest);
+                    await _unitOfWork.SaveAsync();
+
+                    // Tạo thông báo cho khách hàng
+                    var notificationToCustomer = new Notification
+                    {
+                        UserId = bookingRequest.CustomerId,
+                        UserType = "Customer",
+                        Title = "Yêu cầu booking đã bị hủy",
+                        Message = "Your booking request has been rejected by the tour guide.",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    };
+                    await _unitOfWork.NotificationRepository.InsertAsync(notificationToCustomer);
+
+                    await _unitOfWork.SaveAsync();
+                    await transaction.CommitAsync();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    throw new Exception($"Error accepting booking request: {ex.Message}");
+                }
+            }
+        }
     }
 }

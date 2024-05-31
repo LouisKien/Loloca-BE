@@ -178,5 +178,93 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
+
+        [HttpPost("accept-booking-tourguide-request")]
+        public async Task<IActionResult> AcceptBookingRequest(int bookingRequestId)
+        {
+            try
+            {
+                var result = await _tourGuideService.AcceptRequestBookingTourGuideRequest(bookingRequestId);
+                if (result)
+                {
+                    return Ok("Booking request accepted successfully.");
+                }
+                else
+                {
+                    return BadRequest("Failed to accept booking request.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        [HttpPost("reject-booking-tourguide-request")]
+        public async Task<IActionResult> RejectBookingRequest(int bookingRequestId)
+        {
+            try
+            {
+                var result = await _tourGuideService.RejectRequestBookingTourGuideRequest(bookingRequestId);
+                if (result)
+                {
+                    return Ok("Booking request rejected successfully.");
+                }
+                else
+                {
+                    return BadRequest("Failed to rejected booking request.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
+
+
+
+
+        [HttpPost("accept-booking-tour-request")]
+        public async Task<IActionResult> AcceptBookingTourRequest(int bookingRequestId)
+        {
+            try
+            {
+                var result = await _tourGuideService.AcceptRequestBookingTourRequest(bookingRequestId);
+                if (result)
+                {
+                    return Ok("Booking request accepted successfully.");
+                }
+                else
+                {
+                    return BadRequest("Failed to accept booking request.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        [HttpPost("reject-booking-tour-request")]
+        public async Task<IActionResult> RejectBookingTourRequest(int bookingRequestId)
+        {
+            try
+            {
+                var result = await _tourGuideService.RejectRequestBookingTourRequest(bookingRequestId);
+                if (result)
+                {
+                    return Ok("Booking request rejected successfully.");
+                }
+                else
+                {
+                    return BadRequest("Failed to rejected booking request.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
     }
 }

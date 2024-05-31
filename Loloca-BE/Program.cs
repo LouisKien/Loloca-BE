@@ -46,10 +46,10 @@ builder.Services.AddHangfireServer();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-//builder.Services.AddControllersWithViews()
-//    .AddNewtonsoftJson(options =>
-//    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-//);
+builder.Services.AddControllersWithViews()
+    .AddNewtonsoftJson(options =>
+    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+);
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program), typeof(MappingProfile));
@@ -74,6 +74,10 @@ builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<ITourService, TourService>();
 builder.Services.AddScoped<IGoogleDriveService, GoogleDriveService>();
 builder.Services.AddScoped<IPaymentRequestService, PaymentRequestService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IBookingTourGuideRequestService, BookingTourGuideRequestService>();
+builder.Services.AddScoped<IBookingTourRequestService, BookingTourRequestService>();
+//builder.Services.AddScoped<IBookingTourRequestService, BookingTourRequestService>();
 
 // Register in-memory caching
 builder.Services.AddMemoryCache();
@@ -84,6 +88,7 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+builder.Services.AddHttpContextAccessor();
 
 // Set policy permission for roles
 builder.Services.AddAuthorization(options =>

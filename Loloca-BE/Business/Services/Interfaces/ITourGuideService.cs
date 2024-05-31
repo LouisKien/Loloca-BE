@@ -14,5 +14,11 @@ namespace Loloca_BE.Business.Services.Interfaces
         Task<List<GetTourGuide>> GetRandomTourGuidesAsync(string sessionId, int page, int pageSize);
         Task<List<GetTourGuide>> GetRandomTourGuidesInCityAsync(string sessionId, int CityId, int page, int pageSize);
         Task<int> GetTotalPage(int pageSize, int? cityId, string sessionId);
+
+        Task<bool> AcceptRequestBookingTourGuideRequest(int bookingRequestId);
+        Task<bool> RejectRequestBookingTourGuideRequest(int bookingRequestId);
+
+        Task<bool> AcceptRequestBookingTourRequest(int bookingTourRequestId);
+        Task<bool> RejectRequestBookingTourRequest(int bookingTourRequestId);
     }
 }

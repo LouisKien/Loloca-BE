@@ -228,6 +228,88 @@ namespace Loloca_BE.Business.Services.Implements
         }
 
 
+        //public async Task UploadFeedbackAsync(FeedbackModelView feedbackModel, List<IFormFile> images)
+        //{
+        //    string parentFolderId = "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem";
+
+        //    using (var transaction = _unitOfWork.BeginTransaction())
+        //    {
+        //        try
+        //        {
+        //            // Kiểm tra tất cả các file trước khi bắt đầu upload
+        //            foreach (var image in images)
+        //            {
+        //                if (!image.ContentType.StartsWith("image/"))
+        //                {
+        //                    throw new InvalidDataException("Only image files are allowed.");
+        //                }
+        //            }
+
+        //            // Create Feedback entity
+        //            var feedback = _mapper.Map<Feedback>(feedbackModel);
+        //            feedback.TimeFeedback = DateTime.Now;
+        //            feedback.Status = true;
+
+        //            // Save Feedback to database
+        //            await _unitOfWork.FeedbackRepository.InsertAsync(feedback);
+        //            await _unitOfWork.SaveAsync();
+
+        //            var feedbackId = feedback.FeedbackId;
+        //            var feedbackImages = new List<FeedbackImage>();
+
+        //            // Upload each image to Google Drive
+        //            foreach (var image in images)
+        //            {
+        //                string fileName = $"Feedback_{feedbackId}_{Guid.NewGuid()}";
+
+        //                var fileMetadata = new Google.Apis.Drive.v3.Data.File()
+        //                {
+        //                    Name = fileName,
+        //                    Parents = new List<string>() { parentFolderId },
+        //                    MimeType = image.ContentType
+        //                };
+
+        //                using (var stream = image.OpenReadStream())
+        //                {
+        //                    await _googleDriveService.UploadFileAsync(stream, fileMetadata);
+        //                }
+
+        //                // Create FeedbackImage entity
+        //                var feedbackImage = new FeedbackImage
+        //                {
+        //                    FeedbackId = feedbackId,
+        //                    ImagePath = fileName,
+        //                    UploadDate = DateTime.Now
+        //                };
+
+        //                feedbackImages.Add(feedbackImage);
+        //            }
+
+        //            // Save FeedbackImages to database
+        //            if (feedbackImages.Count > 0)
+        //            {
+        //                await _unitOfWork.FeedbackImageRepository.AddRangeAsync(feedbackImages);
+        //                await _unitOfWork.SaveAsync();
+        //            }
+
+        //            // Commit the transaction
+        //            await transaction.CommitAsync();
+        //        }
+        //        catch (InvalidDataException)
+        //        {
+        //            // Nếu có InvalidDataException, rollback transaction và không upload bất kỳ file nào
+        //            await transaction.RollbackAsync();
+        //            throw;
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            // Rollback the transaction in case of error
+        //            await transaction.RollbackAsync();
+        //            throw new Exception("Cannot upload feedback", ex);
+        //        }
+        //    }
+        //}
+
         public async Task UploadFeedbackAsync(FeedbackModelView feedbackModel, List<IFormFile> images)
         {
             string parentFolderId = "1Pp_3K7a1lZZpoZ2GX9nJGtZOAzFiqHem";
@@ -292,6 +374,39 @@ namespace Loloca_BE.Business.Services.Implements
                         await _unitOfWork.SaveAsync();
                     }
 
+                    // Get Customer and TourGuide information
+                    var tour = await _unitOfWork.TourGuideRepository.GetByIDAsync(feedbackModel.TourGuideId);
+                    var customer = await _unitOfWork.CustomerRepository.GetByIDAsync(feedbackModel.CustomerId);
+
+                    // Create notification for Customer
+                    var notificationToCustomer = new Notification
+                    {
+                        UserId = customer.CustomerId,
+                        UserType = "Customer",
+                        Title = "Phản hồi mới",
+                        Message = "Phản hồi của bạn đã được gửi thành công.",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    await _unitOfWork.NotificationRepository.InsertAsync(notificationToCustomer);
+
+                    // Create notification for TourGuide
+                    var notificationToTourGuide = new Notification
+                    {
+                        UserId = tour.TourGuideId,
+                        UserType = "TourGuide",
+                        Title = "Phản hồi mới",
+                        Message = "Bạn có một phản hồi mới từ khách hàng.",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    await _unitOfWork.NotificationRepository.InsertAsync(notificationToTourGuide);
+
+                    // Save notifications to database
+                    await _unitOfWork.SaveAsync();
+
                     // Commit the transaction
                     await transaction.CommitAsync();
                 }
@@ -309,6 +424,7 @@ namespace Loloca_BE.Business.Services.Implements
                 }
             }
         }
+
 
 
 
