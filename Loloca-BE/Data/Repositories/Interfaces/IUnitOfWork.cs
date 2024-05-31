@@ -24,6 +24,8 @@ namespace Loloca_BE.Data.Repositories.Interfaces
 
         IGenericRepository<Order> OrderRepository { get; }
 
+        IGenericRepository<PaymentRequest> PaymentRequestRepository { get; }
+
         IGenericRepository<RefreshToken> RefreshTokenRepository { get; }
 
         IGenericRepository<Tour> TourRepository { get; }

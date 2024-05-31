@@ -17,6 +17,7 @@ namespace Loloca_BE.Data.Repositories.Implements
         private GenericRepository<Feedback> _feedbackRepository;
         private GenericRepository<FeedbackImage> _feedbackImageRepository;
         private GenericRepository<Order> _orderRepository;
+        private GenericRepository<PaymentRequest> _paymentRequestRepository;
         private GenericRepository<RefreshToken> _refreshTokenRepository;
         private GenericRepository<Tour> _tourRepository;
         private GenericRepository<TourGuide> _tourGuideRepository;
@@ -57,6 +58,8 @@ namespace Loloca_BE.Data.Repositories.Implements
         public IGenericRepository<FeedbackImage> FeedbackImageRepository => _feedbackImageRepository ??= new GenericRepository<FeedbackImage>(_dbContext);
 
         public IGenericRepository<Order> OrderRepository => _orderRepository ??= new GenericRepository<Order>(_dbContext);
+
+        public IGenericRepository<PaymentRequest> PaymentRequestRepository => _paymentRequestRepository ??= new GenericRepository<PaymentRequest>(_dbContext);
 
         public IGenericRepository<RefreshToken> RefreshTokenRepository => _refreshTokenRepository ??= new GenericRepository<RefreshToken>(_dbContext);
 

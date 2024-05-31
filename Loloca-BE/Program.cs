@@ -73,6 +73,7 @@ builder.Services.AddScoped<ICitiesService, CitiesService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<ITourService, TourService>();
 builder.Services.AddScoped<IGoogleDriveService, GoogleDriveService>();
+builder.Services.AddScoped<IPaymentRequestService, PaymentRequestService>();
 
 // Register in-memory caching
 builder.Services.AddMemoryCache();
