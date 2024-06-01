@@ -1,6 +1,8 @@
 ﻿using Loloca_BE.Business.Models.CitiesView;
+using Loloca_BE.Business.Services.Implements;
 using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Loloca_BE.Presentation.Controllers
@@ -10,10 +12,12 @@ namespace Loloca_BE.Presentation.Controllers
     public class CitiesController : ControllerBase
     {
         private readonly ICitiesService _citiesService;
+        private readonly IAuthorizeService _authorizeService;
 
-        public CitiesController(ICitiesService citiesService)
+        public CitiesController(ICitiesService citiesService, IAuthorizeService authorizeService)
         {
             _citiesService = citiesService;
+            _authorizeService = authorizeService;
         }
 
         [HttpGet]
@@ -21,6 +25,16 @@ namespace Loloca_BE.Presentation.Controllers
         {
             try
             {
+                //var accountId = User.FindFirst("AccountId")?.Value;
+                //if (accountId == null)
+                //{
+                //    return Forbid();
+                //}
+                //var checkAuthorize = await _authorizeService.CheckAuthorizeByCustomerId(customerId, int.Parse(accountId));
+                //if (checkAuthorize == false)
+                //{
+                //    return Forbid();
+                //}
                 var cities = await _citiesService.GetAllCitiesAsync();
                 return Ok(cities);
             } catch (Exception ex)

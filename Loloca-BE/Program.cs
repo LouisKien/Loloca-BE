@@ -77,6 +77,7 @@ builder.Services.AddScoped<IPaymentRequestService, PaymentRequestService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IBookingTourGuideRequestService, BookingTourGuideRequestService>();
 builder.Services.AddScoped<IBookingTourRequestService, BookingTourRequestService>();
+builder.Services.AddScoped<IAuthorizeService, AuthorizeService>();
 //builder.Services.AddScoped<IBookingTourRequestService, BookingTourRequestService>();
 
 // Register in-memory caching
