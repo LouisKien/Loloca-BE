@@ -160,6 +160,11 @@ recurringJobManager.AddOrUpdate(
     () => app.Services.CreateScope().ServiceProvider.GetRequiredService<ITourBackgroundService>().RefreshTourInCityCache(),
     Cron.Minutely
     );
+recurringJobManager.AddOrUpdate(
+    "RejectExpiredPaymentRequest",
+    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IPaymentRequestBackgroundService>().RejectExpiredPaymentRequest(),
+    Cron.Minutely
+    );
 
 app.UseCors();
 
