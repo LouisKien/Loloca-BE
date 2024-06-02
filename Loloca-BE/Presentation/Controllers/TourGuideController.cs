@@ -14,10 +14,12 @@ namespace Loloca_BE.Presentation.Controllers
     public class TourGuideController : ControllerBase
     {
         private readonly ITourGuideService _tourGuideService;
+        private readonly IMemoryCache _cache;
 
         public TourGuideController(ITourGuideService tourGuideService, IMemoryCache cache)
         {
             _tourGuideService = tourGuideService;
+            _cache = cache;
         }
 
         [AllowAnonymous]
@@ -132,11 +134,13 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     sessionId = Guid.NewGuid().ToString();
                     HttpContext.Session.SetString("SessionId", sessionId);
+                    AddSessionIdToCache(sessionId);
                 }
                 else
                 {
                     sessionId = HttpContext.Session.GetString("SessionId");
                 }
+
                 var tourGuides = await _tourGuideService.GetRandomTourGuidesAsync(sessionId, page, pageSize);
                 var totalPage = await _tourGuideService.GetTotalPage(pageSize, null, sessionId);
                 if (page > totalPage)
@@ -144,9 +148,20 @@ namespace Loloca_BE.Presentation.Controllers
                     return NotFound("This page does not exist.");
                 }
                 return Ok(new { tourGuides, totalPage });
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                return StatusCode(500, $" Internal Server Error: {ex.Message}");
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            }
+        }
+
+        private void AddSessionIdToCache(string sessionId)
+        {
+            var activeSessionIds = _cache.Get<List<string>>("ActiveSessions") ?? new List<string>();
+            if (!activeSessionIds.Contains(sessionId))
+            {
+                activeSessionIds.Add(sessionId);
+                _cache.Set("ActiveSessions", activeSessionIds, TimeSpan.FromMinutes(30));
             }
         }
 
@@ -161,6 +176,7 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     sessionId = Guid.NewGuid().ToString();
                     HttpContext.Session.SetString("SessionId", sessionId);
+                    AddSessionIdToCache(sessionId);
                 }
                 else
                 {

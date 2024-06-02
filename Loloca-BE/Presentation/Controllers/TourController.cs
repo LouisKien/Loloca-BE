@@ -3,6 +3,7 @@ using Loloca_BE.Business.Models.TourView;
 using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Loloca_BE.Presentation.Controllers
 {
@@ -11,10 +12,12 @@ namespace Loloca_BE.Presentation.Controllers
     public class TourController : ControllerBase
     {
         private readonly ITourService _tourService;
+        private readonly IMemoryCache _cache;
 
-        public TourController(ITourService tourService)
+        public TourController(ITourService tourService, IMemoryCache cache)
         {
             _tourService = tourService;
+            _cache = cache;
         }
 
         [HttpPost("/uploadtour")]
@@ -107,6 +110,7 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     sessionId = Guid.NewGuid().ToString();
                     HttpContext.Session.SetString("SessionId", sessionId);
+                    AddSessionIdToCache(sessionId);
                 }
                 else
                 {
@@ -137,6 +141,7 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     sessionId = Guid.NewGuid().ToString();
                     HttpContext.Session.SetString("SessionId", sessionId);
+                    AddSessionIdToCache(sessionId);
                 }
                 else
                 {
@@ -161,28 +166,27 @@ namespace Loloca_BE.Presentation.Controllers
         {
             try
             {
-                string sessionId;
-
-                if (HttpContext.Session.GetString("SessionId") == null)
-                {
-                    sessionId = Guid.NewGuid().ToString();
-                    HttpContext.Session.SetString("SessionId", sessionId);
-                }
-                else
-                {
-                    sessionId = HttpContext.Session.GetString("SessionId");
-                }
-                var tours = await _tourService.GetRandomToursByTourGuideAsync(sessionId, TourGuideId, page, pageSize);
-                var totalPage = await _tourService.GetTotalPageTourGuide(pageSize, TourGuideId, sessionId);
+                var totalPage = await _tourService.GetTotalPageByTourGuide(TourGuideId, pageSize);
                 if (page > totalPage)
                 {
                     return NotFound("This page does not exist.");
                 }
+                var tours = await _tourService.GetToursByTourGuideAsync(TourGuideId, page, pageSize);
                 return Ok(new { tours, totalPage });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $" Internal Server Error: {ex.Message}");
+            }
+        }
+
+        private void AddSessionIdToCache(string sessionId)
+        {
+            var activeSessionIds = _cache.Get<List<string>>("ActiveSessions") ?? new List<string>();
+            if (!activeSessionIds.Contains(sessionId))
+            {
+                activeSessionIds.Add(sessionId);
+                _cache.Set("ActiveSessions", activeSessionIds, TimeSpan.FromMinutes(30));
             }
         }
 

@@ -1,4 +1,7 @@
 using Hangfire;
+using Hangfire.SqlServer;
+using Loloca_BE.Business.BackgroundServices.Implements;
+using Loloca_BE.Business.BackgroundServices.Interfaces;
 using Loloca_BE.Business.Models.Mapper;
 using Loloca_BE.Business.Services.Implements;
 using Loloca_BE.Business.Services.Interfaces;
@@ -38,7 +41,15 @@ builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
+    {
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.Zero,
+        UseRecommendedIsolationLevel = true,
+        UsePageLocksOnDequeue = true,
+        DisableGlobalLocks = true
+    }));
 
 // Add the processing server as IHostedService
 builder.Services.AddHangfireServer();
@@ -63,6 +74,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
 //Add services to the container
+builder.Services.AddScoped<IRefreshTokenBackgroundService, RefreshTokenBackgroundService>();
+builder.Services.AddScoped<IPaymentRequestBackgroundService, PaymentRequestBackgroundService>();
+builder.Services.AddScoped<ITourGuideBackgroundService, TourGuideBackgroundService>();
+builder.Services.AddScoped<ITourBackgroundService, TourBackgroundService>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
@@ -116,6 +132,34 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHangfireDashboard();
+
+// Schedule the recurring job
+var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+recurringJobManager.AddOrUpdate(
+    "RemoveExpiredRefreshToken",
+    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IRefreshTokenBackgroundService>().RemoveExpiredRefreshToken(),
+    Cron.Minutely
+    );
+recurringJobManager.AddOrUpdate(
+    "RefreshTourGuideCache", 
+    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<ITourGuideBackgroundService>().RefreshTourGuideCache(), 
+    Cron.Minutely
+    );
+recurringJobManager.AddOrUpdate(
+    "RefreshTourGuideInCityCache",
+    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<ITourGuideBackgroundService>().RefreshTourGuideInCityCache(),
+    Cron.Minutely
+    );
+recurringJobManager.AddOrUpdate(
+    "RefreshTourCache",
+    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<ITourBackgroundService>().RefreshTourCache(),
+    Cron.Minutely
+    );
+recurringJobManager.AddOrUpdate(
+    "RefreshTourInCityCache",
+    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<ITourBackgroundService>().RefreshTourInCityCache(),
+    Cron.Minutely
+    );
 
 app.UseCors();
 
