@@ -11,7 +11,8 @@ namespace Loloca_BE.Business.Services.Interfaces
         Task<GetDepositView?> GetDepositById(int PaymentRequestId);
         Task<List<GetDepositView>> GetDepositByCustomerId(int customerId, int? status);
         Task<List<GetDepositView>> GetDepositByTourGuideId(int tourGuideId, int? status);
-        Task<int> UpdateStatusDeposit(int paymentRequestId, int status);
+        //Task<int> UpdateStatusDeposit(int paymentRequestId, int status);
+        Task UpdateStatusDepositAsync(int paymentRequestId, int status);
 
         // ----------------------------------------- WITHDRAWAL --------------------------------------------
         Task<int> SendWithdrawalRequest(WithdrawalView withdrawalView);
@@ -19,6 +20,6 @@ namespace Loloca_BE.Business.Services.Interfaces
         Task<GetWithdrawalView?> GetAllWithdrawalById(int PaymentRequestId);
         Task<List<GetWithdrawalView>> GetAllWithdrawalByCustomerId(int CustomerId, int? status);
         Task<List<GetWithdrawalView>> GetAllWithdrawalByTourGuideId(int TourGuideId, int? status);
-        Task<int> UpdateStatusWithdrawal(int paymentRequestId, int status);
+        Task UpdateStatusWithdrawalAsync(int paymentRequestId);
     }
 }

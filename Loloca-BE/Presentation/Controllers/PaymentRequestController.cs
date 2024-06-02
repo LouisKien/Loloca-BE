@@ -24,28 +24,28 @@ namespace Loloca_BE.Presentation.Controllers
         {
             try
             {
-                if(depositView == null)
+                if (depositView == null)
                 {
-                    return BadRequest("Request cannot null");
+                    return BadRequest("Request cannot be null");
                 }
-                if(depositView.TransactionCode == null)
+                if (depositView.TransactionCode == null)
                 {
-                    return BadRequest("Transaction code cannot null");
+                    return BadRequest("Transaction code cannot be null");
                 }
-                if(depositView.Amount < 0 || depositView.Amount == null)
+                if (depositView.Amount < 0)
                 {
-                    return BadRequest("Invalid number of money");
+                    return BadRequest("Invalid amount of money");
                 }
-                if(depositView.AccountId == null)
+                if (depositView.AccountId == 0)
                 {
-                    return BadRequest("Account Id cannot null");
+                    return BadRequest("Account Id cannot be null");
                 }
                 await _paymentRequestService.SendDepositRequest(depositView);
-                return Ok("Your request sent, our team will review within 7 working days");
+                return Ok("Your request has been sent, our team will review it within 7 working days");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $" Internal Server Error: {ex.Message}");
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
             }
         }
 
@@ -113,40 +113,49 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [HttpPut("/api/v1/payment-request/deposit")]
-        public async Task<ActionResult> UpdateStatusDeposit([FromQuery] int paymentRequestId, [FromQuery] int status) {
+        public async Task<ActionResult> UpdateStatusDeposit([FromQuery] int paymentRequestId, [FromQuery] int status)
+        {
             try
             {
-                var updateStatus = await _paymentRequestService.UpdateStatusDeposit(paymentRequestId, status);
-                if (updateStatus == 1)
+                await _paymentRequestService.UpdateStatusDepositAsync(paymentRequestId, status);
+                if (status == 1)
                 {
                     return Ok("Accept request successfully");
                 }
-                else if (updateStatus == 2)
+                else if (status == 2)
                 {
                     return Ok("Reject request successfully");
                 }
-                else if (updateStatus == 0)
-                {
-                    return BadRequest("Cannot approve this request: This request have already approved before");
-                }
-                else if (updateStatus == -1)
-                {
-                    return BadRequest($"Deposit request with id {paymentRequestId} does not exist");
-                }
-                else if (updateStatus == -2)
-                {
-                    return BadRequest("Not correct type of transaction");
-                }
                 else
                 {
-                    return BadRequest("Cannot approve this request");
+                    return BadRequest("Invalid status value");
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $" Internal Server Error: {ex.Message}");
+                if (ex.Message.Contains("Không tìm thấy yêu cầu nạp tiền"))
+                {
+                    return BadRequest($"Deposit request with id {paymentRequestId} does not exist");
+                }
+                else if (ex.Message.Contains("Loại giao dịch không phù hợp"))
+                {
+                    return BadRequest("Not correct type of transaction");
+                }
+                else if (ex.Message.Contains("Yêu cầu đã được xử lý trước đó"))
+                {
+                    return BadRequest("Cannot approve this request: This request have already approved before");
+                }
+                else if (ex.Message.Contains("Admin role can't approve their request"))
+                {
+                    return BadRequest("Admin role can't approve their request");
+                }
+                else
+                {
+                    return StatusCode(500, $"Internal Server Error: {ex.Message}");
+                }
             }
         }
+
 
         // ----------------------------------------- WITHDRAWAL --------------------------------------------
         [HttpPost("/api/v1/payment-request/withdrawal")]
@@ -258,40 +267,23 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [HttpPut("/api/v1/payment-request/withdrawal")]
-        public async Task<ActionResult> UpdateStatusWithdrawal([FromQuery] int paymentRequestId, [FromQuery] int status)
+        public async Task<ActionResult> UpdateStatusWithdrawal([FromQuery] int paymentRequestId)
         {
             try
             {
-                var updateStatus = await _paymentRequestService.UpdateStatusWithdrawal(paymentRequestId, status);
-                if (updateStatus == 1)
-                {
-                    return Ok("Accept request successfully");
-                }
-                else if (updateStatus == 2)
-                {
-                    return Ok("Reject request successfully");
-                }
-                else if (updateStatus == 0)
-                {
-                    return BadRequest("Cannot approve this request: This request have already approved before");
-                }
-                else if (updateStatus == -1)
-                {
-                    return BadRequest($"Withdrawal request with id {paymentRequestId} does not exist");
-                }
-                else if (updateStatus == -2)
-                {
-                    return BadRequest("Not correct type of transaction");
-                }
-                else
-                {
-                    return BadRequest("Cannot approve this request");
-                }
+                await _paymentRequestService.UpdateStatusWithdrawalAsync(paymentRequestId);
+                return Ok("Withdrawal request successfully accepted");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $" Internal Server Error: {ex.Message}");
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
             }
         }
+
+
+
+
+
+
     }
 }

@@ -111,5 +111,33 @@ namespace Loloca_BE.Business.Services.Implements
                 throw new Exception("An error occurred while get booking request.", ex);
             }
         }
+
+        public async Task<IEnumerable<GetBookingTourRequestView>> GetBookingTourRequestByCustomerId(int customerId)
+        {
+            try
+            {
+                var requests = await _unitOfWork.BookingTourRequestRepository.GetAsync(
+                    r => r.CustomerId == customerId);
+                return _mapper.Map<IEnumerable<GetBookingTourRequestView>>(requests);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while getting booking tour requests by customer ID.", ex);
+            }
+        }
+
+        public async Task<IEnumerable<GetBookingTourRequestView>> GetBookingTourRequestByTourGuideId(int tourGuideId)
+        {
+            try
+            {
+                var requests = await _unitOfWork.BookingTourRequestRepository.GetAsync(
+                    r => r.Tour.TourGuideId == tourGuideId);
+                return _mapper.Map<IEnumerable<GetBookingTourRequestView>>(requests);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while getting booking tour requests by tour guide ID.", ex);
+            }
+        }
     }
 }

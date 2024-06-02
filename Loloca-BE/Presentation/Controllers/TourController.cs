@@ -50,7 +50,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpPut("/updatetour-status/{tourId}")]
+        [HttpPut("/accept-tour-change-status/{tourId}")]
         public async Task<IActionResult> UpdateTourStatus(int tourId, [FromForm] TourStatusView tourModel)
         {
             try

@@ -9,5 +9,8 @@ namespace Loloca_BE.Business.Services.Interfaces
         Task<BookingTourRequest> AddBookingTourRequestAsync(BookingTourRequestView model);
         Task<IEnumerable<GetBookingTourRequestView>> GetAllBookingTourRequestAsync();
         Task<GetBookingTourRequestView> GetBookingTourRequestByIdAsync(int id);
+
+        Task<IEnumerable<GetBookingTourRequestView>> GetBookingTourRequestByCustomerId(int customerId);
+        Task<IEnumerable<GetBookingTourRequestView>> GetBookingTourRequestByTourGuideId(int tourGuideId);
     }
 }

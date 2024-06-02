@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Loloca_BE.Business.Models.BookingTourGuideRequestModelView;
+using Loloca_BE.Business.Models.BookingTourRequestModelView;
 using Loloca_BE.Business.Models.CitiesView;
 using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
@@ -97,6 +98,36 @@ namespace Loloca_BE.Business.Services.Implements
             catch (Exception ex)
             {
                 throw new Exception("An error occurred while get booking request.", ex);
+            }
+        }
+
+
+
+        public async Task<IEnumerable<GetBookingTourGuideRequestView>> GetBookingTourGuideRequestByCustomerId(int customerId)
+        {
+            try
+            {
+                var requests = await _unitOfWork.BookingTourGuideRepository.GetAsync(
+                    r => r.CustomerId == customerId);
+                return _mapper.Map<IEnumerable<GetBookingTourGuideRequestView>>(requests);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while getting booking tour guide requests by customer ID.", ex);
+            }
+        }
+
+        public async Task<IEnumerable<GetBookingTourGuideRequestView>> GetBookingTourGuideRequestByTourGuideId(int tourGuideId)
+        {
+            try
+            {
+                var requests = await _unitOfWork.BookingTourGuideRepository.GetAsync(
+                    r => r.TourGuideId == tourGuideId);
+                return _mapper.Map<IEnumerable<GetBookingTourGuideRequestView>>(requests);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while getting booking tour guide requests by tour guide ID.", ex);
             }
         }
     }
