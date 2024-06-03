@@ -13,7 +13,7 @@ using System.Text;
 
 namespace Loloca_BE.Business.Services.Implements
 {
-    public class AuthService : IAuthService
+    public class AuthenticateService : IAuthenticateService
     {
         private readonly IUnitOfWork _unitOfWork;
         private IConfiguration _configuration;
@@ -21,7 +21,7 @@ namespace Loloca_BE.Business.Services.Implements
         private readonly IEmailService _emailService;
         private readonly IMemoryCache _memoryCache;
 
-        public AuthService(IConfiguration configuration, IUnitOfWork unitOfWork, IMapper mapper, IEmailService emailService, IMemoryCache memoryCache)
+        public AuthenticateService(IConfiguration configuration, IUnitOfWork unitOfWork, IMapper mapper, IEmailService emailService, IMemoryCache memoryCache)
         {
             _configuration = configuration;
             _unitOfWork = unitOfWork;
@@ -340,7 +340,8 @@ namespace Loloca_BE.Business.Services.Implements
                         PhoneNumber = registerCustomer.PhoneNumber,
                         Gender = registerCustomer.Gender,
                         DateOfBirth = registerCustomer.DateOfBirth,
-                        Balance = 0
+                        Balance = 0,
+                        CanceledBookingCount = 0
                     };
 
                     await _unitOfWork.CustomerRepository.InsertAsync(customer);
@@ -384,7 +385,8 @@ namespace Loloca_BE.Business.Services.Implements
                         Address = registerTourGuide.Address,
                         CityId = registerTourGuide.CityId,
                         Status = 0,
-                        Balance = 0
+                        Balance = 0,
+                        RejectedBookingCount = 0
                     };
 
                     await _unitOfWork.TourGuideRepository.InsertAsync(tourGuide);

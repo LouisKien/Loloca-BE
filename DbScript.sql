@@ -9,7 +9,13 @@ CREATE TABLE Accounts (
     Email NVARCHAR(255) NOT NULL,
     HashedPassword NVARCHAR(255) NOT NULL,
     Role INT NOT NULL,
-    Status INT NOT NULL
+    Status INT NOT NULL,
+	ReleaseDate DateTime,
+	CONSTRAINT CK_ReleaseDate_Status CHECK 
+	(
+		(Status = 3 AND ReleaseDate IS NOT NULL) OR
+		(Status <> 3 AND ReleaseDate IS NULL)
+	)
 );
 GO
 
@@ -71,6 +77,7 @@ CREATE TABLE TourGuides (
     CoverPath NVARCHAR(255),
     CoverUploadDate DATETIME,
     Balance DECIMAL(13,2) CHECK (Balance >= 0),
+	RejectedBookingCount INT,
     CONSTRAINT FK_TourGuides_Accounts FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId),
     CONSTRAINT FK_TourGuides_Cities FOREIGN KEY (CityId) REFERENCES Cities(CityId)
 );
@@ -88,6 +95,7 @@ CREATE TABLE Customers (
     AvatarPath NVARCHAR(255),
     avatarUploadTime DATETIME,
     Balance DECIMAL(13,2) CHECK (Balance >= 0),
+	CanceledBookingCount INT,
     CONSTRAINT FK_Customers_Accounts FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId)
 );
 GO

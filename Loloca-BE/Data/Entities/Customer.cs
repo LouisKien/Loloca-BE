@@ -24,6 +24,7 @@ namespace Loloca_BE.Data.Entities
         public string? AvatarPath { get; set; }
         public DateTime? AvatarUploadTime { get; set; }
         public decimal? Balance { get; set; }
+        public int? CanceledBookingCount { get; set; }
 
         public virtual Account Account { get; set; } = null!;
         public virtual ICollection<BookingTourGuideRequest> BookingTourGuideRequests { get; set; }

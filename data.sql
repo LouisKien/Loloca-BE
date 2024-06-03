@@ -17,14 +17,14 @@ INSERT INTO Cities (Name, Status) VALUES
 ('Hue', 1);
 
 -- Insert into TourGuides
-INSERT INTO TourGuides (AccountId, CityId, FirstName, LastName, Description, DateOfBirth, Gender, PhoneNumber, Address, ZaloLink, FacebookLink, InstagramLink, PricePerDay, Status, AvatarUploadDate, CoverUploadDate) VALUES
-(2, 1, 'John', 'Doe','Im so handsome', '1985-05-15', 1, '123456789', '123 Street', 'zalo1', 'fb1', 'ig1', 100.00, 1,  '2024-01-01', '2024-01-01'),
-(4, 2, 'Jane', 'Smith','My name is Dinh Trung Cho', '1990-07-20', 2, '987654321', '456 Avenue', 'zalo2', 'fb2', 'ig2', 120.00, 1,  '2024-01-01', '2024-01-01')
+INSERT INTO TourGuides (AccountId, CityId, FirstName, LastName, Description, DateOfBirth, Gender, PhoneNumber, Address, ZaloLink, FacebookLink, InstagramLink, PricePerDay, Status, AvatarUploadDate, CoverUploadDate, Balance, RejectedBookingCount) VALUES
+(2, 1, 'John', 'Doe','Im so handsome', '1985-05-15', 1, '123456789', '123 Street', 'zalo1', 'fb1', 'ig1', 100.00, 1,  '2024-01-01', '2024-01-01', 0, 0),
+(4, 2, 'Jane', 'Smith','My name is Dinh Trung Cho', '1990-07-20', 2, '987654321', '456 Avenue', 'zalo2', 'fb2', 'ig2', 120.00, 1,  '2024-01-01', '2024-01-01', 0, 0)
 
 -- Insert into Customers
-INSERT INTO Customers (AccountId, FirstName, Gender, LastName, DateOfBirth, PhoneNumber, AddressCustomer, avatarUploadTime) VALUES
-(3, 'Emily', 2, 'Clark', '1993-04-22', '111222333', '321 Street', '2024-05-23'),
-(5, 'Michael', 1, 'Johnson', '1987-11-13', '444555666', '654 Avenue', '2024-05-23');
+INSERT INTO Customers (AccountId, FirstName, Gender, LastName, DateOfBirth, PhoneNumber, AddressCustomer, avatarUploadTime, Balance, CanceledBookingCount) VALUES
+(3, 'Emily', 2, 'Clark', '1993-04-22', '111222333', '321 Street', '2024-05-23', 0, 0),
+(5, 'Michael', 1, 'Johnson', '1987-11-13', '444555666', '654 Avenue', '2024-05-23', 0 , 0);
 
 -- Insert into Feedbacks
 INSERT INTO Feedbacks (CustomerId, TourGuideId, NumOfStars, Content, TimeFeedback, Status) VALUES

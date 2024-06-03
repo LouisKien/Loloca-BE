@@ -6,7 +6,7 @@ using NuGet.Common;
 
 namespace Loloca_BE.Business.Services.Interfaces
 {
-    public interface IAuthService
+    public interface IAuthenticateService
     {
         Task<AuthResponse> AuthenticateUser(AuthRequest loginInfo);
         Task<bool> AuthenticateUserAdvanced(AuthResponse authResponse);

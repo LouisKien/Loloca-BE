@@ -28,6 +28,7 @@ namespace Loloca_BE.Business.BackgroundServices.Implements
                         {
                             item.Status = 2;
                             await _unitOfWork.PaymentRequestRepository.UpdateAsync(item);
+                            await _unitOfWork.SaveAsync();
                         }
                         else if (item.Type == 2)
                         {
@@ -49,6 +50,7 @@ namespace Loloca_BE.Business.BackgroundServices.Implements
                                             }
                                             tourGuide.Balance += item.Amount;
                                             await _unitOfWork.TourGuideRepository.UpdateAsync(tourGuide);
+                                            await _unitOfWork.SaveAsync();
                                         }
                                     }
                                     else if (account.Role == 3)
@@ -62,18 +64,18 @@ namespace Loloca_BE.Business.BackgroundServices.Implements
                                             }
                                             customer.Balance += item.Amount;
                                             await _unitOfWork.CustomerRepository.UpdateAsync(customer);
+                                            await _unitOfWork.SaveAsync();
                                         }
                                     }
                                     await Transaction.CommitAsync();
                                 } catch (Exception ex)
                                 {
-                                    Transaction.Rollback();
+                                    await Transaction.RollbackAsync();
                                     Console.WriteLine(ex.ToString());
                                 }
                             }
                         }
                     }
-                    
                 }
             }
             catch (Exception ex)

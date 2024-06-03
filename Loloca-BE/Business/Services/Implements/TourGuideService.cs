@@ -14,11 +14,11 @@ namespace Loloca_BE.Business.Services.Implements
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IGoogleDriveService _googleDriveService;
-        private readonly IAuthService _authService;
+        private readonly IAuthenticateService _authService;
         private readonly IMemoryCache _cache;
         private static readonly Random _random = new Random();
 
-        public TourGuideService(IUnitOfWork unitOfWork, IMapper mapper, IGoogleDriveService googleDriveService, IAuthService authService, IMemoryCache cache)
+        public TourGuideService(IUnitOfWork unitOfWork, IMapper mapper, IGoogleDriveService googleDriveService, IAuthenticateService authService, IMemoryCache cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;

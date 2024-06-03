@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Hangfire.Storage.Monitoring;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -50,6 +49,8 @@ namespace Loloca_BE.Data.Entities
                 entity.Property(e => e.Email).HasMaxLength(255);
 
                 entity.Property(e => e.HashedPassword).HasMaxLength(255);
+
+                entity.Property(e => e.ReleaseDate).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<BookingTourGuideRequest>(entity =>
@@ -109,7 +110,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Customer>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A793DDBFE7")
+                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7018368CE")
                     .IsUnique();
 
                 entity.Property(e => e.AddressCustomer).HasMaxLength(255);
@@ -210,7 +211,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<PaymentRequest>(entity =>
             {
                 entity.HasKey(e => e.PaymentId)
-                    .HasName("PK__PaymentR__9B556A38A8C93C21");
+                    .HasName("PK__PaymentR__9B556A38C14D9FFF");
 
                 entity.Property(e => e.Amount).HasColumnType("decimal(13, 2)");
 
@@ -263,7 +264,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<TourGuide>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A79B2CA613")
+                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A723AD336E")
                     .IsUnique();
 
                 entity.Property(e => e.Address).HasMaxLength(255);
@@ -310,7 +311,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourImage>(entity =>
             {
                 entity.HasKey(e => e.ImageId)
-                    .HasName("PK__TourImag__7516F70CA3D3AD02");
+                    .HasName("PK__TourImag__7516F70C1BC8EA9B");
 
                 entity.ToTable("TourImage");
 

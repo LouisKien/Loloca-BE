@@ -16,6 +16,7 @@ namespace Loloca_BE.Data.Entities
         public string HashedPassword { get; set; } = null!;
         public int Role { get; set; }
         public int Status { get; set; }
+        public DateTime? ReleaseDate { get; set; }
 
         public virtual Customer? Customer { get; set; }
         public virtual TourGuide? TourGuide { get; set; }

@@ -16,10 +16,10 @@ namespace Loloca_BE.Business.Services.Implements
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
-        private readonly IAuthService _authService;
+        private readonly IAuthenticateService _authService;
         private readonly IGoogleDriveService _googleDriveService;
 
-        public CustomerService(IUnitOfWork unitOfWork, IConfiguration configuration, IMapper mapper, IAuthService authService, IGoogleDriveService googleDriveService)
+        public CustomerService(IUnitOfWork unitOfWork, IConfiguration configuration, IMapper mapper, IAuthenticateService authService, IGoogleDriveService googleDriveService)
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;

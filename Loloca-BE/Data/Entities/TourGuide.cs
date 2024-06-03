@@ -32,6 +32,7 @@ namespace Loloca_BE.Data.Entities
         public string? CoverPath { get; set; }
         public DateTime? CoverUploadDate { get; set; }
         public decimal? Balance { get; set; }
+        public int? RejectedBookingCount { get; set; }
 
         public virtual Account Account { get; set; } = null!;
         public virtual City City { get; set; } = null!;

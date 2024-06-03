@@ -12,11 +12,11 @@ namespace Loloca_BE.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthenticateController : ControllerBase
     {
-        private readonly IAuthService _authService;
+        private readonly IAuthenticateService _authService;
 
-        public AuthController(IAuthService accountsService)
+        public AuthenticateController(IAuthenticateService accountsService)
         {
             _authService = accountsService;
         }
