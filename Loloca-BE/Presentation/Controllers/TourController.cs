@@ -117,6 +117,10 @@ namespace Loloca_BE.Presentation.Controllers
                     sessionId = HttpContext.Session.GetString("SessionId");
                 }
                 var tours = await _tourService.GetRandomToursAsync(sessionId, page, pageSize);
+                if (!tours.Any())
+                {
+                    return NotFound("No tour exist");
+                }
                 var totalPage = await _tourService.GetTotalPage(pageSize, null, sessionId);
                 if (page > totalPage)
                 {
@@ -148,6 +152,10 @@ namespace Loloca_BE.Presentation.Controllers
                     sessionId = HttpContext.Session.GetString("SessionId");
                 }
                 var tours = await _tourService.GetRandomToursInCityAsync(sessionId, CityId, page, pageSize);
+                if (!tours.Any())
+                {
+                    return NotFound("No tour exist");
+                }
                 var totalPage = await _tourService.GetTotalPage(pageSize, CityId, sessionId);
                 if (page > totalPage)
                 {
@@ -166,12 +174,16 @@ namespace Loloca_BE.Presentation.Controllers
         {
             try
             {
+                var tours = await _tourService.GetToursByTourGuideAsync(TourGuideId, page, pageSize);
+                if (!tours.Any())
+                {
+                    return NotFound("No tour exist");
+                }
                 var totalPage = await _tourService.GetTotalPageByTourGuide(TourGuideId, pageSize);
                 if (page > totalPage)
                 {
                     return NotFound("This page does not exist.");
                 }
-                var tours = await _tourService.GetToursByTourGuideAsync(TourGuideId, page, pageSize);
                 return Ok(new { tours, totalPage });
             }
             catch (Exception ex)

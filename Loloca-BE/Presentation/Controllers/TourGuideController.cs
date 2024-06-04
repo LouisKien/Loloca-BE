@@ -108,13 +108,16 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpGet("/api/v1/tourguide/info/{tourGuideId}")]
         public async Task<IActionResult> GetTourGuideInfo(int tourGuideId)
         {
             try
             {
                 var tourGuideInfo = await _tourGuideService.GetTourGuideInfoAsync(tourGuideId);
+                if(tourGuideInfo.AccountStatus != 1)
+                {
+                    return BadRequest("This tour guide is not available now");
+                }
                 return Ok(tourGuideInfo);
             }
             catch (Exception ex)
@@ -123,7 +126,21 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/tourguide")]
+        [HttpGet("/api/v1/tourguide/private-info/{tourGuideId}")]
+        public async Task<IActionResult> GetTourGuidePrivateInfo(int tourGuideId)
+        {
+            try
+            {
+                var tourGuideInfo = await _tourGuideService.GetPrivateTourGuideInfoAsync(tourGuideId);
+                return Ok(tourGuideInfo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("/api/v1/tourguide/random")]
         public async Task<IActionResult> GetRandomTourGuides([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
@@ -155,6 +172,25 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [HttpGet("/api/v1/tourguide")]
+        public async Task<IActionResult> GetTourGuides([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var tourGuides = await _tourGuideService.GetTourGuidesAsync(page, pageSize);
+                var totalPage = await _tourGuideService.GetTotalPage(pageSize);
+                if (page > totalPage)
+                {
+                    return NotFound("This page does not exist.");
+                }
+                return Ok(new { tourGuides, totalPage });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            }
+        }
+
         private void AddSessionIdToCache(string sessionId)
         {
             var activeSessionIds = _cache.Get<List<string>>("ActiveSessions") ?? new List<string>();
@@ -165,7 +201,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/tourguide/city")]
+        [HttpGet("/api/v1/tourguide/city/random")]
         public async Task<IActionResult> GetRandomTourGuidesInCity([FromQuery] int CityId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try

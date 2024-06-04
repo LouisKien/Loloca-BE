@@ -13,5 +13,6 @@
         public byte[]? Avatar { get; set; }
         public DateTime? AvatarUploadTime { get; set; }
         public int? AccountStatus { get; set; }
+        public decimal? Balance { get; set; }
     }
 }

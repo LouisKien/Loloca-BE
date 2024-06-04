@@ -18,13 +18,13 @@ INSERT INTO Cities (Name, Status) VALUES
 
 -- Insert into TourGuides
 INSERT INTO TourGuides (AccountId, CityId, FirstName, LastName, Description, DateOfBirth, Gender, PhoneNumber, Address, ZaloLink, FacebookLink, InstagramLink, PricePerDay, Status, AvatarUploadDate, CoverUploadDate, Balance, RejectedBookingCount) VALUES
-(2, 1, 'John', 'Doe','Im so handsome', '1985-05-15', 1, '123456789', '123 Street', 'zalo1', 'fb1', 'ig1', 100.00, 1,  '2024-01-01', '2024-01-01', 0, 0),
-(4, 2, 'Jane', 'Smith','My name is Dinh Trung Cho', '1990-07-20', 2, '987654321', '456 Avenue', 'zalo2', 'fb2', 'ig2', 120.00, 1,  '2024-01-01', '2024-01-01', 0, 0)
+(2, 1, 'John', 'Doe','Im so handsome', '1985-05-15', 1, '123456789', '123 Street', 'zalo1', 'fb1', 'ig1', 100.00, 1,  NULL, NULL, 0, 0),
+(4, 2, 'Jane', 'Smith','My name is Dinh Trung Cho', '1990-07-20', 2, '987654321', '456 Avenue', 'zalo2', 'fb2', 'ig2', 120.00, 1,  NULL, NULL, 0, 0)
 
 -- Insert into Customers
 INSERT INTO Customers (AccountId, FirstName, Gender, LastName, DateOfBirth, PhoneNumber, AddressCustomer, avatarUploadTime, Balance, CanceledBookingCount) VALUES
-(3, 'Emily', 2, 'Clark', '1993-04-22', '111222333', '321 Street', '2024-05-23', 0, 0),
-(5, 'Michael', 1, 'Johnson', '1987-11-13', '444555666', '654 Avenue', '2024-05-23', 0 , 0);
+(3, 'Emily', 2, 'Clark', '1993-04-22', '111222333', '321 Street', NULL, 0, 0),
+(5, 'Michael', 1, 'Johnson', '1987-11-13', '444555666', '654 Avenue', NULL, 0 , 0);
 
 -- Insert into Feedbacks
 INSERT INTO Feedbacks (CustomerId, TourGuideId, NumOfStars, Content, TimeFeedback, Status) VALUES
@@ -34,14 +34,6 @@ INSERT INTO Feedbacks (CustomerId, TourGuideId, NumOfStars, Content, TimeFeedbac
 (2, 1, 5, 'Highly recommend!', '2024-05-23', 1),
 (1, 2, 4, 'Enjoyed the tour', '2024-05-24', 1);
 
--- Insert into FeedbackImages
-INSERT INTO FeedbackImages (FeedbackId, UploadDate) VALUES
-(1, '2024-05-20'),
-(2, '2024-05-21'),
-(3, '2024-05-22'),
-(4, '2024-05-23'),
-(5, '2024-05-24');
-
 -- Insert into Tours
 INSERT INTO Tours (CityId, TourGuideId, Name, Description, Duration, Status) VALUES
 (1, 1, 'Hanoi City Tour', 'Explore the main attractions of Hanoi', 4, 1),
@@ -49,14 +41,6 @@ INSERT INTO Tours (CityId, TourGuideId, Name, Description, Duration, Status) VAL
 (3, 1, 'Da Nang Highlights', 'Discover the beauty of Da Nang', 5, 1),
 (4, 2, 'Nha Trang Beach Day', 'Enjoy a relaxing day at the beach', 8, 1),
 (5, 1, 'Hue Cultural Trip', 'Dive into the culture and history of Hue', 3, 1);
-
--- Insert into TourImage
-INSERT INTO TourImage (TourId, Caption, UploadDate) VALUES
-(1, 'Beautiful Hanoi', '2024-05-01'),
-(2, 'Exciting Ho Chi Minh', '2024-05-02'),
-(3, 'Stunning Da Nang', '2024-05-03'),
-(4, 'Relaxing Nha Trang', '2024-05-04'),
-(5, 'Historic Hue', '2024-05-05');
 
 -- Insert into BookingTourGuideRequests
 INSERT INTO BookingTourGuideRequests (TourGuideId, CustomerId, RequestDate, RequestTimeOut, StartDate, EndDate, TotalPrice, Note, Status) VALUES

@@ -10,5 +10,6 @@ namespace Loloca_BE.Business.Services.Interfaces
         Task<List<GetCustomersView>> GetCustomers(int page, int pageSize);
         Task<int> GetTotalPage(int pageSize);
         Task<GetCustomersView> GetCustomerById(int customerId);
+        Task<GetCustomersView> GetCustomerByIdPrivate(int customerId);
     }
 }
