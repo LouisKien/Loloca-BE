@@ -26,12 +26,48 @@ namespace Loloca_BE.Business.Services.Implements
             {
                 try
                 {
+                    // Kiểm tra rằng StartDate và EndDate không bằng nhau
+                    if (model.StartDate == model.EndDate)
+                    {
+                        throw new Exception("Ngày bắt đầu và ngày kết thúc không được trùng nhau.");
+                    }
+
+                    // Lấy tất cả các yêu cầu đặt tour đã tồn tại cho tour cụ thể này
+                    var existingBookings = await _unitOfWork.BookingTourGuideRepository.GetAllAsync(
+                        b => b.TourGuideId == model.TourGuideId && b.Status == 1
+                    );
+
+                    // Kiểm tra xem ngày bắt đầu và ngày kết thúc của yêu cầu mới có trùng lặp với bất kỳ yêu cầu nào đã tồn tại hay không
+                    foreach (var booking in existingBookings)
+                    {
+                        if ((model.StartDate >= booking.StartDate && model.StartDate < booking.EndDate) ||
+                            (model.EndDate > booking.StartDate && model.EndDate <= booking.EndDate) ||
+                            (model.StartDate <= booking.StartDate && model.EndDate >= booking.EndDate))
+                        {
+                            throw new Exception($"Yêu cầu mới không được trùng lặp với bất kỳ yêu cầu nào đã tồn tại. Yêu cầu đã tồn tại: {booking.StartDate.ToString("dd/MM/yyyy")} - {booking.EndDate.ToString("dd/MM/yyyy")}");
+                        }
+                    }
+
+                    // Tạo đối tượng yêu cầu đặt tour mới
+                    var tourGuides = await _unitOfWork.TourGuideRepository.GetByIDAsync(model.TourGuideId);
+
                     var bookingRequest = _mapper.Map<BookingTourGuideRequest>(model);
+                    TimeSpan numOfDays = bookingRequest.EndDate - bookingRequest.StartDate;
                     bookingRequest.RequestDate = DateTime.Now;
-                    bookingRequest.RequestTimeOut = bookingRequest.RequestDate.AddDays(7); // Cộng thêm 20 phút từ RequestDate
+                    bookingRequest.TotalPrice = (decimal) numOfDays.Days * (decimal) tourGuides.PricePerDay;
+                    bookingRequest.RequestTimeOut = bookingRequest.RequestDate.AddDays(7); // Thêm 20 phút vào RequestDate
                     bookingRequest.Status = 1;
+
                     await _unitOfWork.BookingTourGuideRepository.InsertAsync(bookingRequest);
                     await _unitOfWork.SaveAsync();
+
+                    // Lấy thông tin Tour cùng với TourGuide
+
+
+                    if (tourGuides == null)
+                    {
+                        throw new Exception("Không tìm thấy thông tin TourGuide.");
+                    }
 
                     // Tạo thông báo cho khách hàng
                     var notificationToCustomer = new Notification

@@ -45,9 +45,17 @@ namespace Loloca_BE.Business.Services.Implements
                         }
                     }
 
+
+
                     // Tạo đối tượng yêu cầu đặt tour mới
+                    var tourss = await _unitOfWork.TourRepository.GetByIDAsync( model.TourId );
+                    if(tourss != null)
+                    {
+                    }
+
                     var bookingRequest = _mapper.Map<BookingTourRequest>(model);
                     bookingRequest.RequestDate = DateTime.Now;
+                    bookingRequest.TotalPrice = (decimal) tourss.Price;
                     bookingRequest.RequestTimeOut = bookingRequest.RequestDate.AddDays(7); // Thêm 20 phút vào RequestDate
                     bookingRequest.Status = 1;
 

@@ -1,4 +1,5 @@
 ﻿using Loloca_BE.Business.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Loloca_BE.Presentation.Controllers
@@ -14,6 +15,7 @@ namespace Loloca_BE.Presentation.Controllers
             _adminService = adminService;
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPost("lock-account")]
         public async Task<IActionResult> LockAccount(int accountId)
         {

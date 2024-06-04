@@ -7,15 +7,13 @@ namespace Loloca_BE.Data.Entities
 {
     public partial class LolocaDbContext : DbContext
     {
-        private readonly IConfiguration _configuration;
         public LolocaDbContext()
         {
         }
 
-        public LolocaDbContext(DbContextOptions<LolocaDbContext> options, IConfiguration configuration)
+        public LolocaDbContext(DbContextOptions<LolocaDbContext> options)
             : base(options)
         {
-            _configuration = configuration;
         }
 
         public virtual DbSet<Account> Accounts { get; set; } = null!;
@@ -37,8 +35,8 @@ namespace Loloca_BE.Data.Entities
         {
             if (!optionsBuilder.IsConfigured)
             {
-                string connectionString = _configuration.GetConnectionString("DefaultConnection");
-                optionsBuilder.UseSqlServer(connectionString);
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Server=(local);Database=LolocaDb;Uid=sa;Pwd=12345;");
             }
         }
 
@@ -110,7 +108,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Customer>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7018368CE")
+                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7A3E444E2")
                     .IsUnique();
 
                 entity.Property(e => e.AddressCustomer).HasMaxLength(255);
@@ -211,7 +209,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<PaymentRequest>(entity =>
             {
                 entity.HasKey(e => e.PaymentId)
-                    .HasName("PK__PaymentR__9B556A38C14D9FFF");
+                    .HasName("PK__PaymentR__9B556A38F95F20A0");
 
                 entity.Property(e => e.Amount).HasColumnType("decimal(13, 2)");
 
@@ -249,6 +247,8 @@ namespace Loloca_BE.Data.Entities
             {
                 entity.Property(e => e.Name).HasMaxLength(255);
 
+                entity.Property(e => e.Price).HasColumnType("decimal(13, 2)");
+
                 entity.HasOne(d => d.City)
                     .WithMany(p => p.Tours)
                     .HasForeignKey(d => d.CityId)
@@ -264,7 +264,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<TourGuide>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A723AD336E")
+                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A796B16E8F")
                     .IsUnique();
 
                 entity.Property(e => e.Address).HasMaxLength(255);
@@ -311,7 +311,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourImage>(entity =>
             {
                 entity.HasKey(e => e.ImageId)
-                    .HasName("PK__TourImag__7516F70C1BC8EA9B");
+                    .HasName("PK__TourImag__7516F70C3CEE2DB4");
 
                 entity.ToTable("TourImage");
 

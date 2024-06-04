@@ -25,6 +25,10 @@ namespace Loloca_BE.Presentation.Controllers
                 return BadRequest("Model is null.");
             }
 
+            if(model.StartDate < DateTime.Now || model.EndDate < DateTime.Now || model.StartDate > model.EndDate)
+            {
+                return BadRequest("Cút");
+            }
             try
             {
                 var result = await _bookingService.AddBookingTourGuideRequestAsync(model);
