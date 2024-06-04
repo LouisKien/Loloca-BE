@@ -35,10 +35,62 @@ namespace Loloca_BE.Business.Services.Implements
                     // Lấy tất cả các yêu cầu đặt tour đã tồn tại cho tour cụ thể này
                     var existingBookings = await _unitOfWork.BookingTourGuideRepository.GetAllAsync(
                         b => b.TourGuideId == model.TourGuideId && b.Status == 1
-                    );
+                  );
+
+                    var existingBookings1 = await _unitOfWork.BookingTourGuideRepository.GetAllAsync(
+                      b => b.CustomerId == model.CustomerId && b.Status <= 1
+                  );
+
+                    var existingBookings2 = await _unitOfWork.BookingTourRequestRepository.GetAllAsync(
+                   b => b.CustomerId == model.CustomerId && b.Status <= 1
+                  );
+
+
+                    bool check =  false;
+                    var tour = await _unitOfWork.TourRepository.GetAllAsync(
+                   filter: t=> t.TourGuideId == model.TourGuideId     
+                        );
+                    foreach ( var item in tour)
+                    {
+                        var bookingTour = await _unitOfWork.BookingTourRequestRepository.GetAllAsync(filter: t =>
+                        ((model.StartDate >= t.StartDate && model.StartDate < t.EndDate) ||
+                            (model.EndDate > t.StartDate && model.EndDate <= t.EndDate) ||
+                            (model.StartDate <= t.StartDate && model.EndDate >= t.EndDate)) && t.Status <= 1 && t.TourId == item.TourId);
+
+                        if (bookingTour.Any())
+                        {
+                            check = true;
+                        }
+                        break;
+
+                    }
+                    if (check)
+                    {
+                        throw new Exception("Yêu cầu không được trùng lặp");
+                    }
 
                     // Kiểm tra xem ngày bắt đầu và ngày kết thúc của yêu cầu mới có trùng lặp với bất kỳ yêu cầu nào đã tồn tại hay không
                     foreach (var booking in existingBookings)
+                    {
+                        if ((model.StartDate >= booking.StartDate && model.StartDate < booking.EndDate) ||
+                            (model.EndDate > booking.StartDate && model.EndDate <= booking.EndDate) ||
+                            (model.StartDate <= booking.StartDate && model.EndDate >= booking.EndDate))
+                        {
+                            throw new Exception($"Yêu cầu mới không được trùng lặp với bất kỳ yêu cầu nào đã tồn tại. Yêu cầu đã tồn tại: {booking.StartDate.ToString("dd/MM/yyyy")} - {booking.EndDate.ToString("dd/MM/yyyy")}");
+                        }
+                    }
+
+                    foreach (var booking in existingBookings1)
+                    {
+                        if ((model.StartDate >= booking.StartDate && model.StartDate < booking.EndDate) ||
+                            (model.EndDate > booking.StartDate && model.EndDate <= booking.EndDate) ||
+                            (model.StartDate <= booking.StartDate && model.EndDate >= booking.EndDate))
+                        {
+                            throw new Exception($"Yêu cầu mới không được trùng lặp với bất kỳ yêu cầu nào đã tồn tại. Yêu cầu đã tồn tại: {booking.StartDate.ToString("dd/MM/yyyy")} - {booking.EndDate.ToString("dd/MM/yyyy")}");
+                        }
+                    }
+
+                    foreach (var booking in existingBookings2)
                     {
                         if ((model.StartDate >= booking.StartDate && model.StartDate < booking.EndDate) ||
                             (model.EndDate > booking.StartDate && model.EndDate <= booking.EndDate) ||

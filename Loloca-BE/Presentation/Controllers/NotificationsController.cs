@@ -59,7 +59,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize("RequireAllRoles")]
-        [HttpGet("{id}")]
+        [HttpGet("{id}/notification")]
         public async Task<IActionResult> GetNotificationById(int id)
         {
             try

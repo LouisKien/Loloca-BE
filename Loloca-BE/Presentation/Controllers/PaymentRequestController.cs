@@ -24,7 +24,7 @@ namespace Loloca_BE.Presentation.Controllers
 
         // ----------------------------------------- DEPOSIT --------------------------------------------
         [Authorize(Policy = "RequireTourGuideOrCustomerRole")]
-        [HttpPost("deposit")]
+        [HttpPost("create-deposit")]
         public async Task<ActionResult> DepositRequest([FromBody] DepositRequestView depositView)
         {
             try
@@ -68,7 +68,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireAdminRole")]
-        [HttpGet("deposit")]
+        [HttpGet("get-all-deposit")]
         public async Task<ActionResult> GetAllDepositRequest([FromQuery] int? status)
         {
             try
@@ -173,7 +173,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireAdminRole")]
-        [HttpPut("deposit")]
+        [HttpPut("update-deposit")]
         public async Task<ActionResult> UpdateStatusDeposit([FromQuery] int paymentRequestId, [FromQuery] int status)
         {
             try
@@ -281,7 +281,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireAdminRole")]
-        [HttpGet("withdrawal")]
+        [HttpGet("create-withdrawal")]
         public async Task<ActionResult> GetAllWithdrawalRequest([FromQuery] int? status)
         {
             try

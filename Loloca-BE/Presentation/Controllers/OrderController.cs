@@ -21,7 +21,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireAdminRole")]
-        [HttpGet]
+        [HttpGet("get-all-order")]
         public async Task<ActionResult<IEnumerable<OrderModelView>>> GetAllOrdersAsync()
         {
             try
@@ -141,7 +141,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireCustomerRole")]
-        [HttpPut("{id}/status/{status}")]
+        [HttpPut("update-status/{id}/{status}")]
         public async Task<ActionResult<OrderModelView>> UpdateOrderStatusAsync(int id, int status)
         {
             try

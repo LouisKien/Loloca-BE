@@ -22,7 +22,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireCustomerRole")]
-        [HttpPost]
+        [HttpPost("create-booking-tour-request")]
         public async Task<IActionResult> CreateBookingTourRequest([FromBody] BookingTourRequestView model)
         {
             try
@@ -39,8 +39,13 @@ namespace Loloca_BE.Presentation.Controllers
                 var checkAuthorize = await _authorizeService.CheckAuthorizeByCustomerId(model.CustomerId, int.Parse(accountId));
                 if(checkAuthorize.isUser)
                 {
+
+                    if(model.StartDate < DateTime.Now || model.EndDate < DateTime.Now || model.StartDate > model.EndDate)
+                    {
+                        return BadRequest();
+                    }
                     var result = await _bookingTourRequestService.AddBookingTourRequestAsync(model);
-                    return Ok(result);
+                    return Ok("Tạo thành công");
                 } else
                 {
                     return Forbid();
@@ -54,7 +59,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireAdminRole")]
-        [HttpGet]
+        [HttpGet("get-all-booking-tour-reuqest")]
         public async Task<IActionResult> GetAllBookingTourRequest()
         {
             try

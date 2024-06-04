@@ -418,7 +418,7 @@ namespace Loloca_BE.Business.Services.Implements
                     }
 
                     // Cập nhật trạng thái của BookingTourGuideRequest thành đã chấp nhận
-                    bookingRequest.Status = 2;
+                    bookingRequest.Status = 1;
                     await _unitOfWork.BookingTourGuideRepository.UpdateAsync(bookingRequest);
                     await _unitOfWork.SaveAsync();
 
@@ -465,7 +465,7 @@ namespace Loloca_BE.Business.Services.Implements
                     }
 
                     // Cập nhật trạng thái của BookingTourGuideRequest thành đã từ chối
-                    bookingRequest.Status = 3;
+                    bookingRequest.Status = 2;
                     await _unitOfWork.BookingTourGuideRepository.UpdateAsync(bookingRequest);
                     await _unitOfWork.SaveAsync();
 
@@ -512,7 +512,7 @@ namespace Loloca_BE.Business.Services.Implements
                     }
 
                     // Cập nhật trạng thái của BookingTourRequest thành đã chấp nhận
-                    bookingRequest.Status = 2;
+                    bookingRequest.Status = 1;
                     await _unitOfWork.BookingTourRequestRepository.UpdateAsync(bookingRequest);
                     await _unitOfWork.SaveAsync();
 
@@ -559,7 +559,7 @@ namespace Loloca_BE.Business.Services.Implements
                     }
 
                     // Cập nhật trạng thái của BookingTourGuideRequest thành đã từ chối
-                    bookingRequest.Status = 3;
+                    bookingRequest.Status = 2;
                     await _unitOfWork.BookingTourRequestRepository.UpdateAsync(bookingRequest);
                     await _unitOfWork.SaveAsync();
 

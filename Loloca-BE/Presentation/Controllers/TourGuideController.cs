@@ -212,7 +212,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("random")]
+        [HttpGet("get-random-tourguide")]
         public async Task<IActionResult> GetRandomTourGuides([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
@@ -245,7 +245,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("")]
+        [HttpGet("get-all-tourguides")]
         public async Task<IActionResult> GetAllTourGuides([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
@@ -275,7 +275,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("random")]
+        [HttpGet("get-random-tourguide-in-city")]
         public async Task<IActionResult> GetRandomTourGuidesInCity([FromQuery] int CityId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try

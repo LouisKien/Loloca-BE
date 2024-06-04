@@ -145,7 +145,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("")]
+        [HttpGet("random")]
         public async Task<IActionResult> GetRandomTours([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try

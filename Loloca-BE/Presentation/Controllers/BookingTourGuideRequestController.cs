@@ -21,7 +21,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireCustomerRole")]
-        [HttpPost]
+        [HttpPost("create-booking-tourguide")]
         public async Task<IActionResult> CreateBookingTourGuideRequest([FromBody] BookingTourGuideRequestView model)
         {
             try
@@ -43,7 +43,7 @@ namespace Loloca_BE.Presentation.Controllers
                         return BadRequest("Cút");
                     }
                     var result = await _bookingService.AddBookingTourGuideRequestAsync(model);
-                    return Ok(result);
+                    return Ok("Tạo thành công");
                 } else
                 {
                     return Forbid();
@@ -56,7 +56,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireAdminRole")]
-        [HttpGet]
+        [HttpGet("get-all-booking-tourguide")]
         public async Task<IActionResult> GetAllBookingTourGuideRequest()
         {
             try
