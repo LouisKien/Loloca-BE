@@ -1,5 +1,6 @@
 ﻿using Loloca_BE.Business.Models;
 using Loloca_BE.Business.Models.TourGuideView;
+using Loloca_BE.Business.Services.Implements;
 using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -14,28 +15,43 @@ namespace Loloca_BE.Presentation.Controllers
     public class TourGuideController : ControllerBase
     {
         private readonly ITourGuideService _tourGuideService;
+        private readonly IAuthorizeService _authorizeService;
         private readonly IMemoryCache _cache;
 
-        public TourGuideController(ITourGuideService tourGuideService, IMemoryCache cache)
+        public TourGuideController(ITourGuideService tourGuideService, IMemoryCache cache, IAuthorizeService authorizeService)
         {
             _tourGuideService = tourGuideService;
             _cache = cache;
+            _authorizeService = authorizeService;
         }
 
+        [Authorize(Policy = "RequireTourGuideRole")]
         [AllowAnonymous]
-        [HttpPost("/api/v1/tourguide/update-avatar")]
+        [HttpPost("update-avatar")]
         public async Task<IActionResult> UpdateAvatar([FromForm] IFormFile file, [FromForm] int TourGuideId)
         {
             try
             {
-                if (file == null)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return BadRequest("No file provided.");
+                    return Forbid();
                 }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByTourGuideId(TourGuideId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    if (file == null)
+                    {
+                        return BadRequest("No file provided.");
+                    }
 
-                await _tourGuideService.UploadAvatarAsync(file, TourGuideId);
+                    await _tourGuideService.UploadAvatarAsync(file, TourGuideId);
 
-                return Ok("Avatar uploaded successfully!");
+                    return Ok("Avatar uploaded successfully!");
+                } else
+                {
+                    return Forbid();
+                } 
             }
             catch (InvalidDataException ex)
             {
@@ -47,20 +63,33 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [AllowAnonymous]
-        [HttpPost("/api/v1/tourguide/update-cover")]
+        [Authorize(Policy = "RequireTourGuideRole")]
+        [HttpPost("update-cover")]
         public async Task<IActionResult> UpdateCover([FromForm] IFormFile file, [FromForm] int TourGuideId)
         {
             try
             {
-                if (file == null)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return BadRequest("No file provided.");
+                    return Forbid();
                 }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByTourGuideId(TourGuideId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    if (file == null)
+                    {
+                        return BadRequest("No file provided.");
+                    }
 
-                await _tourGuideService.UploadCoverAsync(file, TourGuideId);
+                    await _tourGuideService.UploadCoverAsync(file, TourGuideId);
 
-                return Ok("Cover uploaded successfully!");
+                    return Ok("Cover uploaded successfully!");
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (InvalidDataException ex)
             {
@@ -72,13 +101,27 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPost("update-info")]
         public async Task<IActionResult> UpdateTourGuideInfo(int tourGuideId, [FromBody] UpdateProfileTourGuide model)
         {
             try
             {
-                await _tourGuideService.UpdateTourGuideInfo(tourGuideId, model);
-                return Ok("Cập nhật thông tin thành công");
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
+                {
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByTourGuideId(tourGuideId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    await _tourGuideService.UpdateTourGuideInfo(tourGuideId, model);
+                    return Ok("Cập nhật thông tin thành công");
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -86,20 +129,33 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-
+        [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword(int accountId, [FromBody] ChangePasswordTourGuide model)
         {
             try
             {
-                var success = await _tourGuideService.ChangeTourGuidePassword(accountId, model);
-                if (success)
+                var accountIdJwt = User.FindFirst("AccountId")?.Value;
+                if (accountIdJwt == null)
                 {
-                    return Ok("Đổi mật khẩu thành công");
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByAccountId(accountId, int.Parse(accountIdJwt));
+                if (checkAuthorize.isUser)
+                {
+                    var success = await _tourGuideService.ChangeTourGuidePassword(accountId, model);
+                    if (success)
+                    {
+                        return Ok("Đổi mật khẩu thành công");
+                    }
+                    else
+                    {
+                        return BadRequest("Đổi mật khẩu không thành công");
+                    }
                 }
                 else
                 {
-                    return BadRequest("Đổi mật khẩu không thành công");
+                    return Forbid();
                 }
             }
             catch (Exception ex)
@@ -108,7 +164,8 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/tourguide/info/{tourGuideId}")]
+        [AllowAnonymous]
+        [HttpGet("info/{tourGuideId}")]
         public async Task<IActionResult> GetTourGuideInfo(int tourGuideId)
         {
             try
@@ -126,13 +183,27 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/tourguide/private-info/{tourGuideId}")]
+        [Authorize(Policy = "RequireTourGuideRole")]
+        [HttpGet("private-info/{tourGuideId}")]
         public async Task<IActionResult> GetTourGuidePrivateInfo(int tourGuideId)
         {
             try
             {
-                var tourGuideInfo = await _tourGuideService.GetPrivateTourGuideInfoAsync(tourGuideId);
-                return Ok(tourGuideInfo);
+                var accountIdJwt = User.FindFirst("AccountId")?.Value;
+                if (accountIdJwt == null)
+                {
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByTourGuideId(tourGuideId, int.Parse(accountIdJwt));
+                if (checkAuthorize.isUser)
+                {
+                    var tourGuideInfo = await _tourGuideService.GetPrivateTourGuideInfoAsync(tourGuideId);
+                    return Ok(tourGuideInfo);
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -140,7 +211,8 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/tourguide/random")]
+        [AllowAnonymous]
+        [HttpGet("random")]
         public async Task<IActionResult> GetRandomTourGuides([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
@@ -172,8 +244,9 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/tourguide")]
-        public async Task<IActionResult> GetTourGuides([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        [AllowAnonymous]
+        [HttpGet("")]
+        public async Task<IActionResult> GetAllTourGuides([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
@@ -201,7 +274,8 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/tourguide/city/random")]
+        [AllowAnonymous]
+        [HttpGet("random")]
         public async Task<IActionResult> GetRandomTourGuidesInCity([FromQuery] int CityId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
@@ -231,19 +305,32 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPost("accept-booking-tourguide-request")]
         public async Task<IActionResult> AcceptBookingRequest(int bookingRequestId)
         {
             try
             {
-                var result = await _tourGuideService.AcceptRequestBookingTourGuideRequest(bookingRequestId);
-                if (result)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return Ok("Booking request accepted successfully.");
+                    return Forbid();
                 }
-                else
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByBookingTourGuideRequestId(bookingRequestId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
                 {
-                    return BadRequest("Failed to accept booking request.");
+                    var result = await _tourGuideService.AcceptRequestBookingTourGuideRequest(bookingRequestId);
+                    if (result)
+                    {
+                        return Ok("Booking request accepted successfully.");
+                    }
+                    else
+                    {
+                        return BadRequest("Failed to accept booking request.");
+                    }
+                } else
+                {
+                    return Forbid();
                 }
             }
             catch (Exception ex)
@@ -252,19 +339,33 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPost("reject-booking-tourguide-request")]
         public async Task<IActionResult> RejectBookingRequest(int bookingRequestId)
         {
             try
             {
-                var result = await _tourGuideService.RejectRequestBookingTourGuideRequest(bookingRequestId);
-                if (result)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return Ok("Booking request rejected successfully.");
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByBookingTourGuideRequestId(bookingRequestId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    var result = await _tourGuideService.RejectRequestBookingTourGuideRequest(bookingRequestId);
+                    if (result)
+                    {
+                        return Ok("Booking request rejected successfully.");
+                    }
+                    else
+                    {
+                        return BadRequest("Failed to rejected booking request.");
+                    }
                 }
                 else
                 {
-                    return BadRequest("Failed to rejected booking request.");
+                    return Forbid();
                 }
             }
             catch (Exception ex)
@@ -273,23 +374,33 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-
-
-
-
+        [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPost("accept-booking-tour-request")]
         public async Task<IActionResult> AcceptBookingTourRequest(int bookingRequestId)
         {
             try
             {
-                var result = await _tourGuideService.AcceptRequestBookingTourRequest(bookingRequestId);
-                if (result)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return Ok("Booking request accepted successfully.");
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByBookingTourRequestId(bookingRequestId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    var result = await _tourGuideService.AcceptRequestBookingTourRequest(bookingRequestId);
+                    if (result)
+                    {
+                        return Ok("Booking request accepted successfully.");
+                    }
+                    else
+                    {
+                        return BadRequest("Failed to accept booking request.");
+                    }
                 }
                 else
                 {
-                    return BadRequest("Failed to accept booking request.");
+                    return Forbid();
                 }
             }
             catch (Exception ex)
@@ -298,19 +409,33 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPost("reject-booking-tour-request")]
         public async Task<IActionResult> RejectBookingTourRequest(int bookingRequestId)
         {
             try
             {
-                var result = await _tourGuideService.RejectRequestBookingTourRequest(bookingRequestId);
-                if (result)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return Ok("Booking request rejected successfully.");
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByBookingTourRequestId(bookingRequestId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    var result = await _tourGuideService.RejectRequestBookingTourRequest(bookingRequestId);
+                    if (result)
+                    {
+                        return Ok("Booking request rejected successfully.");
+                    }
+                    else
+                    {
+                        return BadRequest("Failed to rejected booking request.");
+                    }
                 }
                 else
                 {
-                    return BadRequest("Failed to rejected booking request.");
+                    return Forbid();
                 }
             }
             catch (Exception ex)

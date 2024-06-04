@@ -2,6 +2,8 @@
 using Loloca_BE.Business.Models.PaymentRequestView;
 using Loloca_BE.Business.Services.Implements;
 using Loloca_BE.Business.Services.Interfaces;
+using Loloca_BE.Data.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,36 +14,52 @@ namespace Loloca_BE.Presentation.Controllers
     public class PaymentRequestController : ControllerBase
     {
         private readonly IPaymentRequestService _paymentRequestService;
+        private readonly IAuthorizeService _authorizeService;
 
-        public PaymentRequestController(IPaymentRequestService paymentRequestService)
+        public PaymentRequestController(IPaymentRequestService paymentRequestService, IAuthorizeService authorizeService)
         {
             _paymentRequestService = paymentRequestService;
+            _authorizeService = authorizeService;
         }
 
         // ----------------------------------------- DEPOSIT --------------------------------------------
-        [HttpPost("/api/v1/payment-request/deposit")]
+        [Authorize(Policy = "RequireTourGuideOrCustomerRole")]
+        [HttpPost("deposit")]
         public async Task<ActionResult> DepositRequest([FromBody] DepositRequestView depositView)
         {
             try
             {
-                if (depositView == null)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return BadRequest("Request cannot be null");
+                    return Forbid();
                 }
-                if (depositView.TransactionCode == null)
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByAccountId(depositView.AccountId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
                 {
-                    return BadRequest("Transaction code cannot be null");
+                    if (depositView == null)
+                    {
+                        return BadRequest("Request cannot be null");
+                    }
+                    if (depositView.TransactionCode == null)
+                    {
+                        return BadRequest("Transaction code cannot be null");
+                    }
+                    if (depositView.Amount < 0)
+                    {
+                        return BadRequest("Invalid amount of money");
+                    }
+                    if (depositView.AccountId == 0)
+                    {
+                        return BadRequest("Account Id cannot be null");
+                    }
+                    await _paymentRequestService.SendDepositRequest(depositView);
+                    return Ok("Your request has been sent, our team will review it within 7 working days");
                 }
-                if (depositView.Amount < 0)
+                else
                 {
-                    return BadRequest("Invalid amount of money");
+                    return Forbid();
                 }
-                if (depositView.AccountId == 0)
-                {
-                    return BadRequest("Account Id cannot be null");
-                }
-                await _paymentRequestService.SendDepositRequest(depositView);
-                return Ok("Your request has been sent, our team will review it within 7 working days");
             }
             catch (Exception ex)
             {
@@ -49,7 +67,8 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/payment-request/deposit")]
+        [Authorize(Policy = "RequireAdminRole")]
+        [HttpGet("deposit")]
         public async Task<ActionResult> GetAllDepositRequest([FromQuery] int? status)
         {
             try
@@ -63,19 +82,33 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/payment-request/deposit/{PaymentRequestId}")]
-        public async Task<ActionResult> GetAllDepositRequest(int PaymentRequestId)
+        [Authorize(Policy = "RequireAllRoles")]
+        [HttpGet("deposit/{PaymentRequestId}")]
+        public async Task<ActionResult> GetDepositRequest(int PaymentRequestId)
         {
             try
             {
-                var deposit = await _paymentRequestService.GetDepositById(PaymentRequestId);
-                if (deposit == null)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return NotFound($"Does not find any request with id {PaymentRequestId}");
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByPaymentRequestId(PaymentRequestId, int.Parse(accountId));
+                if (checkAuthorize.isUser || checkAuthorize.isAdmin)
+                {
+                    var deposit = await _paymentRequestService.GetDepositById(PaymentRequestId);
+                    if (deposit == null)
+                    {
+                        return NotFound($"Does not find any request with id {PaymentRequestId}");
+                    }
+                    else
+                    {
+                        return Ok(deposit);
+                    }
                 }
                 else
                 {
-                    return Ok(deposit);
+                    return Forbid();
                 }
             }
             catch (Exception ex)
@@ -84,13 +117,27 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/payment-request/deposit/customer")]
+        [Authorize(Policy = "RequireAdminOrCustomerRole")]
+        [HttpGet("deposit/customer")]
         public async Task<ActionResult> GetDepositByCustomerId([FromQuery] int customerId, [FromQuery] int? status)
         {
             try
             {
-                var deposits = await _paymentRequestService.GetDepositByCustomerId(customerId, status);
-                return Ok(deposits);
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
+                {
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByCustomerId(customerId, int.Parse(accountId));
+                if (checkAuthorize.isUser || checkAuthorize.isAdmin)
+                {
+                    var deposits = await _paymentRequestService.GetDepositByCustomerId(customerId, status);
+                    return Ok(deposits);
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -98,13 +145,26 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/payment-request/deposit/tourguide")]
+        [Authorize(Policy = "RequireAdminOrTourGuideRole")]
+        [HttpGet("deposit/tourguide")]
         public async Task<ActionResult> GetDepositByTourGuideId([FromQuery] int tourGuideId, [FromQuery] int? status)
         {
             try
             {
-                var deposits = await _paymentRequestService.GetDepositByTourGuideId(tourGuideId, status);
-                return Ok(deposits);
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
+                {
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByTourGuideId(tourGuideId, int.Parse(accountId));
+                if (checkAuthorize.isUser || checkAuthorize.isAdmin)
+                {
+                    var deposits = await _paymentRequestService.GetDepositByTourGuideId(tourGuideId, status);
+                    return Ok(deposits);
+                } else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -112,7 +172,8 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpPut("/api/v1/payment-request/deposit")]
+        [Authorize(Policy = "RequireAdminRole")]
+        [HttpPut("deposit")]
         public async Task<ActionResult> UpdateStatusDeposit([FromQuery] int paymentRequestId, [FromQuery] int status)
         {
             try
@@ -158,44 +219,60 @@ namespace Loloca_BE.Presentation.Controllers
 
 
         // ----------------------------------------- WITHDRAWAL --------------------------------------------
-        [HttpPost("/api/v1/payment-request/withdrawal")]
+        [Authorize(Policy = "RequireTourGuideOrCustomerRole")]
+        [HttpPost("withdrawal")]
         public async Task<ActionResult> WithdrawalRequest([FromBody] WithdrawalView withdrawalView)
         {
             try
             {
-                if (withdrawalView == null)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return BadRequest("Request cannot null");
+                    return Forbid();
                 }
-                if (withdrawalView.BankAccount == null)
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByAccountId(withdrawalView.AccountId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
                 {
-                    return BadRequest("Bank account cannot null");
+                    if (withdrawalView == null)
+                    {
+                        return BadRequest("Request cannot null");
+                    }
+                    if (withdrawalView.BankAccount == null)
+                    {
+                        return BadRequest("Bank account cannot null");
+                    }
+                    if (withdrawalView.Bank == null)
+                    {
+                        return BadRequest("Bank cannot null");
+                    }
+                    if (withdrawalView.Amount < 0 || withdrawalView.Amount == null)
+                    {
+                        return BadRequest("Invalid number of money");
+                    }
+                    if (withdrawalView.AccountId == null)
+                    {
+                        return BadRequest("Account Id cannot null");
+                    }
+                    var status = await _paymentRequestService.SendWithdrawalRequest(withdrawalView);
+                    if (status == 1)
+                    {
+                        return Ok("Your request sent, our team will review within 7 working days");
+                    }
+                    else if (status == -1)
+                    {
+                        return BadRequest("Admin role can't send request");
+                    }
+                    else if (status == -2)
+                    {
+                        return BadRequest("Out of balance in Loloca wallet");
+                    }
+                    return BadRequest("Send request failed");
                 }
-                if (withdrawalView.Bank == null)
+                else
                 {
-                    return BadRequest("Bank cannot null");
+                    return Forbid();
                 }
-                if (withdrawalView.Amount < 0 || withdrawalView.Amount == null)
-                {
-                    return BadRequest("Invalid number of money");
-                }
-                if (withdrawalView.AccountId == null)
-                {
-                    return BadRequest("Account Id cannot null");
-                }
-                var status = await _paymentRequestService.SendWithdrawalRequest(withdrawalView);
-                if (status == 1)
-                {
-                    return Ok("Your request sent, our team will review within 7 working days");
-                }
-                else if (status == -1)
-                {
-                    return BadRequest("Admin role can't send request");
-                } else if (status == -2)
-                {
-                    return BadRequest("Out of balance in Loloca wallet");
-                }
-                return BadRequest("Send request failed");
+                    
             }
             catch (Exception ex)
             {
@@ -203,7 +280,8 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/payment-request/withdrawal")]
+        [Authorize(Policy = "RequireAdminRole")]
+        [HttpGet("withdrawal")]
         public async Task<ActionResult> GetAllWithdrawalRequest([FromQuery] int? status)
         {
             try
@@ -217,19 +295,33 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/payment-request/withdrawal/{PaymentRequestId}")]
-        public async Task<ActionResult> GetAllWithdrawalRequest(int PaymentRequestId)
+        [Authorize(Policy = "RequireAllRoles")]
+        [HttpGet("withdrawal/{PaymentRequestId}")]
+        public async Task<ActionResult> GetWithdrawalRequest(int PaymentRequestId)
         {
             try
             {
-                var withdrawal = await _paymentRequestService.GetAllWithdrawalById(PaymentRequestId);
-                if (withdrawal == null)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return NotFound($"Does not find any request with id {PaymentRequestId}");
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByPaymentRequestId(PaymentRequestId, int.Parse(accountId));
+                if (checkAuthorize.isUser || checkAuthorize.isAdmin)
+                {
+                    var withdrawal = await _paymentRequestService.GetAllWithdrawalById(PaymentRequestId);
+                    if (withdrawal == null)
+                    {
+                        return NotFound($"Does not find any request with id {PaymentRequestId}");
+                    }
+                    else
+                    {
+                        return Ok(withdrawal);
+                    }
                 }
                 else
                 {
-                    return Ok(withdrawal);
+                    return Forbid();
                 }
             }
             catch (Exception ex)
@@ -238,13 +330,27 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/payment-request/withdrawal/customer")]
+        [Authorize(Policy = "RequireAdminOrCustomerRole")]
+        [HttpGet("withdrawal/customer")]
         public async Task<ActionResult> GetWithdrawalByCustomerId([FromQuery] int customerId, [FromQuery] int? status)
         {
             try
             {
-                var withdrawals = await _paymentRequestService.GetAllWithdrawalByCustomerId(customerId, status);
-                return Ok(withdrawals);
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
+                {
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByCustomerId(customerId, int.Parse(accountId));
+                if (checkAuthorize.isUser || checkAuthorize.isAdmin)
+                {
+                    var withdrawals = await _paymentRequestService.GetAllWithdrawalByCustomerId(customerId, status);
+                    return Ok(withdrawals);
+                }
+                else
+                {
+                    return Forbid();
+                } 
             }
             catch (Exception ex)
             {
@@ -252,13 +358,27 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/payment-request/withdrawal/tourguide")]
+        [Authorize(Policy = "RequireAdminOrTourGuideRole")]
+        [HttpGet("withdrawal/tourguide")]
         public async Task<ActionResult> GetWithdrawalByTourGuideId([FromQuery] int tourGuideId, [FromQuery] int? status)
         {
             try
             {
-                var withdrawals = await _paymentRequestService.GetAllWithdrawalByTourGuideId(tourGuideId, status);
-                return Ok(withdrawals);
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
+                {
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByTourGuideId(tourGuideId, int.Parse(accountId));
+                if (checkAuthorize.isUser || checkAuthorize.isAdmin)
+                {
+                    var withdrawals = await _paymentRequestService.GetAllWithdrawalByTourGuideId(tourGuideId, status);
+                    return Ok(withdrawals);
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -266,7 +386,8 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpPut("/api/v1/payment-request/withdrawal")]
+        [Authorize(Policy = "RequireAdminRole")]
+        [HttpPut("withdrawal")]
         public async Task<ActionResult> UpdateStatusWithdrawal([FromQuery] int paymentRequestId)
         {
             try
@@ -279,11 +400,5 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"Internal Server Error: {ex.Message}");
             }
         }
-
-
-
-
-
-
     }
 }

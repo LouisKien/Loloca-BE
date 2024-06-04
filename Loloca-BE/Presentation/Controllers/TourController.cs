@@ -2,6 +2,7 @@
 using Loloca_BE.Business.Models.TourView;
 using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -12,26 +13,40 @@ namespace Loloca_BE.Presentation.Controllers
     public class TourController : ControllerBase
     {
         private readonly ITourService _tourService;
+        private readonly IAuthorizeService _authorizeService;
         private readonly IMemoryCache _cache;
 
-        public TourController(ITourService tourService, IMemoryCache cache)
+        public TourController(ITourService tourService, IMemoryCache cache, IAuthorizeService authorizeService)
         {
             _tourService = tourService;
             _cache = cache;
+            _authorizeService = authorizeService;
         }
 
+        [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPost("/uploadtour")]
         public async Task<IActionResult> UploadTourImages([FromForm] TourModelView tourModel, [FromForm] List<IFormFile> images)
         {
             try
             {
-                if (images == null || images.Count == 0)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return BadRequest("No images uploaded.");
+                    return Forbid();
                 }
-
-                await _tourService.UploadTourImageAsync(tourModel, images);
-                return Ok("Tour uploaded successfully.");
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByTourGuideId(tourModel.TourGuideId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    if (images == null || images.Count == 0)
+                    {
+                        return BadRequest("No images uploaded.");
+                    }
+                    await _tourService.UploadTourImageAsync(tourModel, images);
+                    return Ok("Tour uploaded successfully.");
+                }
+                else {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -39,13 +54,27 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPut("/updatetour/{tourId}")]
         public async Task<IActionResult> UpdateTour(int tourId, [FromForm] TourInfoView tourModel)
         {
             try
             {
-                await _tourService.UpdateTourAsync(tourId, tourModel);
-                return Ok("Tour updated successfully.");
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
+                {
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByTourId(tourId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    await _tourService.UpdateTourAsync(tourId, tourModel);
+                    return Ok("Tour updated successfully.");
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -53,6 +82,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPut("/accept-tour-change-status/{tourId}")]
         public async Task<IActionResult> UpdateTourStatus(int tourId, [FromForm] TourStatusView tourModel)
         {
@@ -67,13 +97,27 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireTourGuideRole")]
         [HttpDelete("{tourId}")]
         public async Task<IActionResult> DeleteTour(int tourId)
         {
             try
             {
-                await _tourService.DeleteTourAsync(tourId);
-                return Ok("Tour deleted successfully.");
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
+                {
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByTourId(tourId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    await _tourService.DeleteTourAsync(tourId);
+                    return Ok("Tour deleted successfully.");
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -81,6 +125,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("{tourId}")]
         public async Task<IActionResult> GetTourByIdAsync(int tourId)
         {
@@ -99,7 +144,8 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/tour")]
+        [AllowAnonymous]
+        [HttpGet("")]
         public async Task<IActionResult> GetRandomTours([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
@@ -134,7 +180,8 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/tour/city")]
+        [AllowAnonymous]
+        [HttpGet("city")]
         public async Task<IActionResult> GetRandomToursInCity([FromQuery] int CityId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
@@ -169,7 +216,8 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet("/api/v1/tour/tourGuide")]
+        [AllowAnonymous]
+        [HttpGet("tour-guide")]
         public async Task<IActionResult> GetRandomToursByTourGuide([FromQuery] int TourGuideId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
@@ -202,6 +250,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpGet("status/{status}")]
         public async Task<IActionResult> GetToursByStatusAsync(int status)
         {

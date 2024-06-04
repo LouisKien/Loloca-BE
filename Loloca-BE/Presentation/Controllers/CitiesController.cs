@@ -20,21 +20,12 @@ namespace Loloca_BE.Presentation.Controllers
             _authorizeService = authorizeService;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAllCities()
         {
             try
             {
-                //var accountId = User.FindFirst("AccountId")?.Value;
-                //if (accountId == null)
-                //{
-                //    return Forbid();
-                //}
-                //var checkAuthorize = await _authorizeService.CheckAuthorizeByCustomerId(customerId, int.Parse(accountId));
-                //if (checkAuthorize == false)
-                //{
-                //    return Forbid();
-                //}
                 var cities = await _citiesService.GetAllCitiesAsync();
                 return Ok(cities);
             } catch (Exception ex)
@@ -43,6 +34,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCityById(int id)
         {
@@ -60,6 +52,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPost]
         public async Task<IActionResult> CreateCity([FromBody] CityView cityView)
         {
@@ -83,7 +76,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCity(int id, [FromBody] CityView cityView)
         {
@@ -107,6 +100,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCity(int id)
         {

@@ -1,6 +1,8 @@
 ﻿using Loloca_BE.Business.Models.FeedbackView;
+using Loloca_BE.Business.Services.Implements;
 using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Loloca_BE.Presentation.Controllers
@@ -10,23 +12,40 @@ namespace Loloca_BE.Presentation.Controllers
     public class FeedbackController : ControllerBase
     {
         private readonly IFeedbackService _feedbackService;
+        private readonly IAuthorizeService _authorizeService;
 
-        public FeedbackController(IFeedbackService feedbackService)
+        public FeedbackController(IFeedbackService feedbackService, IAuthorizeService authorizeService)
         {
             _feedbackService = feedbackService;
+            _authorizeService = authorizeService;
         }
+
+        [Authorize(Policy = "RequireCustomerRole")]
         [HttpPost("upload")]
         public async Task<IActionResult> UploadFeedbackAsync([FromForm] FeedbackModelView feedbackModel, [FromForm] List<IFormFile> images)
         {
             try
             {
-                if (images == null || images.Count == 0)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return BadRequest("No images uploaded.");
+                    return Forbid();
                 }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByCustomerId(feedbackModel.CustomerId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    if (images == null || images.Count == 0)
+                    {
+                        return BadRequest("No images uploaded.");
+                    }
 
-                await _feedbackService.UploadFeedbackAsync(feedbackModel, images);
-                return Ok("Feedback uploaded successfully.");
+                    await _feedbackService.UploadFeedbackAsync(feedbackModel, images);
+                    return Ok("Feedback uploaded successfully.");
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -34,17 +53,31 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize("RequireAdminOrCustomerRole")]
         [HttpGet("customer/{customerId}")]
         public async Task<IActionResult> GetFeedbackByCustomerIdAsync(int customerId)
         {
             try
             {
-                var feedback = await _feedbackService.GetFeedbackByCustomerIdAsync(customerId);
-                if (feedback == null)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return NotFound($"No feedback found for customer with ID {customerId}");
+                    return Forbid();
                 }
-                return Ok(feedback);
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByCustomerId(customerId, int.Parse(accountId));
+                if (checkAuthorize.isUser || checkAuthorize.isAdmin)
+                {
+                    var feedback = await _feedbackService.GetFeedbackByCustomerIdAsync(customerId);
+                    if (feedback == null)
+                    {
+                        return NotFound($"No feedback found for customer with ID {customerId}");
+                    }
+                    return Ok(feedback);
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -52,6 +85,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("tourguide/{tourGuideId}")]
         public async Task<IActionResult> GetFeedbackByTourGuideIdAsync(int tourGuideId)
         {
@@ -70,6 +104,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpGet]
         public async Task<IActionResult> GetAllFeedbacksAsync()
         {
@@ -83,6 +118,8 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        [AllowAnonymous]
         [HttpGet("{feedbackId}")]
         public async Task<IActionResult> GetFeedbackByIdAsync(int feedbackId)
         {
@@ -101,19 +138,32 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminOrCustomerRole")]
         [HttpPut("{feedbackId}/status")]
         public async Task<IActionResult> UpdateFeedbackStatusAsync(int feedbackId, [FromForm] bool newStatus)
         {
             try
             {
-                var success = await _feedbackService.UpdateStatusAsync(feedbackId, newStatus);
-                if (success)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return Ok("Feedback status updated successfully.");
+                    return Forbid();
                 }
-                else
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByFeedbackId(feedbackId, int.Parse(accountId));
+                if (checkAuthorize.isUser || checkAuthorize.isAdmin)
                 {
-                    return NotFound($"Feedback with ID {feedbackId} not found.");
+                    var success = await _feedbackService.UpdateStatusAsync(feedbackId, newStatus);
+                    if (success)
+                    {
+                        return Ok("Feedback status updated successfully.");
+                    }
+                    else
+                    {
+                        return NotFound($"Feedback with ID {feedbackId} not found.");
+                    }
+                } else
+                {
+                    return Forbid();
                 }
             }
             catch (Exception ex)
@@ -121,7 +171,5 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
-
     }
 }

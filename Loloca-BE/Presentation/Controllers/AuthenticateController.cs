@@ -22,7 +22,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("/api/v1/auth")]
+        [HttpPost("auth")]
         public async Task<IActionResult> Login([FromBody] AuthRequest loginInfo)
         {
             try
@@ -82,7 +82,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("/api/v1/auth/verify")]
+        [HttpPost("auth/verify")]
         public async Task<IActionResult> VerifyLogin([FromBody] EmailVerificationView body)
         {
             try
@@ -110,7 +110,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("/api/v1/auth/refresh")]
+        [HttpPost("auth/refresh")]
         public async Task<IActionResult> AccessTokenRequest([FromBody] RefreshTokenRequest refreshToken)
         {
             try
@@ -130,7 +130,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("/api/v1/register/customer")]
+        [HttpPost("register/customer")]
         public async Task<IActionResult> RegisterCustomer([FromBody] RegisterCustomerRequest body)
         {
             try
@@ -181,7 +181,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("/api/v1/register/tourguide")]
+        [HttpPost("register/tourguide")]
         public async Task<IActionResult> RegisterTourGuide([FromBody] RegisterTourGuideRequest body)
         {
             try
@@ -237,7 +237,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("/api/v1/register/verify")]
+        [HttpPost("register/verify")]
         public async Task<IActionResult> VerifyRegister([FromBody] EmailVerificationView body)
         {
             try
@@ -273,7 +273,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("/api/v1/auth/forget-password")]
+        [HttpPost("auth/forget-password")]
         public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordRequest body)
         {
             if (body.Email.IsNullOrEmpty())
@@ -291,7 +291,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("/api/v1/auth/forget-password/verify")]
+        [HttpPost("auth/forget-password/verify")]
         public async Task<IActionResult> VerifyForgetAccount([FromBody] VerifyForgetPasswordRequest body)
         {
             if (body.Email.IsNullOrEmpty())
@@ -321,7 +321,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("/api/v1/auth/forget-password/new-password")]
+        [HttpPost("auth/forget-password/new-password")]
         public async Task<IActionResult> ChangeNewPassword([FromBody] ChangeNewPasswordRequest body)
         {
             if (body.Email.IsNullOrEmpty())

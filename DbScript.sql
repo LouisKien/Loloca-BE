@@ -100,28 +100,6 @@ CREATE TABLE Customers (
 );
 GO
 
-CREATE TABLE Feedbacks (
-    FeedbackId INT IDENTITY(1,1) PRIMARY KEY,
-    CustomerId INT NOT NULL,
-    TourGuideId INT NOT NULL,
-    NumOfStars INT NOT NULL,
-    Content NVARCHAR(MAX),
-    TimeFeedback DATETIME,
-    Status BIT NOT NULL,
-    CONSTRAINT FK_Feedbacks_Customers FOREIGN KEY (CustomerId) REFERENCES Customers(CustomerId),
-    CONSTRAINT FK_Feedbacks_TourGuides FOREIGN KEY (TourGuideId) REFERENCES TourGuides(TourGuideId)
-);
-GO
-
-CREATE TABLE FeedbackImages (
-    FeedbackImageId INT IDENTITY(1,1) PRIMARY KEY,
-    FeedbackId INT NOT NULL,
-    ImagePath NVARCHAR(255),
-    UploadDate DATETIME,
-    CONSTRAINT FK_FeedbackImage_Feedbacks FOREIGN KEY (FeedbackId) REFERENCES Feedbacks(FeedbackId)
-);
-GO
-
 CREATE TABLE Tours (
     TourId INT IDENTITY(1,1) PRIMARY KEY,
     CityId INT NOT NULL,
@@ -198,6 +176,36 @@ CREATE TABLE Orders (
         (BookingTourGuideRequestId IS NOT NULL AND BookingTourRequestsId IS NULL)
         OR (BookingTourGuideRequestId IS NULL AND BookingTourRequestsId IS NOT NULL)
     )
+);
+GO
+
+CREATE TABLE Feedbacks (
+    FeedbackId INT IDENTITY(1,1) PRIMARY KEY,
+    CustomerId INT NOT NULL,
+    TourGuideId INT NOT NULL,
+	BookingTourRequestsId INT,
+	BookingTourGuideRequestId INT,
+    NumOfStars INT NOT NULL,
+    Content NVARCHAR(MAX),
+    TimeFeedback DATETIME,
+    Status BIT NOT NULL,
+    CONSTRAINT FK_Feedbacks_Customers FOREIGN KEY (CustomerId) REFERENCES Customers(CustomerId),
+    CONSTRAINT FK_Feedbacks_TourGuides FOREIGN KEY (TourGuideId) REFERENCES TourGuides(TourGuideId),
+	CONSTRAINT FK_Feedbacks_BookingTourGuideRequests FOREIGN KEY (BookingTourGuideRequestId) REFERENCES BookingTourGuideRequests(BookingTourGuideRequestId),
+    CONSTRAINT FK_Feedbacks_BookingTourRequests FOREIGN KEY (BookingTourRequestsId) REFERENCES BookingTourRequests(BookingTourRequestId),
+    CHECK (
+        (BookingTourGuideRequestId IS NOT NULL AND BookingTourRequestsId IS NULL)
+        OR (BookingTourGuideRequestId IS NULL AND BookingTourRequestsId IS NOT NULL)
+    )
+);
+GO
+
+CREATE TABLE FeedbackImages (
+    FeedbackImageId INT IDENTITY(1,1) PRIMARY KEY,
+    FeedbackId INT NOT NULL,
+    ImagePath NVARCHAR(255),
+    UploadDate DATETIME,
+    CONSTRAINT FK_FeedbackImage_Feedbacks FOREIGN KEY (FeedbackId) REFERENCES Feedbacks(FeedbackId)
 );
 GO
 

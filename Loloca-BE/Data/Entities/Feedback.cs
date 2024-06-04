@@ -13,11 +13,15 @@ namespace Loloca_BE.Data.Entities
         public int FeedbackId { get; set; }
         public int CustomerId { get; set; }
         public int TourGuideId { get; set; }
+        public int? BookingTourRequestsId { get; set; }
+        public int? BookingTourGuideRequestId { get; set; }
         public int NumOfStars { get; set; }
         public string? Content { get; set; }
         public DateTime? TimeFeedback { get; set; }
         public bool Status { get; set; }
 
+        public virtual BookingTourGuideRequest? BookingTourGuideRequest { get; set; }
+        public virtual BookingTourRequest? BookingTourRequests { get; set; }
         public virtual Customer Customer { get; set; } = null!;
         public virtual TourGuide TourGuide { get; set; } = null!;
         public virtual ICollection<FeedbackImage> FeedbackImages { get; set; }

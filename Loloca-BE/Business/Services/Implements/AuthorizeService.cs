@@ -1,5 +1,4 @@
 ﻿using Loloca_BE.Business.Services.Interfaces;
-using Loloca_BE.Data.Entities;
 using Loloca_BE.Data.Repositories.Interfaces;
 
 namespace Loloca_BE.Business.Services.Implements
@@ -13,29 +12,41 @@ namespace Loloca_BE.Business.Services.Implements
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<bool> CheckAuthorizeByAccountId(int userAccountId, int accountId)
+        public async Task<(bool isUser, bool isAdmin)> CheckAuthorizeByAccountId(int userAccountId, int accountId)
         {
             try
             {
+                bool isAdmin = false;
+                bool isUser = false;
                 var account = (await _unitOfWork.AccountRepository.GetByIDAsync(userAccountId));
                 if(account != null)
                 {
                     if (account.AccountId == accountId)
                     {
-                        return true;
+                        isUser = true;
                     }
                 }
-                return false;
+                var accountJwt = await _unitOfWork.AccountRepository.GetByIDAsync(accountId);
+                if (accountJwt != null)
+                {
+                    if (accountJwt.Role == 1)
+                    {
+                        isAdmin = true;
+                    }
+                }
+                return (isUser, isAdmin);
             } catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
         }
 
-        public async Task<bool> CheckAuthorizeByBookingTourGuideRequestId(int bookingTourGuideRequestId, int accountId)
+        public async Task<(bool isUser, bool isAdmin)> CheckAuthorizeByBookingTourGuideRequestId(int bookingTourGuideRequestId, int accountId)
         {
             try
             {
+                bool isAdmin = false;
+                bool isUser = false;
                 var accountJwt = await _unitOfWork.AccountRepository.GetByIDAsync(accountId);
                 if (accountJwt != null)
                 {
@@ -49,7 +60,7 @@ namespace Loloca_BE.Business.Services.Implements
                             {
                                 if (btgr.TourGuideId == tourGuide.TourGuideId)
                                 {
-                                    return true;
+                                    isUser = true;
                                 }
                             }
                         }
@@ -64,13 +75,17 @@ namespace Loloca_BE.Business.Services.Implements
                             {
                                 if (btgr.CustomerId == customer.CustomerId)
                                 {
-                                    return true;
+                                    isUser = true;
                                 }
                             }
                         }
                     }
+                    if(accountJwt.Role == 1)
+                    {
+                        isAdmin = true;
+                    }
                 }
-                return false;
+                return (isUser, isAdmin);
             }
             catch (Exception ex)
             {
@@ -78,10 +93,12 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
-        public async Task<bool> CheckAuthorizeByBookingTourRequestId(int bookingTourRequestId, int accountId)
+        public async Task<(bool isUser, bool isAdmin)> CheckAuthorizeByBookingTourRequestId(int bookingTourRequestId, int accountId)
         {
             try
             {
+                bool isAdmin = false;
+                bool isUser = false;
                 var accountJwt = await _unitOfWork.AccountRepository.GetByIDAsync(accountId);
                 if (accountJwt != null)
                 {
@@ -98,7 +115,7 @@ namespace Loloca_BE.Business.Services.Implements
                                 {
                                     if(tour.TourGuideId == tourGuide.TourGuideId)
                                     {
-                                        return true;
+                                        isUser = true;
                                     }
                                 }
                             }
@@ -114,13 +131,17 @@ namespace Loloca_BE.Business.Services.Implements
                             {
                                 if (btr.CustomerId == customer.CustomerId)
                                 {
-                                    return true;
+                                    isUser = true;
                                 }
                             }
                         }
                     }
+                    if (accountJwt.Role == 1)
+                    {
+                        isAdmin = true;
+                    }
                 }
-                return false;
+                return (isUser, isAdmin);
             }
             catch (Exception ex)
             {
@@ -128,19 +149,29 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
-        public async Task<bool> CheckAuthorizeByCustomerId(int customerId, int accountId)
+        public async Task<(bool isUser, bool isAdmin)> CheckAuthorizeByCustomerId(int customerId, int accountId)
         {
             try
             {
+                bool isAdmin = false;
+                bool isUser = false;
                 var customer = await _unitOfWork.CustomerRepository.GetByIDAsync(customerId);
                 if (customer != null)
                 {
                     if(customer.AccountId == accountId)
                     {
-                        return true;
+                        isUser = true;
                     }
                 }
-                return false;
+                var accountJwt = await _unitOfWork.AccountRepository.GetByIDAsync(accountId);
+                if (accountJwt != null)
+                {
+                    if (accountJwt.Role == 1)
+                    {
+                        isAdmin = true;
+                    }
+                }
+                return (isUser, isAdmin);
             }
             catch (Exception ex)
             {
@@ -148,10 +179,12 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
-        public async Task<bool> CheckAuthorizeByFeedbackId(int feedbackId, int accountId)
+        public async Task<(bool isUser, bool isAdmin)> CheckAuthorizeByFeedbackId(int feedbackId, int accountId)
         {
             try
             {
+                bool isAdmin = false;
+                bool isUser = false;
                 var accountJwt = await _unitOfWork.AccountRepository.GetByIDAsync(accountId);
                 if (accountJwt != null)
                 {
@@ -165,7 +198,7 @@ namespace Loloca_BE.Business.Services.Implements
                             {
                                 if(feedback.TourGuideId == tourGuide.TourGuideId)
                                 {
-                                    return true;
+                                    isUser = true;
                                 }
                             }
                         }
@@ -179,13 +212,17 @@ namespace Loloca_BE.Business.Services.Implements
                             {
                                 if (feedback.CustomerId == customer.CustomerId)
                                 {
-                                    return true;
+                                    isUser = true;
                                 }
                             }
                         }
                     }
+                    if (accountJwt.Role == 1)
+                    {
+                        isAdmin = true;
+                    }
                 }
-                return false;
+                return (isUser, isAdmin);
             }
             catch (Exception ex)
             {
@@ -193,10 +230,49 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
-        public async Task<bool> CheckAuthorizeByOrderId(int orderId, int accountId)
+        public async Task<(bool isUser, bool isAdmin)> CheckAuthorizeByNotificationId(int notificationId, int accountId)
         {
             try
             {
+                bool isAdmin = false;
+                bool isUser = false;
+                var notification = await _unitOfWork.NotificationRepository.GetByIDAsync(notificationId);
+                if(notification != null)
+                {
+                    switch (notification.UserType)
+                    {
+                        case "1":
+                            isAdmin = true;
+                            break;
+                        case "2":
+                            var tourGuide = (await _unitOfWork.TourGuideRepository.GetAsync(t => t.AccountId == accountId)).FirstOrDefault();
+                            if(tourGuide != null)
+                            {
+                                isUser = true;
+                            }
+                            break;
+                        case "3":
+                            var customer = (await _unitOfWork.CustomerRepository.GetAsync(c => c.AccountId == accountId)).FirstOrDefault();
+                            if(customer != null)
+                            {
+                                isUser = true;
+                            }
+                            break;
+                    }
+                }
+                return (isUser, isAdmin);
+            } catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<(bool isUser, bool isAdmin)> CheckAuthorizeByOrderId(int orderId, int accountId)
+        {
+            try
+            {
+                bool isAdmin = false;
+                bool isUser = false;
                 var order = await _unitOfWork.OrderRepository.GetByIDAsync(orderId);
                 if (order != null)
                 {
@@ -205,11 +281,19 @@ namespace Loloca_BE.Business.Services.Implements
                     {
                         if(customer.AccountId == accountId)
                         {
-                            return true;
+                            isUser = true;
                         }
                     }
                 }
-                return false;
+                var accountJwt = await _unitOfWork.AccountRepository.GetByIDAsync(accountId);
+                if (accountJwt != null)
+                {
+                    if (accountJwt.Role == 1)
+                    {
+                        isAdmin = true;
+                    }
+                }
+                return (isUser, isAdmin);
             }
             catch (Exception ex)
             {
@@ -217,19 +301,29 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
-        public async Task<bool> CheckAuthorizeByPaymentRequestId(int paymentRequestId, int accountId)
+        public async Task<(bool isUser, bool isAdmin)> CheckAuthorizeByPaymentRequestId(int paymentRequestId, int accountId)
         {
             try
             {
+                bool isAdmin = false;
+                bool isUser = false;
                 var pr = await _unitOfWork.PaymentRequestRepository.GetByIDAsync(paymentRequestId);
                 if (pr != null)
                 {
                     if(pr.AccountId == accountId)
                     {
-                        return true;
+                        isUser = true;
                     }
                 }
-                return false;
+                var accountJwt = await _unitOfWork.AccountRepository.GetByIDAsync(accountId);
+                if (accountJwt != null)
+                {
+                    if (accountJwt.Role == 1)
+                    {
+                        isAdmin = true;
+                    }
+                }
+                return (isUser, isAdmin);
             }
             catch (Exception ex)
             {
@@ -237,19 +331,29 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
-        public async Task<bool> CheckAuthorizeByTourGuideId(int tourGuideId, int accountId)
+        public async Task<(bool isUser, bool isAdmin)> CheckAuthorizeByTourGuideId(int tourGuideId, int accountId)
         {
             try
             {
+                bool isAdmin = false;
+                bool isUser = false;
                 var tourGuide = await _unitOfWork.TourGuideRepository.GetByIDAsync(tourGuideId);
                 if (tourGuide != null)
                 {
                     if(tourGuide.AccountId == accountId)
                     {
-                        return true;
+                        isUser = true;
                     }
                 }
-                return false;
+                var accountJwt = await _unitOfWork.AccountRepository.GetByIDAsync(accountId);
+                if (accountJwt != null)
+                {
+                    if (accountJwt.Role == 1)
+                    {
+                        isAdmin = true;
+                    }
+                }
+                return (isUser, isAdmin);
             }
             catch (Exception ex)
             {
@@ -257,10 +361,12 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
-        public async Task<bool> CheckAuthorizeByTourId(int tourId, int accountId)
+        public async Task<(bool isUser, bool isAdmin)> CheckAuthorizeByTourId(int tourId, int accountId)
         {
             try
             {
+                bool isAdmin = false;
+                bool isUser = false;
                 var tour = await _unitOfWork.TourRepository.GetByIDAsync(tourId);
                 if(tour != null)
                 {
@@ -269,11 +375,19 @@ namespace Loloca_BE.Business.Services.Implements
                     {
                         if(tourGuide.AccountId == accountId)
                         {
-                            return true;
+                            isUser = true;
                         }
                     }
                 }
-                return false;
+                var accountJwt = await _unitOfWork.AccountRepository.GetByIDAsync(accountId);
+                if (accountJwt != null)
+                {
+                    if (accountJwt.Role == 1)
+                    {
+                        isAdmin = true;
+                    }
+                }
+                return (isUser, isAdmin);
             }
             catch (Exception ex)
             {

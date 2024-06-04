@@ -179,19 +179,20 @@ namespace Loloca_BE.Business.Services.Implements
 
 
                                     var accessClaims = new List<Claim>
-                                {
-                                    new Claim("Role", account.Role.ToString()),
-                                    new Claim("Email", account.Email)
-                                };
+                                    {
+                                        new Claim("Role", account.Role.ToString()),
+                                        new Claim("Email", account.Email),
+                                        new Claim("AccountId", account.AccountId.ToString())
+                                    };
 
                                     var accessExpiration = DateTime.Now.AddHours(1);
                                     var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
                                     var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
 
                                     var refreshClaims = new List<Claim>
-                                {
-                                    new Claim("Email", account.Email)
-                                };
+                                    {
+                                        new Claim("Email", account.Email)
+                                    };
                                     var refreshExpiration = DateTime.Now.AddDays(14);
                                     var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
                                     var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
@@ -439,9 +440,9 @@ namespace Loloca_BE.Business.Services.Implements
 
                             var accessClaims = new List<Claim>
                             {
-                            new Claim("Role", account.Role.ToString()),
-                            new Claim("Email", account.Email),
-                            new Claim("AccountId", account.AccountId.ToString())
+                                new Claim("Role", account.Role.ToString()),
+                                new Claim("Email", account.Email),
+                                new Claim("AccountId", account.AccountId.ToString())
                             };
 
                             var accessExpiration = DateTime.Now.AddHours(1);
@@ -450,7 +451,7 @@ namespace Loloca_BE.Business.Services.Implements
 
                             var refreshClaims = new List<Claim>
                             {
-                            new Claim("Email", account.Email)
+                                new Claim("Email", account.Email)
                             };
                             var refreshExpiration = DateTime.Now.AddDays(14);
                             var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
@@ -486,11 +487,11 @@ namespace Loloca_BE.Business.Services.Implements
 
 
                 var accessClaims = new List<Claim>
-                        {
-                            new Claim("Role", account.Role.ToString()),
-                            new Claim("Email", account.Email),
-                            new Claim("AccountId", account.AccountId.ToString())
-                        };
+                    {
+                        new Claim("Role", account.Role.ToString()),
+                        new Claim("Email", account.Email),
+                        new Claim("AccountId", account.AccountId.ToString())
+                    };
 
                 var accessExpiration = DateTime.Now.AddHours(1);
                 var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);

@@ -108,7 +108,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Customer>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7A3E444E2")
+                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7EF0DCA01")
                     .IsUnique();
 
                 entity.Property(e => e.AddressCustomer).HasMaxLength(255);
@@ -139,6 +139,16 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<Feedback>(entity =>
             {
                 entity.Property(e => e.TimeFeedback).HasColumnType("datetime");
+
+                entity.HasOne(d => d.BookingTourGuideRequest)
+                    .WithMany(p => p.Feedbacks)
+                    .HasForeignKey(d => d.BookingTourGuideRequestId)
+                    .HasConstraintName("FK_Feedbacks_BookingTourGuideRequests");
+
+                entity.HasOne(d => d.BookingTourRequests)
+                    .WithMany(p => p.Feedbacks)
+                    .HasForeignKey(d => d.BookingTourRequestsId)
+                    .HasConstraintName("FK_Feedbacks_BookingTourRequests");
 
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.Feedbacks)
@@ -209,7 +219,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<PaymentRequest>(entity =>
             {
                 entity.HasKey(e => e.PaymentId)
-                    .HasName("PK__PaymentR__9B556A38F95F20A0");
+                    .HasName("PK__PaymentR__9B556A38F66116B5");
 
                 entity.Property(e => e.Amount).HasColumnType("decimal(13, 2)");
 
@@ -264,7 +274,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<TourGuide>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A796B16E8F")
+                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A73891DB0E")
                     .IsUnique();
 
                 entity.Property(e => e.Address).HasMaxLength(255);
@@ -311,7 +321,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourImage>(entity =>
             {
                 entity.HasKey(e => e.ImageId)
-                    .HasName("PK__TourImag__7516F70C3CEE2DB4");
+                    .HasName("PK__TourImag__7516F70CDB8AD0F1");
 
                 entity.ToTable("TourImage");
 

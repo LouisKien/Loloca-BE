@@ -2,14 +2,15 @@
 {
     public interface IAuthorizeService
     {
-        Task<bool> CheckAuthorizeByAccountId(int userAccountId, int accountId);
-        Task<bool> CheckAuthorizeByCustomerId(int customerId, int accountId);
-        Task<bool> CheckAuthorizeByTourGuideId(int tourGuideId, int accountId);
-        Task<bool> CheckAuthorizeByPaymentRequestId(int paymentRequestId, int accountId);
-        Task<bool> CheckAuthorizeByTourId(int tourId, int accountId);
-        Task<bool> CheckAuthorizeByFeedbackId(int feedbackId, int accountId);
-        Task<bool> CheckAuthorizeByBookingTourGuideRequestId(int bookingTourGuideRequestId, int accountId);
-        Task<bool> CheckAuthorizeByBookingTourRequestId(int bookingTourRequestId, int accountId);
-        Task<bool> CheckAuthorizeByOrderId(int orderId, int accountId);
+        Task<(bool isUser, bool isAdmin)> CheckAuthorizeByAccountId(int userAccountId, int accountId);
+        Task<(bool isUser, bool isAdmin)> CheckAuthorizeByCustomerId(int customerId, int accountId);
+        Task<(bool isUser, bool isAdmin)> CheckAuthorizeByTourGuideId(int tourGuideId, int accountId);
+        Task<(bool isUser, bool isAdmin)> CheckAuthorizeByPaymentRequestId(int paymentRequestId, int accountId);
+        Task<(bool isUser, bool isAdmin)> CheckAuthorizeByTourId(int tourId, int accountId);
+        Task<(bool isUser, bool isAdmin)> CheckAuthorizeByFeedbackId(int feedbackId, int accountId);
+        Task<(bool isUser, bool isAdmin)> CheckAuthorizeByBookingTourGuideRequestId(int bookingTourGuideRequestId, int accountId);
+        Task<(bool isUser, bool isAdmin)> CheckAuthorizeByBookingTourRequestId(int bookingTourRequestId, int accountId);
+        Task<(bool isUser, bool isAdmin)> CheckAuthorizeByOrderId(int orderId, int accountId);
+        Task<(bool isUser, bool isAdmin)> CheckAuthorizeByNotificationId(int notificationId, int accountId);
     }
 }

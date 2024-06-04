@@ -10,26 +10,42 @@ namespace Loloca_BE.Presentation.Controllers
     [Route("api/[controller]")]
     public class NotificationsController : ControllerBase
     {
+        private readonly IAuthorizeService _authorizeService;
         private readonly INotificationService _notificationService;
 
-        public NotificationsController(INotificationService notificationService)
+        public NotificationsController(INotificationService notificationService, IAuthorizeService authorizeService)
         {
             _notificationService = notificationService;
+            _authorizeService = authorizeService;
         }
 
+        [Authorize("RequireAllRoles")]
         [HttpPost("{id}/read")]
         public async Task<IActionResult> MarkAsRead(int id)
         {
             try
             {
-                var result = await _notificationService.MarkAsRead(id);
-                if (result)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return Ok("Thông báo đã được đánh dấu là đã đọc");
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByNotificationId(id, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    var result = await _notificationService.MarkAsRead(id);
+                    if (result)
+                    {
+                        return Ok("Thông báo đã được đánh dấu là đã đọc");
+                    }
+                    else
+                    {
+                        return BadRequest("Không thể đánh dấu thông báo");
+                    }
                 }
                 else
                 {
-                    return BadRequest("Không thể đánh dấu thông báo");
+                    return Forbid();
                 }
             }
             catch (UnauthorizedAccessException ex)
@@ -42,31 +58,31 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllNotification()
-        {
-            try
-            {
-                var noti = await _notificationService.GetAllNotificationAsync();
-                return Ok(noti);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $" Internal Server Error: {ex.Message}");
-            }
-        }
-
+        [Authorize("RequireAllRoles")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetNotificationById(int id)
         {
             try
             {
-                var noti = await _notificationService.GetNotificationByIdAsync(id);
-                if (noti == null)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return NotFound();
+                    return Forbid();
                 }
-                return Ok(noti);
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByNotificationId(id, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    var noti = await _notificationService.GetNotificationByIdAsync(id);
+                    if (noti == null)
+                    {
+                        return NotFound();
+                    }
+                    return Ok(noti);
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -74,6 +90,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAllRoles")]
         [HttpGet("user/{userId}/{userType}")]
         public async Task<ActionResult<IEnumerable<Notification>>> GetNotificationsByUserIdAndTypeUser(int userId, string userType)
         {

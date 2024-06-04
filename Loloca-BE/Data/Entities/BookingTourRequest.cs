@@ -7,6 +7,7 @@ namespace Loloca_BE.Data.Entities
     {
         public BookingTourRequest()
         {
+            Feedbacks = new HashSet<Feedback>();
             Orders = new HashSet<Order>();
         }
 
@@ -23,6 +24,7 @@ namespace Loloca_BE.Data.Entities
 
         public virtual Customer Customer { get; set; } = null!;
         public virtual Tour Tour { get; set; } = null!;
+        public virtual ICollection<Feedback> Feedbacks { get; set; }
         public virtual ICollection<Order> Orders { get; set; }
     }
 }

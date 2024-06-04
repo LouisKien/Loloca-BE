@@ -1,5 +1,8 @@
 ﻿using Loloca_BE.Business.Models.OrderView;
+using Loloca_BE.Business.Services.Implements;
 using Loloca_BE.Business.Services.Interfaces;
+using Loloca_BE.Data.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Loloca_BE.Presentation.Controllers
@@ -9,12 +12,15 @@ namespace Loloca_BE.Presentation.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
+        private readonly IAuthorizeService _authorizeService;
 
-        public OrderController(IOrderService orderService)
+        public OrderController(IOrderService orderService, IAuthorizeService authorizeService)
         {
             _orderService = orderService;
+            _authorizeService = authorizeService;
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OrderModelView>>> GetAllOrdersAsync()
         {
@@ -29,17 +35,30 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminOrCustomerRole")]
         [HttpGet("{id}")]
         public async Task<ActionResult<OrderModelView>> GetOrderByIdAsync(int id)
         {
             try
             {
-                var order = await _orderService.GetOrderByIdAsync(id);
-                if (order == null)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return NotFound();
+                    return Forbid();
                 }
-                return Ok(order);
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByOrderId(id, int.Parse(accountId));
+                if (checkAuthorize.isUser || checkAuthorize.isAdmin)
+                {
+                    var order = await _orderService.GetOrderByIdAsync(id);
+                    if (order == null)
+                    {
+                        return NotFound();
+                    }
+                    return Ok(order);
+                } else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -47,6 +66,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireCustomerRole")]
         [HttpPost("tourGuide")]
         public async Task<ActionResult<OrderForBookingTourGuideView>> CreateOrderForBookingTourGuideRequestAsync(OrderForBookingTourGuideView orderModel)
         {
@@ -56,14 +76,25 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
-                var createdOrder = await _orderService.CreateOrderForBookingTourGuideRequestAsync(orderModel);
-                if (createdOrder == null)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return BadRequest("Failed to create order.");
+                    return Forbid();
                 }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByBookingTourGuideRequestId((int) orderModel.BookingTourGuideRequestId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    var createdOrder = await _orderService.CreateOrderForBookingTourGuideRequestAsync(orderModel);
+                    if (createdOrder == null)
+                    {
+                        return BadRequest("Failed to create order.");
+                    }
 
-                return Ok(createdOrder); // Return the created order with HTTP status 200 (OK)
+                    return Ok(createdOrder); // Return the created order with HTTP status 200 (OK)
+                } else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -72,7 +103,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
 
-
+        [Authorize(Policy = "RequireCustomerRole")]
         [HttpPost("tour")]
         public async Task<ActionResult<OrderForBookingTourView>> CreateOrderForBookingTourRequestAsync(OrderForBookingTourView orderModel)
         {
@@ -82,14 +113,26 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
-                var createdOrder = await _orderService.CreateOrderForBookingTourRequestAsync(orderModel);
-                if (createdOrder == null)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return BadRequest("Failed to create order.");
+                    return Forbid();
                 }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByBookingTourRequestId((int)orderModel.BookingTourRequestsId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    var createdOrder = await _orderService.CreateOrderForBookingTourRequestAsync(orderModel);
+                    if (createdOrder == null)
+                    {
+                        return BadRequest("Failed to create order.");
+                    }
 
-                return Ok(createdOrder); // Return the created order with HTTP status 200 (OK)
+                    return Ok(createdOrder); // Return the created order with HTTP status 200 (OK)
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -97,13 +140,27 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireCustomerRole")]
         [HttpPut("{id}/status/{status}")]
         public async Task<ActionResult<OrderModelView>> UpdateOrderStatusAsync(int id, int status)
         {
             try
             {
-                var updatedOrder = await _orderService.UpdateOrderStatusAsync(id, status);
-                return Ok(updatedOrder);
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
+                {
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByOrderId(id, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    var updatedOrder = await _orderService.UpdateOrderStatusAsync(id, status);
+                    return Ok(updatedOrder);
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (KeyNotFoundException ex)
             {

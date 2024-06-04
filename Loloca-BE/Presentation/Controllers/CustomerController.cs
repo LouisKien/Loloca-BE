@@ -1,4 +1,5 @@
 ﻿using Loloca_BE.Business.Models.CustomerView;
+using Loloca_BE.Business.Services.Implements;
 using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -11,17 +12,34 @@ namespace Loloca_BE.Presentation.Controllers
     public class CustomerController : ControllerBase
     {
         private readonly ICustomerService _customerService;
-        public CustomerController(ICustomerService customerService)
+        private readonly IAuthorizeService _authorizeService;
+        public CustomerController(ICustomerService customerService, IAuthorizeService authorizeService)
         {
             _customerService = customerService;
+            _authorizeService = authorizeService;
         }
+
+        [Authorize(Policy = "RequireCustomerRole")]
         [HttpPost("update-info")]
         public async Task<IActionResult> UpdateCustomerInfo(int customerId, [FromBody] UpdateProfile model)
         {
             try
             {
-                await _customerService.UpdateCustomerInfo(customerId, model);
-                return Ok("Cập nhật thông tin thành công");
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
+                {
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByCustomerId(customerId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    await _customerService.UpdateCustomerInfo(customerId, model);
+                    return Ok("Cập nhật thông tin thành công");
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -29,20 +47,33 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-
+        [Authorize(Policy = "RequireCustomerRole")]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword(int accountId, [FromBody] ChangePassword model)
         {
             try
             {
-                var success = await _customerService.ChangeCustomerPassword(accountId, model);
-                if (success)
+                var accountIdJwt = User.FindFirst("AccountId")?.Value;
+                if (accountIdJwt == null)
                 {
-                    return Ok("Đổi mật khẩu thành công");
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByAccountId(accountId, int.Parse(accountIdJwt));
+                if (checkAuthorize.isUser)
+                {
+                    var success = await _customerService.ChangeCustomerPassword(accountId, model);
+                    if (success)
+                    {
+                        return Ok("Đổi mật khẩu thành công");
+                    }
+                    else
+                    {
+                        return BadRequest("Đổi mật khẩu không thành công");
+                    }
                 }
                 else
                 {
-                    return BadRequest("Đổi mật khẩu không thành công");
+                    return Forbid();
                 }
             }
             catch (Exception ex)
@@ -51,20 +82,33 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [AllowAnonymous]
-        [HttpPost("/api/v1/customer/update-avatar")]
+        [Authorize(Policy = "RequireCustomerRole")]
+        [HttpPost("update-avatar")]
         public async Task<IActionResult> UpdateAvatar([FromForm] IFormFile file, [FromForm] int CustomerId)
         {
             try
             {
-                if (file == null)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return BadRequest("No file provided.");
+                    return Forbid();
                 }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByCustomerId(CustomerId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    if (file == null)
+                    {
+                        return BadRequest("No file provided.");
+                    }
 
-                await _customerService.UploadAvatarAsync(file, CustomerId);
+                    await _customerService.UploadAvatarAsync(file, CustomerId);
 
-                return Ok("Avatar uploaded successfully!");
+                    return Ok("Avatar uploaded successfully!");
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (InvalidDataException ex)
             {
@@ -76,8 +120,8 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [AllowAnonymous]
-        [HttpGet("/api/v1/customer")]
+        [Authorize(Policy = "RequireAdminRole")]
+        [HttpGet("")]
         public async Task<IActionResult> GetListCustomers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
@@ -97,8 +141,8 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("api/v1/customer/")]
-        public async Task<IActionResult> GetCustomerById([FromQuery] int customerId)
+        [HttpGet("{customerId}")]
+        public async Task<IActionResult> GetCustomerById(int customerId)
         {
             try
             {
@@ -118,18 +162,31 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [AllowAnonymous]
-        [HttpGet("api/v1/customer/private")]
+        [Authorize(Policy = "RequireCustomerRole")]
+        [HttpGet("private")]
         public async Task<IActionResult> GetCustomerByIdPrivate([FromQuery] int customerId)
         {
             try
             {
-                var customer = await _customerService.GetCustomerByIdPrivate(customerId);
-                if (customer == null)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return NotFound("This customer does not exist");
+                    return Forbid();
                 }
-                return Ok(customer);
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByCustomerId(customerId, int.Parse(accountId));
+                if (checkAuthorize.isUser)
+                {
+                    var customer = await _customerService.GetCustomerByIdPrivate(customerId);
+                    if (customer == null)
+                    {
+                        return NotFound("This customer does not exist");
+                    }
+                    return Ok(customer);
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {

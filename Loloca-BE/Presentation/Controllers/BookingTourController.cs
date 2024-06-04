@@ -1,7 +1,9 @@
 ﻿using Loloca_BE.Business.Models.BookingTourGuideRequestModelView;
 using Loloca_BE.Business.Models.BookingTourRequestModelView;
+using Loloca_BE.Business.Services.Implements;
 using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Loloca_BE.Presentation.Controllers
@@ -11,24 +13,39 @@ namespace Loloca_BE.Presentation.Controllers
     public class BookingTourController : ControllerBase
     {
         private readonly IBookingTourRequestService _bookingTourRequestService;
+        private readonly IAuthorizeService _authorizeService;
 
-        public BookingTourController(IBookingTourRequestService bookingTourRequestService)
+        public BookingTourController(IBookingTourRequestService bookingTourRequestService, IAuthorizeService authorizeService)
         {
             _bookingTourRequestService = bookingTourRequestService;
+            _authorizeService = authorizeService;
         }
 
+        [Authorize(Policy = "RequireCustomerRole")]
         [HttpPost]
         public async Task<IActionResult> CreateBookingTourRequest([FromBody] BookingTourRequestView model)
         {
-            if (model == null)
-            {
-                return BadRequest("Model is null.");
-            }
-
             try
             {
-                var result = await _bookingTourRequestService.AddBookingTourRequestAsync(model);
-                return Ok(result);
+                if (model == null)
+                {
+                    return BadRequest("Model is null.");
+                }
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
+                {
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByCustomerId(model.CustomerId, int.Parse(accountId));
+                if(checkAuthorize.isUser)
+                {
+                    var result = await _bookingTourRequestService.AddBookingTourRequestAsync(model);
+                    return Ok(result);
+                } else
+                {
+                    return Forbid();
+                }
+
             }
             catch (Exception ex)
             {
@@ -36,6 +53,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpGet]
         public async Task<IActionResult> GetAllBookingTourRequest()
         {
@@ -50,17 +68,31 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAllRoles")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBookingTourRequestById(int id)
         {
             try
             {
-                var tourGuide = await _bookingTourRequestService.GetBookingTourRequestByIdAsync(id);
-                if (tourGuide == null)
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
                 {
-                    return NotFound();
+                    return Forbid();
                 }
-                return Ok(tourGuide);
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByBookingTourRequestId(id, int.Parse(accountId));
+                if (checkAuthorize.isUser || checkAuthorize.isAdmin)
+                {
+                    var tourGuide = await _bookingTourRequestService.GetBookingTourRequestByIdAsync(id);
+                    if (tourGuide == null)
+                    {
+                        return NotFound();
+                    }
+                    return Ok(tourGuide);
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             catch (Exception ex)
             {
@@ -68,13 +100,28 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminOrCustomerRole")]
         [HttpGet("customer/{customerId}")]
         public async Task<ActionResult<IEnumerable<BookingTourRequest>>> GetBookingTourRequestByCustomerId(int customerId)
         {
             try
             {
-                var requests = await _bookingTourRequestService.GetBookingTourRequestByCustomerId(customerId);
-                return Ok(requests);
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
+                {
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByCustomerId(customerId, int.Parse(accountId));
+                if (checkAuthorize.isUser || checkAuthorize.isAdmin)
+                {
+                    var requests = await _bookingTourRequestService.GetBookingTourRequestByCustomerId(customerId);
+                    return Ok(requests);
+                }
+                else
+                {
+                    return Forbid();
+                }
+
             }
             catch (Exception ex)
             {
@@ -82,13 +129,24 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminOrTourGuideRole")]
         [HttpGet("tourguide/{tourGuideId}")]
         public async Task<ActionResult<IEnumerable<BookingTourRequest>>> GetBookingTourRequestByTourGuideId(int tourGuideId)
         {
             try
             {
-                var requests = await _bookingTourRequestService.GetBookingTourRequestByTourGuideId(tourGuideId);
-                return Ok(requests);
+                var accountId = User.FindFirst("AccountId")?.Value;
+                if (accountId == null)
+                {
+                    return Forbid();
+                }
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByTourGuideId(tourGuideId, int.Parse(accountId));
+                if (checkAuthorize.isUser == false || checkAuthorize.isAdmin == false)
+                {
+                    var requests = await _bookingTourRequestService.GetBookingTourRequestByTourGuideId(tourGuideId);
+                    return Ok(requests);
+                }
+                else { return Forbid(); }
             }
             catch (Exception ex)
             {
