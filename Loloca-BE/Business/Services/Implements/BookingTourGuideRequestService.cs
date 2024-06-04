@@ -28,7 +28,7 @@ namespace Loloca_BE.Business.Services.Implements
                 {
                     var bookingRequest = _mapper.Map<BookingTourGuideRequest>(model);
                     bookingRequest.RequestDate = DateTime.Now;
-                    bookingRequest.RequestTimeOut = bookingRequest.RequestDate.AddMinutes(20); // Cộng thêm 20 phút từ RequestDate
+                    bookingRequest.RequestTimeOut = bookingRequest.RequestDate.AddDays(7); // Cộng thêm 20 phút từ RequestDate
                     bookingRequest.Status = 1;
                     await _unitOfWork.BookingTourGuideRepository.InsertAsync(bookingRequest);
                     await _unitOfWork.SaveAsync();

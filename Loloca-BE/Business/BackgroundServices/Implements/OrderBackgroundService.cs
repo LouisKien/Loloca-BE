@@ -18,7 +18,7 @@ namespace Loloca_BE.Business.BackgroundServices.Implements
             {
                 try
                 {
-                    var bookingRequests = await _unitOfWork.OrderRepository.GetAllAsync(filter: o => o.CreateAt.AddDays(3) < DateTime.UtcNow && o.Status == 0);
+                    var bookingRequests = await _unitOfWork.OrderRepository.GetAllAsync(filter: o => o.CreateAt.AddHours(72) < DateTime.Now && o.Status == 0);
                     if (bookingRequests.Any())
                     {
                         foreach (var item in bookingRequests)

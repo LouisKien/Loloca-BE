@@ -129,6 +129,7 @@ CREATE TABLE Tours (
     Name NVARCHAR(255),
     Description NVARCHAR(MAX),
     Duration INT,
+	Price DECIMAL(13,2),
     Status INT NOT NULL,
     CONSTRAINT FK_Tours_Cities FOREIGN KEY (CityId) REFERENCES Cities(CityId),
     CONSTRAINT FK_Tours_TourGuides FOREIGN KEY (TourGuideId) REFERENCES TourGuides(TourGuideId)

@@ -17,7 +17,7 @@ namespace Loloca_BE.Business.BackgroundServices.Implements
         {
             try
             {
-                var refreshTokens = await _unitOfWork.RefreshTokenRepository.GetAsync(r => r.ExpiredDate < DateTime.UtcNow);
+                var refreshTokens = await _unitOfWork.RefreshTokenRepository.GetAsync(r => r.ExpiredDate < DateTime.Now);
                 foreach (var refreshToken in refreshTokens)
                 {
                     await _unitOfWork.RefreshTokenRepository.DeleteAsync(refreshToken);

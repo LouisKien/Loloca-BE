@@ -43,12 +43,12 @@ INSERT INTO FeedbackImages (FeedbackId, UploadDate) VALUES
 (5, '2024-05-24');
 
 -- Insert into Tours
-INSERT INTO Tours (CityId, TourGuideId, Name, Description, Duration, Status) VALUES
-(1, 1, 'Hanoi City Tour', 'Explore the main attractions of Hanoi', 4, 1),
-(2, 2, 'Ho Chi Minh Adventure', 'A thrilling journey through Ho Chi Minh City', 6, 1),
-(3, 1, 'Da Nang Highlights', 'Discover the beauty of Da Nang', 5, 1),
-(4, 2, 'Nha Trang Beach Day', 'Enjoy a relaxing day at the beach', 8, 1),
-(5, 1, 'Hue Cultural Trip', 'Dive into the culture and history of Hue', 3, 1);
+INSERT INTO Tours (CityId, TourGuideId, Name, Description, Duration, Price, Status) VALUES
+(1, 1, 'Hanoi City Tour', 'Explore the main attractions of Hanoi', 4,200, 1),
+(2, 2, 'Ho Chi Minh Adventure', 'A thrilling journey through Ho Chi Minh City', 6,300, 1),
+(3, 1, 'Da Nang Highlights', 'Discover the beauty of Da Nang', 5,100, 1),
+(4, 2, 'Nha Trang Beach Day', 'Enjoy a relaxing day at the beach', 8,500, 1),
+(5, 1, 'Hue Cultural Trip', 'Dive into the culture and history of Hue', 3,560, 1);
 
 -- Insert into TourImage
 INSERT INTO TourImage (TourId, Caption, UploadDate) VALUES

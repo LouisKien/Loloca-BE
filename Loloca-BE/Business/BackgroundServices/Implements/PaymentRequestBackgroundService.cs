@@ -19,7 +19,7 @@ namespace Loloca_BE.Business.BackgroundServices.Implements
             
             try
             {
-                var pr = await _unitOfWork.PaymentRequestRepository.GetAsync(filter: p => p.RequestDate.AddDays(7) < DateTime.UtcNow && p.Status == 0);
+                var pr = await _unitOfWork.PaymentRequestRepository.GetAsync(filter: p => p.RequestDate.AddDays(7) < DateTime.Now && p.Status == 0);
                 if (pr.Any())
                 {
                     foreach (var item in pr)

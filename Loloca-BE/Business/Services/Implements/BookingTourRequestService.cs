@@ -23,15 +23,38 @@ namespace Loloca_BE.Business.Services.Implements
             {
                 try
                 {
+                    // Kiểm tra rằng StartDate và EndDate không bằng nhau
+                    if (model.StartDate == model.EndDate)
+                    {
+                        throw new Exception("Ngày bắt đầu và ngày kết thúc không được trùng nhau.");
+                    }
+
+                    // Lấy tất cả các yêu cầu đặt tour đã tồn tại cho tour cụ thể này
+                    var existingBookings = await _unitOfWork.BookingTourRequestRepository.GetAllAsync(
+                        b => b.TourId == model.TourId && b.Status == 1
+                    );
+
+                    // Kiểm tra xem ngày bắt đầu và ngày kết thúc của yêu cầu mới có trùng lặp với bất kỳ yêu cầu nào đã tồn tại hay không
+                    foreach (var booking in existingBookings)
+                    {
+                        if ((model.StartDate >= booking.StartDate && model.StartDate < booking.EndDate) ||
+                            (model.EndDate > booking.StartDate && model.EndDate <= booking.EndDate) ||
+                            (model.StartDate <= booking.StartDate && model.EndDate >= booking.EndDate))
+                        {
+                            throw new Exception($"Yêu cầu mới không được trùng lặp với bất kỳ yêu cầu nào đã tồn tại. Yêu cầu đã tồn tại: {booking.StartDate.ToString("dd/MM/yyyy")} - {booking.EndDate.ToString("dd/MM/yyyy")}");
+                        }
+                    }
+
+                    // Tạo đối tượng yêu cầu đặt tour mới
                     var bookingRequest = _mapper.Map<BookingTourRequest>(model);
                     bookingRequest.RequestDate = DateTime.Now;
-                    bookingRequest.RequestTimeOut = bookingRequest.RequestDate.AddMinutes(20); // Add 20 minutes to RequestDate
+                    bookingRequest.RequestTimeOut = bookingRequest.RequestDate.AddDays(7); // Thêm 20 phút vào RequestDate
                     bookingRequest.Status = 1;
 
                     await _unitOfWork.BookingTourRequestRepository.InsertAsync(bookingRequest);
                     await _unitOfWork.SaveAsync();
 
-                    // Retrieve the Tour entity along with TourGuide using includeProperties
+                    // Lấy thông tin Tour cùng với TourGuide
                     var tours = await _unitOfWork.TourRepository.GetAllAsync(
                         t => t.TourId == model.TourId,
                         null,
@@ -41,10 +64,10 @@ namespace Loloca_BE.Business.Services.Implements
                     var tour = tours.FirstOrDefault();
                     if (tour == null)
                     {
-                        throw new Exception("Tour not found");
+                        throw new Exception("Không tìm thấy thông tin Tour.");
                     }
 
-                    // Create notification for the customer
+                    // Tạo thông báo cho khách hàng
                     var notificationToCustomer = new Notification
                     {
                         UserId = bookingRequest.CustomerId,
@@ -57,10 +80,10 @@ namespace Loloca_BE.Business.Services.Implements
 
                     await _unitOfWork.NotificationRepository.InsertAsync(notificationToCustomer);
 
-                    // Create notification for the TourGuide
+                    // Tạo thông báo cho Hướng dẫn viên
                     var notificationToTourGuide = new Notification
                     {
-                        UserId = tour.TourGuideId,  // Use tour.TourGuideId
+                        UserId = tour.TourGuideId,  // Sử dụng tour.TourGuideId
                         UserType = "TourGuide",
                         Title = "Bạn có một yêu cầu đặt Tour mới",
                         Message = "Bạn đã được đặt để hướng dẫn một tour mới. Vui lòng kiểm tra và xác nhận yêu cầu.",
@@ -81,6 +104,9 @@ namespace Loloca_BE.Business.Services.Implements
                 }
             }
         }
+
+
+
 
         public async Task<IEnumerable<GetBookingTourRequestView>> GetAllBookingTourRequestAsync()
         {
