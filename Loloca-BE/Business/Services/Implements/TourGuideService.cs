@@ -153,36 +153,46 @@ namespace Loloca_BE.Business.Services.Implements
 
         public async Task<bool> ChangeTourGuidePassword(int tourguideId, ChangePasswordTourGuide model)
         {
-            try
+            using(var Transaction = _unitOfWork.BeginTransaction())
             {
-                var account = await _unitOfWork.AccountRepository.GetByIDAsync(tourguideId);
-                if (account == null)
+                try
                 {
-                    throw new Exception("Không tìm thấy hướng dẫn viên");
-                }
+                    var account = await _unitOfWork.AccountRepository.GetByIDAsync(tourguideId);
+                    if (account == null)
+                    {
+                        throw new Exception("Không tìm thấy hướng dẫn viên");
+                    }
 
-                // Kiểm tra vai trò của tài khoản
-                if (account.Role != 2)
+                    // Kiểm tra vai trò của tài khoản
+                    if (account.Role != 2)
+                    {
+                        throw new Exception("Không được phép thay đổi mật khẩu");
+                    }
+
+                    if (!await _authService.VerifyPassword(model.OldPassword, account.HashedPassword))
+                    {
+                        throw new Exception("Mật khẩu hiện tại không đúng");
+                    }
+
+                    account.HashedPassword = await _authService.HashPassword(model.NewPassword);
+
+                    await _unitOfWork.AccountRepository.UpdateAsync(account);
+                    await _unitOfWork.SaveAsync();
+                    var refeshTokens = await _unitOfWork.RefreshTokenRepository.GetAsync(r => r.AccountId == account.AccountId);
+                    if (refeshTokens.Any())
+                    {
+                        await _unitOfWork.RefreshTokenRepository.DeleteRangeAsync(refeshTokens);
+                    }
+                    await _unitOfWork.SaveAsync();
+                    await Transaction.CommitAsync();
+                    return true;
+                }
+                catch (Exception ex)
                 {
-                    throw new Exception("Không được phép thay đổi mật khẩu");
+                    await Transaction.RollbackAsync();
+                    // Thêm logging hoặc xử lý lỗi khác nếu cần
+                    throw new Exception("Lỗi khi thay đổi mật khẩu hướng dẫn viên", ex);
                 }
-
-                if (!await _authService.VerifyPassword(model.OldPassword, account.HashedPassword))
-                {
-                    throw new Exception("Mật khẩu hiện tại không đúng");
-                }
-
-                account.HashedPassword = await _authService.HashPassword(model.NewPassword);
-
-                await _unitOfWork.AccountRepository.UpdateAsync(account);
-                await _unitOfWork.SaveAsync();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                // Thêm logging hoặc xử lý lỗi khác nếu cần
-                throw new Exception("Lỗi khi thay đổi mật khẩu hướng dẫn viên", ex);
             }
         }
 
@@ -201,6 +211,47 @@ namespace Loloca_BE.Business.Services.Implements
 
                 return new GetTourGuideInfo
                 {
+                    AccountStatus = (await _unitOfWork.AccountRepository.GetByIDAsync(tourGuide.AccountId)).Status,
+                    CityName = (await _unitOfWork.CityRepository.GetByIDAsync(tourGuide.CityId)).Name,
+                    FirstName = tourGuide.FirstName,
+                    LastName = tourGuide.LastName,
+                    DateOfBirth = tourGuide.DateOfBirth,
+                    Gender = tourGuide.Gender,
+                    Description = tourGuide.Description,
+                    ZaloLink = tourGuide.ZaloLink,
+                    FacebookLink = tourGuide.FacebookLink,
+                    InstagramLink = tourGuide.InstagramLink,
+                    PricePerDay = tourGuide.PricePerDay,
+                    Avatar = avatarContent,
+                    AvatarUploadedTime = tourGuide.AvatarUploadDate,
+                    Cover = coverContent,
+                    CoverUploadedTime = tourGuide.CoverUploadDate
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<GetTourGuidePrivateInfo> GetPrivateTourGuideInfoAsync(int tourGuideId)
+        {
+            try
+            {
+                var tourGuide = await _unitOfWork.TourGuideRepository.GetByIDAsync(tourGuideId);
+                if (tourGuide == null)
+                {
+                    throw new Exception("Tour guide not found.");
+                }
+
+                byte[]? avatarContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
+                byte[]? coverContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.CoverPath, "1s642kdPTeuccQ0bcXXPXkEdAVCWDItmH");
+
+                return new GetTourGuidePrivateInfo
+                {
+                    Email = (await _unitOfWork.AccountRepository.GetByIDAsync(tourGuide.AccountId)).Email,
+                    TourGuideId = tourGuide.TourGuideId,
+                    CityName = (await _unitOfWork.CityRepository.GetByIDAsync(tourGuide.CityId)).Name,
                     FirstName = tourGuide.FirstName,
                     LastName = tourGuide.LastName,
                     DateOfBirth = tourGuide.DateOfBirth,
@@ -215,7 +266,8 @@ namespace Loloca_BE.Business.Services.Implements
                     Avatar = avatarContent,
                     AvatarUploadedTime = tourGuide.AvatarUploadDate,
                     Cover = coverContent,
-                    CoverUploadedTime = tourGuide.CoverUploadDate
+                    CoverUploadedTime = tourGuide.CoverUploadDate,
+                    Balance = tourGuide.Balance
                 };
             }
             catch (Exception ex)
@@ -532,6 +584,61 @@ namespace Loloca_BE.Business.Services.Implements
                     await transaction.RollbackAsync();
                     throw new Exception($"Error accepting booking request: {ex.Message}");
                 }
+            }
+        }
+
+        public async Task<int> GetTotalPage(int pageSize)
+        {
+            try
+            {
+                int total;
+                total = await _unitOfWork.CustomerRepository.CountAsync();
+                return (int)Math.Ceiling(total / (double)pageSize);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<GetTourGuideInfo>> GetTourGuidesAsync(int page, int pageSize)
+        {
+            try
+            {
+                var tourGuides = await _unitOfWork.TourGuideRepository.GetAsync(pageIndex: page, pageSize: pageSize);
+                List<GetTourGuideInfo> getTourGuides = new List<GetTourGuideInfo>(); 
+                if (tourGuides.Any())
+                {
+                    foreach (var tourGuide in tourGuides)
+                    {
+                        byte[]? avatarContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
+                        byte[]? coverContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.CoverPath, "1s642kdPTeuccQ0bcXXPXkEdAVCWDItmH");
+
+                        var item = new GetTourGuideInfo
+                        {
+                            AccountStatus = (await _unitOfWork.AccountRepository.GetByIDAsync(tourGuide.AccountId)).Status,
+                            CityName = (await _unitOfWork.CityRepository.GetByIDAsync(tourGuide.CityId)).Name,
+                            FirstName = tourGuide.FirstName,
+                            LastName = tourGuide.LastName,
+                            DateOfBirth = tourGuide.DateOfBirth,
+                            Gender = tourGuide.Gender,
+                            Description = tourGuide.Description,
+                            ZaloLink = tourGuide.ZaloLink,
+                            FacebookLink = tourGuide.FacebookLink,
+                            InstagramLink = tourGuide.InstagramLink,
+                            PricePerDay = tourGuide.PricePerDay,
+                            Avatar = avatarContent,
+                            AvatarUploadedTime = tourGuide.AvatarUploadDate,
+                            Cover = coverContent,
+                            CoverUploadedTime = tourGuide.CoverUploadDate
+                        };
+                        getTourGuides.Add(item);
+                    }
+                }
+                return getTourGuides;
+            } catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
     }

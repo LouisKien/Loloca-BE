@@ -303,22 +303,25 @@ namespace Loloca_BE.Business.Services.Implements
 
             foreach (var tour in tours)
             {
-                var tourImage = (await _unitOfWork.TourImageRepository.FindAsync(t => t.TourId == tour.TourId)).FirstOrDefault();
-
-                var item = new AllToursView
+                if(tour.TourGuide.Status == 1)
                 {
-                    CityName = tour.City.Name,
-                    Description = tour.Description,
-                    Duration = tour.Duration,
-                    Name = tour.Name,
-                    ThumbnailTourImage = tourImage == null ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourImage.ImagePath, "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o"),
-                    CityId = tour.CityId,
-                    TourGuideId = tour.TourGuideId,
-                    TourId = tour.TourId,
-                    TourGuideName = $"{tour.TourGuide.LastName} {tour.TourGuide.FirstName}"
-                };
+                    var tourImage = (await _unitOfWork.TourImageRepository.FindAsync(t => t.TourId == tour.TourId)).FirstOrDefault();
 
-                items.Add(item);
+                    var item = new AllToursView
+                    {
+                        CityName = tour.City.Name,
+                        Description = tour.Description,
+                        Duration = tour.Duration,
+                        Name = tour.Name,
+                        ThumbnailTourImage = tourImage == null ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourImage.ImagePath, "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o"),
+                        CityId = tour.CityId,
+                        TourGuideId = tour.TourGuideId,
+                        TourId = tour.TourId,
+                        TourGuideName = $"{tour.TourGuide.LastName} {tour.TourGuide.FirstName}"
+                    };
+
+                    items.Add(item);
+                }
             }
 
             return items.OrderBy(x => _random.Next()).ToList();

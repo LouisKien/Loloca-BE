@@ -107,8 +107,31 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     return NotFound("This customer does not exist");
                 }
+                if(customer.AccountStatus != 1)
+                {
+                    return NotFound("This customer is currently not available");
+                }
                 return Ok(customer);
             } catch (Exception ex)
+            {
+                return StatusCode(500, $" Internal Server Error: {ex.Message}");
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("api/v1/customer/private")]
+        public async Task<IActionResult> GetCustomerByIdPrivate([FromQuery] int customerId)
+        {
+            try
+            {
+                var customer = await _customerService.GetCustomerByIdPrivate(customerId);
+                if (customer == null)
+                {
+                    return NotFound("This customer does not exist");
+                }
+                return Ok(customer);
+            }
+            catch (Exception ex)
             {
                 return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }

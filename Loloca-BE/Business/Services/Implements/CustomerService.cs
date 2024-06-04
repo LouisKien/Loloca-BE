@@ -52,36 +52,49 @@ namespace Loloca_BE.Business.Services.Implements
 
         public async Task<bool> ChangeCustomerPassword(int customerId, ChangePassword model)
         {
-            try
+            using (var Transaction = _unitOfWork.BeginTransaction())
             {
-                var account = await _unitOfWork.AccountRepository.GetByIDAsync(customerId);
-                if (account == null)
+                try
                 {
-                    throw new Exception("Không tìm thấy khách hàng");
-                }
+                    var account = await _unitOfWork.AccountRepository.GetByIDAsync(customerId);
+                    if (account == null)
+                    {
+                        throw new Exception("Không tìm thấy khách hàng");
+                    }
 
-                // Kiểm tra vai trò của tài khoản
-                if (account.Role != 3)
+                    // Kiểm tra vai trò của tài khoản
+                    if (account.Role != 3)
+                    {
+                        throw new Exception("Không được phép thay đổi mật khẩu");
+                    }
+
+                    if (!await _authService.VerifyPassword(model.OldPassword, account.HashedPassword))
+                    {
+                        throw new Exception("Mật khẩu hiện tại không đúng");
+                    }
+
+                    account.HashedPassword = await _authService.HashPassword(model.NewPassword);
+
+                    await _unitOfWork.AccountRepository.UpdateAsync(account);
+                    
+                    var refeshTokens = await _unitOfWork.RefreshTokenRepository.GetAsync(r => r.AccountId == account.AccountId);
+                    if (refeshTokens.Any())
+                    {
+                        foreach(var refeshToken in refeshTokens)
+                        {
+                            await _unitOfWork.RefreshTokenRepository.DeleteAsync(refeshToken);
+                        }
+                    }
+                    await _unitOfWork.SaveAsync();
+                    await Transaction.CommitAsync();
+                    return true;
+                }
+                catch (Exception ex)
                 {
-                    throw new Exception("Không được phép thay đổi mật khẩu");
+                    // Thêm logging hoặc xử lý lỗi khác nếu cần
+                    await Transaction.RollbackAsync();
+                    throw new Exception("Lỗi khi thay đổi mật khẩu khách hàng", ex);
                 }
-
-                if (!await _authService.VerifyPassword(model.OldPassword, account.HashedPassword))
-                {
-                    throw new Exception("Mật khẩu hiện tại không đúng");
-                }
-
-                account.HashedPassword = await _authService.HashPassword(model.NewPassword);
-
-                await _unitOfWork.AccountRepository.UpdateAsync(account);
-                await _unitOfWork.SaveAsync();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                // Thêm logging hoặc xử lý lỗi khác nếu cần
-                throw new Exception("Lỗi khi thay đổi mật khẩu khách hàng", ex);
             }
         }
 
@@ -197,11 +210,41 @@ namespace Loloca_BE.Business.Services.Implements
                         AvatarUploadTime = customer.AvatarUploadTime,
                         CustomerId = customer.CustomerId,
                         DateOfBirth = customer.DateOfBirth,
+                        FirstName = customer.FirstName,
+                        Gender = customer.Gender,
+                        LastName = customer.LastName,
+                    };
+                    return customerView;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<GetCustomersView> GetCustomerByIdPrivate(int customerId)
+        {
+            try
+            {
+                var customer = (await _unitOfWork.CustomerRepository.GetAsync(filter: c => c.CustomerId == customerId, includeProperties: "Account")).FirstOrDefault();
+                if (customer != null)
+                {
+                    var customerView = new GetCustomersView
+                    {
+                        AccountStatus = customer.Account.Status,
+                        AddressCustomer = customer.AddressCustomer,
+                        Avatar = await _googleDriveService.GetImageFromCacheOrDriveAsync(customer.AvatarPath, "1w1JtGcVwuhWnYdpGsXrTKr_dcSnGTG4Z"),
+                        AvatarUploadTime = customer.AvatarUploadTime,
+                        CustomerId = customer.CustomerId,
+                        DateOfBirth = customer.DateOfBirth,
                         Email = customer.Account.Email,
                         FirstName = customer.FirstName,
                         Gender = customer.Gender,
                         LastName = customer.LastName,
-                        PhoneNumber = customer.PhoneNumber
+                        PhoneNumber = customer.PhoneNumber,
+                        Balance = customer.Balance
                     };
                     return customerView;
                 }
