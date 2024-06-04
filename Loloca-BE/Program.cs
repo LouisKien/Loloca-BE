@@ -234,6 +234,16 @@ recurringJobManager.AddOrUpdate(
     () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IAccountBackgroundService>().UnlockSpammedTourGuideAccount(),
     Cron.Minutely
     );
+recurringJobManager.AddOrUpdate(
+    "CompletedBookingTourGuideRequest",
+    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IBookingTourGuideRequestBackgroundService>().CompletedBookingTourGuideRequest(),
+    Cron.Minutely
+    );
+recurringJobManager.AddOrUpdate(
+    "CompletedBookingTourRequest",
+    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IBookingTourRequestBackgroundService>().CompletedBookingTourRequest(),
+    Cron.Minutely
+    );
 
 app.UseCors();
 

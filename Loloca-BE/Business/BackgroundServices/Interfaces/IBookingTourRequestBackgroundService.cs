@@ -3,5 +3,6 @@
     public interface IBookingTourRequestBackgroundService
     {
         Task RejectTimeOutBookingTourRequest();
+        Task CompletedBookingTourRequest();
     }
 }
