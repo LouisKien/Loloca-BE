@@ -2,6 +2,7 @@
 using Loloca_BE.Business.Models.CustomerView;
 using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
+using Loloca_BE.Data.Repositories.Implements;
 using Loloca_BE.Data.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.Tokens;
@@ -253,6 +254,116 @@ namespace Loloca_BE.Business.Services.Implements
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<bool> ChangeStatusBookingTourGuideAsync(int bookingTourRequestId)
+        {
+            using (var transaction = _unitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    var booking = await _unitOfWork.BookingTourGuideRepository.GetByIDAsync(bookingTourRequestId);
+
+                    if (booking == null)
+                    {
+                        throw new Exception("Booking tour request not found.");
+                    }
+
+                    if (booking.Status == 1)
+                    {
+                        booking.Status = 3;
+                        await _unitOfWork.BookingTourGuideRepository.UpdateAsync(booking);
+                        await _unitOfWork.SaveAsync();
+
+                        // Tạo thông báo cho khách hàng
+                        var customerNotification = new Notification
+                        {
+                            UserId = booking.CustomerId,
+                            UserType = "Customer",
+                            Title = "Trạng thái đặt hướng dẫn viên đã thay đổi",
+                            Message = "Chuyến đi đã đánh dấu hoàn thành.",
+                            IsRead = false,
+                            CreatedAt = DateTime.Now
+                        };
+
+                        // Tạo thông báo cho hướng dẫn viên
+                        var tourGuideNotification = new Notification
+                        {
+                            UserId = booking.TourGuideId,
+                            UserType = "TourGuide",
+                            Title = "Trạng thái đặt hướng dẫn viên đã thay đổi",
+                            Message = "Chuyến đi đã được đánh dấu hoàn thành.",
+                            IsRead = false,
+                            CreatedAt = DateTime.Now
+                        };
+
+                        await _unitOfWork.NotificationRepository.InsertAsync(customerNotification);
+                        await _unitOfWork.NotificationRepository.InsertAsync(tourGuideNotification);
+                        await _unitOfWork.SaveAsync();
+
+                        await transaction.CommitAsync();
+                        return true;
+                    }
+                    else
+                    {
+                        throw new Exception("Cannot change status because the current status is not 1.");
+                    }
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+        }
+
+        public async Task<bool> ChangeStatusBookingTourAsync(int bookingTourRequestId)
+        {
+            using (var transaction = _unitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    var booking = await _unitOfWork.BookingTourRequestRepository.GetByIDAsync(bookingTourRequestId);
+
+                    if (booking == null)
+                    {
+                        throw new Exception("Booking tour request not found.");
+                    }
+
+                    if (booking.Status == 1)
+                    {
+                        booking.Status = 3;
+                        await _unitOfWork.BookingTourRequestRepository.UpdateAsync(booking);
+                        await _unitOfWork.SaveAsync();
+
+                        // Tạo thông báo cho khách hàng
+                        var notification = new Notification
+                        {
+                            UserId = booking.CustomerId,
+                            UserType = "Customer",
+                            Title = "Trạng thái đặt tour đã thay đổi",
+                            Message = "Trạng thái đặt tour của bạn đã được thay đổi thành hoàn thành.",
+                            IsRead = false,
+                            CreatedAt = DateTime.Now
+                        };
+
+                        await _unitOfWork.NotificationRepository.InsertAsync(notification);
+                        await _unitOfWork.SaveAsync();
+
+                        await transaction.CommitAsync();
+                        return true;
+                    }
+                    else
+                    {
+                        throw new Exception("Cannot change status because the current status is not 1.");
+                    }
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
             }
         }
     }

@@ -327,19 +327,56 @@ namespace Loloca_BE.Business.Services.Implements
                         }
                     }
 
-                    // Create Feedback entity
+                    // Kiểm tra rằng chỉ một trong hai ID (BookingTourRequestsId hoặc BookingTourGuideRequestId) được cung cấp
+                    if ((feedbackModel.BookingTourRequestsId.HasValue && feedbackModel.BookingTourGuideRequestId.HasValue) ||
+                        (!feedbackModel.BookingTourRequestsId.HasValue && !feedbackModel.BookingTourGuideRequestId.HasValue))
+                    {
+                        throw new Exception("You must provide exactly one Booking ID.");
+                    }
+
+                    // Kiểm tra trạng thái và quyền sở hữu của BookingTourRequests hoặc BookingTourGuideRequest
+                    if (feedbackModel.BookingTourRequestsId.HasValue)
+                    {
+                        var bookingTourRequest = await _unitOfWork.BookingTourRequestRepository.GetByIDAsync(feedbackModel.BookingTourRequestsId.Value);
+                        if (bookingTourRequest == null || bookingTourRequest.Status != 3)
+                        {
+                            throw new Exception("Invalid or incomplete BookingTourRequest.");
+                        }
+
+                        // Kiểm tra quyền sở hữu
+                        if (bookingTourRequest.CustomerId != feedbackModel.CustomerId)
+                        {
+                            throw new Exception("BookingTourRequest does not belong to the customer.");
+                        }
+                    }
+                    else if (feedbackModel.BookingTourGuideRequestId.HasValue)
+                    {
+                        var bookingTourGuideRequest = await _unitOfWork.BookingTourGuideRepository.GetByIDAsync(feedbackModel.BookingTourGuideRequestId.Value);
+                        if (bookingTourGuideRequest == null || bookingTourGuideRequest.Status != 3)
+                        {
+                            throw new Exception("Invalid or incomplete BookingTourGuideRequest.");
+                        }
+
+                        // Kiểm tra quyền sở hữu
+                        if (bookingTourGuideRequest.CustomerId != feedbackModel.CustomerId || bookingTourGuideRequest.TourGuideId != feedbackModel.TourGuideId)
+                        {
+                            throw new Exception("BookingTourGuideRequest does not belong to the customer or tour guide.");
+                        }
+                    }
+
+                    // Tạo Feedback entity
                     var feedback = _mapper.Map<Feedback>(feedbackModel);
                     feedback.TimeFeedback = DateTime.Now;
                     feedback.Status = true;
 
-                    // Save Feedback to database
+                    // Lưu Feedback vào cơ sở dữ liệu
                     await _unitOfWork.FeedbackRepository.InsertAsync(feedback);
                     await _unitOfWork.SaveAsync();
 
                     var feedbackId = feedback.FeedbackId;
                     var feedbackImages = new List<FeedbackImage>();
 
-                    // Upload each image to Google Drive
+                    // Upload từng ảnh lên Google Drive
                     foreach (var image in images)
                     {
                         string fileName = $"Feedback_{feedbackId}_{Guid.NewGuid()}";
@@ -356,7 +393,7 @@ namespace Loloca_BE.Business.Services.Implements
                             await _googleDriveService.UploadFileAsync(stream, fileMetadata);
                         }
 
-                        // Create FeedbackImage entity
+                        // Tạo FeedbackImage entity
                         var feedbackImage = new FeedbackImage
                         {
                             FeedbackId = feedbackId,
@@ -367,18 +404,18 @@ namespace Loloca_BE.Business.Services.Implements
                         feedbackImages.Add(feedbackImage);
                     }
 
-                    // Save FeedbackImages to database
+                    // Lưu FeedbackImages vào cơ sở dữ liệu
                     if (feedbackImages.Count > 0)
                     {
                         await _unitOfWork.FeedbackImageRepository.AddRangeAsync(feedbackImages);
                         await _unitOfWork.SaveAsync();
                     }
 
-                    // Get Customer and TourGuide information
-                    var tour = await _unitOfWork.TourGuideRepository.GetByIDAsync(feedbackModel.TourGuideId);
+                    // Lấy thông tin TourGuide và Customer
+                    var tourGuide = await _unitOfWork.TourGuideRepository.GetByIDAsync(feedbackModel.TourGuideId);
                     var customer = await _unitOfWork.CustomerRepository.GetByIDAsync(feedbackModel.CustomerId);
 
-                    // Create notification for Customer
+                    // Tạo thông báo cho khách hàng
                     var notificationToCustomer = new Notification
                     {
                         UserId = customer.CustomerId,
@@ -389,12 +426,10 @@ namespace Loloca_BE.Business.Services.Implements
                         CreatedAt = DateTime.Now
                     };
 
-                    await _unitOfWork.NotificationRepository.InsertAsync(notificationToCustomer);
-
-                    // Create notification for TourGuide
+                    // Tạo thông báo cho hướng dẫn viên
                     var notificationToTourGuide = new Notification
                     {
-                        UserId = tour.TourGuideId,
+                        UserId = tourGuide.TourGuideId,
                         UserType = "TourGuide",
                         Title = "Phản hồi mới",
                         Message = "Bạn có một phản hồi mới từ khách hàng.",
@@ -402,9 +437,8 @@ namespace Loloca_BE.Business.Services.Implements
                         CreatedAt = DateTime.Now
                     };
 
+                    await _unitOfWork.NotificationRepository.InsertAsync(notificationToCustomer);
                     await _unitOfWork.NotificationRepository.InsertAsync(notificationToTourGuide);
-
-                    // Save notifications to database
                     await _unitOfWork.SaveAsync();
 
                     // Commit the transaction
@@ -424,6 +458,8 @@ namespace Loloca_BE.Business.Services.Implements
                 }
             }
         }
+
+
 
 
 

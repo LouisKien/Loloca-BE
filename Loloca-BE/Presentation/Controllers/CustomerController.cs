@@ -193,5 +193,37 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
+
+        [Authorize(Policy = "RequireCustomerRole")]
+        [HttpPost("change-status-booking-tour-guide/{bookingTourGuideRequestId}")]
+        public async Task<IActionResult> ChangeStatusBookingTourGuide(int bookingTourGuideRequestId)
+        {
+            try
+            {
+                var result = await _customerService.ChangeStatusBookingTourGuideAsync(bookingTourGuideRequestId);
+                return result ? Ok("Chuyến đi đánh dấu hoàn thành và thông báo đã được gửi.") : BadRequest("Không thể thay đổi trạng thái của chuyến đi");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [Authorize(Policy = "RequireCustomerRole")]
+        [HttpPost("change-status-booking-tour/{bookingTourRequestId}")]
+        public async Task<IActionResult> ChangeStatusBookingTour(int bookingTourRequestId)
+        {
+            try
+            {
+                var result = await _customerService.ChangeStatusBookingTourAsync(bookingTourRequestId);
+                return result ? Ok("Chuyến đi đánh dấu hoàn thành và thông báo đã được gửi.") : BadRequest("Không thể thay đổi trạng thái của chuyến đi");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
     }
 }

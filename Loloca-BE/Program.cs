@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Org.BouncyCastle.Pqc.Crypto.Lms;
 using System.Configuration;
 using System.Text;
 
@@ -34,8 +35,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+
+
+
 // Add connection string
 builder.Services.AddDbContext<LolocaDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Scoped);
+builder.Services.AddDbContext<LolocaDbContext>(ServiceLifetime.Transient);
 
 // Add Hangfire services.
 builder.Services.AddHangfire(configuration => configuration

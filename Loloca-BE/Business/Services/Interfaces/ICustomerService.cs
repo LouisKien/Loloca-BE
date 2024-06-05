@@ -11,5 +11,8 @@ namespace Loloca_BE.Business.Services.Interfaces
         Task<int> GetTotalPage(int pageSize);
         Task<GetCustomersView> GetCustomerById(int customerId);
         Task<GetCustomersView> GetCustomerByIdPrivate(int customerId);
+
+        Task<bool> ChangeStatusBookingTourGuideAsync(int bookingTourRequestId);
+        Task<bool> ChangeStatusBookingTourAsync(int bookingTourRequestId);
     }
 }
