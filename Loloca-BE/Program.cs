@@ -130,7 +130,7 @@ builder.Services.AddAuthorization(options =>
 });
 
 // Load .env file
-DotNetEnv.Env.Load();
+//DotNetEnv.Env.Load();
 
 builder.Services.AddSwaggerGen(opt =>
 {

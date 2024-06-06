@@ -28,7 +28,7 @@ namespace Loloca_BE.Presentation.Controllers
         [Authorize(Policy = "RequireTourGuideRole")]
         [AllowAnonymous]
         [HttpPost("update-avatar")]
-        public async Task<IActionResult> UpdateAvatar([FromForm] IFormFile file, [FromForm] int TourGuideId)
+        public async Task<IActionResult> UpdateAvatar([FromForm] List<IFormFile> files, [FromForm] int TourGuideId)
         {
             try
             {
@@ -40,6 +40,11 @@ namespace Loloca_BE.Presentation.Controllers
                 var checkAuthorize = await _authorizeService.CheckAuthorizeByTourGuideId(TourGuideId, int.Parse(accountId));
                 if (checkAuthorize.isUser)
                 {
+                    if (!files.Any())
+                    {
+                        return BadRequest("No file provided.");
+                    }
+                    var file = files.FirstOrDefault();
                     if (file == null)
                     {
                         return BadRequest("No file provided.");
@@ -65,7 +70,7 @@ namespace Loloca_BE.Presentation.Controllers
 
         [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPost("update-cover")]
-        public async Task<IActionResult> UpdateCover([FromForm] IFormFile file, [FromForm] int TourGuideId)
+        public async Task<IActionResult> UpdateCover([FromForm] List<IFormFile> files, [FromForm] int TourGuideId)
         {
             try
             {
@@ -77,6 +82,11 @@ namespace Loloca_BE.Presentation.Controllers
                 var checkAuthorize = await _authorizeService.CheckAuthorizeByTourGuideId(TourGuideId, int.Parse(accountId));
                 if (checkAuthorize.isUser)
                 {
+                    if (!files.Any())
+                    {
+                        return BadRequest("No file provided.");
+                    }
+                    var file = files.FirstOrDefault();
                     if (file == null)
                     {
                         return BadRequest("No file provided.");

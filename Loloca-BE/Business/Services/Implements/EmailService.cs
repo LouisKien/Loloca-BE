@@ -16,9 +16,9 @@ namespace Loloca_BE.Business.Services.Implements
         private readonly string _credentialsPath;
         private UserCredential _credential;
 
-        public EmailService()
+        public EmailService(IWebHostEnvironment env)
         {
-            _credentialsPath = Environment.GetEnvironmentVariable("CREDENTIALS_PATH");
+            _credentialsPath = Path.Combine(env.ContentRootPath, "credentials.json");
         }
 
         private async Task<UserCredential> GetCredentialAsync()

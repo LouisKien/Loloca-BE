@@ -1,4 +1,5 @@
 ﻿
+using DotNetEnv;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
@@ -13,9 +14,9 @@ namespace Loloca_BE.Business.Services.Implements
         private readonly string _credentialsPath;
         private readonly IMemoryCache _cache;
 
-        public GoogleDriveService(IMemoryCache cache)
+        public GoogleDriveService(IMemoryCache cache, IWebHostEnvironment env)
         {
-            _credentialsPath = Environment.GetEnvironmentVariable("CREDENTIALS_PATH");
+            _credentialsPath = Path.Combine(env.ContentRootPath, "credentials.json");
             _cache = cache;
         }
 

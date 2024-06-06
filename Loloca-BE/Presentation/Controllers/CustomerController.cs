@@ -84,7 +84,7 @@ namespace Loloca_BE.Presentation.Controllers
 
         [Authorize(Policy = "RequireCustomerRole")]
         [HttpPost("update-avatar")]
-        public async Task<IActionResult> UpdateAvatar([FromForm] IFormFile file, [FromForm] int CustomerId)
+        public async Task<IActionResult> UpdateAvatar([FromForm] List<IFormFile> files, [FromForm] int CustomerId)
         {
             try
             {
@@ -96,6 +96,11 @@ namespace Loloca_BE.Presentation.Controllers
                 var checkAuthorize = await _authorizeService.CheckAuthorizeByCustomerId(CustomerId, int.Parse(accountId));
                 if (checkAuthorize.isUser)
                 {
+                    if (!files.Any())
+                    {
+                        return BadRequest("No file provided.");
+                    }
+                    var file = files.FirstOrDefault();
                     if (file == null)
                     {
                         return BadRequest("No file provided.");
