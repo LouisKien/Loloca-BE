@@ -41,7 +41,7 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     switch (account_.Status)
                     {
-                        case 0:
+                        case 2:
                             return BadRequest("Your account is locked by administrator");
                         case 1:
                             if (account_.Role == 1 || account_.Role == 2)
@@ -67,7 +67,7 @@ namespace Loloca_BE.Presentation.Controllers
                                 return response;
                             }
                             break;
-                        case 2:
+                        case 0:
                             await _authService.SendVerificationEmail(account_.Email);
                             return Ok("Your account hasn't verified yet, please check email to verify your account, if you don't see it, check your spam");
                         default:

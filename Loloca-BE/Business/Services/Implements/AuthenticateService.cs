@@ -185,7 +185,7 @@ namespace Loloca_BE.Business.Services.Implements
                                         new Claim("AccountId", account.AccountId.ToString())
                                     };
 
-                                    var accessExpiration = DateTime.Now.AddHours(1);
+                                    var accessExpiration = DateTime.Now.AddMinutes(30);
                                     var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
                                     var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
 
@@ -327,7 +327,7 @@ namespace Loloca_BE.Business.Services.Implements
                     {
                         Email = registerCustomer.Email,
                         HashedPassword = await HashPassword(registerCustomer.Password),
-                        Status = 2,
+                        Status = 0,
                         Role = 3
                     };
                     await _unitOfWork.AccountRepository.InsertAsync(account);
@@ -369,7 +369,7 @@ namespace Loloca_BE.Business.Services.Implements
                     {
                         Email = registerTourGuide.Email,
                         HashedPassword = await HashPassword(registerTourGuide.Password),
-                        Status = 2,
+                        Status = 0,
                         Role = 2
                     };
                     await _unitOfWork.AccountRepository.InsertAsync(account);
@@ -445,7 +445,7 @@ namespace Loloca_BE.Business.Services.Implements
                                 new Claim("AccountId", account.AccountId.ToString())
                             };
 
-                            var accessExpiration = DateTime.Now.AddHours(1);
+                            var accessExpiration = DateTime.Now.AddMinutes(30);
                             var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
                             var newAccessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
 
@@ -493,7 +493,7 @@ namespace Loloca_BE.Business.Services.Implements
                         new Claim("AccountId", account.AccountId.ToString())
                     };
 
-                var accessExpiration = DateTime.Now.AddHours(1);
+                var accessExpiration = DateTime.Now.AddMinutes(30);
                 var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
                 var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
 
@@ -610,7 +610,7 @@ namespace Loloca_BE.Business.Services.Implements
                             var account = accounts.FirstOrDefault();
                             if (account != null)
                             {
-                                if (account.Status == 2)
+                                if (account.Status == 0)
                                 {
                                     account.Status = 1;
                                     await _unitOfWork.AccountRepository.UpdateAsync(account);
