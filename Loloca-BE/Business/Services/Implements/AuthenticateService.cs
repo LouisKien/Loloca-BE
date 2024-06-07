@@ -169,51 +169,138 @@ namespace Loloca_BE.Business.Services.Implements
                     {
                         if (account.Status == 1)
                         {
-                            // Check if the code exists in the cache and is not expired
                             if (_memoryCache.TryGetValue(email, out string? cachedCode) && cachedCode == verificationCode)
                             {
                                 try
                                 {
-                                    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-                                    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+                                    if (account.Role == 1) {
+                                        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                                        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
 
-                                    var accessClaims = new List<Claim>
+                                        var accessClaims = new List<Claim>
                                     {
                                         new Claim("Role", account.Role.ToString()),
                                         new Claim("Email", account.Email),
                                         new Claim("AccountId", account.AccountId.ToString())
                                     };
 
-                                    var accessExpiration = DateTime.Now.AddMinutes(30);
-                                    var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
-                                    var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
+                                        var accessExpiration = DateTime.Now.AddMinutes(30);
+                                        var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
+                                        var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
 
-                                    var refreshClaims = new List<Claim>
+                                        var refreshClaims = new List<Claim>
                                     {
                                         new Claim("Email", account.Email)
                                     };
-                                    var refreshExpiration = DateTime.Now.AddDays(14);
-                                    var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
-                                    var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
+                                        var refreshExpiration = DateTime.Now.AddDays(14);
+                                        var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
+                                        var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
 
-                                    // Store refresh token in the database
-                                    var token = new RefreshToken
+                                        var token = new RefreshToken
+                                        {
+                                            AccountId = account.AccountId,
+                                            Token = refreshToken,
+                                            ExpiredDate = refreshExpiration,
+                                            Status = true,
+                                            DeviceName = "Unknown"
+                                        };
+
+                                        await _unitOfWork.RefreshTokenRepository.InsertAsync(token);
+                                        await _unitOfWork.SaveAsync();
+
+                                        _memoryCache.Remove(email);
+
+                                        return (accessToken, refreshToken);
+                                    } else if(account.Role == 2)
                                     {
-                                        AccountId = account.AccountId,
-                                        Token = refreshToken,
-                                        ExpiredDate = refreshExpiration,
-                                        Status = true,
-                                        DeviceName = "Unknown"
+                                        var tourGuide = (await _unitOfWork.TourGuideRepository.GetAsync(t => t.AccountId == account.AccountId)).FirstOrDefault();
+                                        if (tourGuide != null) {
+                                            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                                            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+
+                                            var accessClaims = new List<Claim>
+                                    {
+                                        new Claim("Role", account.Role.ToString()),
+                                        new Claim("Email", account.Email),
+                                        new Claim("AccountId", account.AccountId.ToString()),
+                                        new Claim("TourGuideId", tourGuide.TourGuideId.ToString())
                                     };
 
-                                    await _unitOfWork.RefreshTokenRepository.InsertAsync(token);
-                                    await _unitOfWork.SaveAsync();
+                                            var accessExpiration = DateTime.Now.AddMinutes(30);
+                                            var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
+                                            var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
 
-                                    _memoryCache.Remove(email);
+                                            var refreshClaims = new List<Claim>
+                                    {
+                                        new Claim("Email", account.Email)
+                                    };
+                                            var refreshExpiration = DateTime.Now.AddDays(14);
+                                            var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
+                                            var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
 
-                                    return (accessToken, refreshToken);
+                                            var token = new RefreshToken
+                                            {
+                                                AccountId = account.AccountId,
+                                                Token = refreshToken,
+                                                ExpiredDate = refreshExpiration,
+                                                Status = true,
+                                                DeviceName = "Unknown"
+                                            };
 
+                                            await _unitOfWork.RefreshTokenRepository.InsertAsync(token);
+                                            await _unitOfWork.SaveAsync();
+
+                                            _memoryCache.Remove(email);
+
+                                            return (accessToken, refreshToken);
+                                        }
+                                    } else if (account.Role == 3)
+                                    {
+                                        var customer = (await _unitOfWork.CustomerRepository.GetAsync(c => c.AccountId == account.AccountId)).FirstOrDefault();
+                                        if (customer != null) {
+                                            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                                            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+
+                                            var accessClaims = new List<Claim>
+                                    {
+                                        new Claim("Role", account.Role.ToString()),
+                                        new Claim("Email", account.Email),
+                                        new Claim("AccountId", account.AccountId.ToString()),
+                                        new Claim("CustomerId", customer.CustomerId.ToString())
+                                    };
+
+                                            var accessExpiration = DateTime.Now.AddMinutes(30);
+                                            var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
+                                            var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
+
+                                            var refreshClaims = new List<Claim>
+                                    {
+                                        new Claim("Email", account.Email)
+                                    };
+                                            var refreshExpiration = DateTime.Now.AddDays(14);
+                                            var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
+                                            var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
+
+                                            var token = new RefreshToken
+                                            {
+                                                AccountId = account.AccountId,
+                                                Token = refreshToken,
+                                                ExpiredDate = refreshExpiration,
+                                                Status = true,
+                                                DeviceName = "Unknown"
+                                            };
+
+                                            await _unitOfWork.RefreshTokenRepository.InsertAsync(token);
+                                            await _unitOfWork.SaveAsync();
+
+                                            _memoryCache.Remove(email);
+
+                                            return (accessToken, refreshToken);
+                                        }
+                                    }
                                 }
                                 catch (Exception ex)
                                 {
@@ -434,36 +521,112 @@ namespace Loloca_BE.Business.Services.Implements
                         var account = await _unitOfWork.AccountRepository.GetByIDAsync(existRefreshToken.AccountId);
                         if (account != null)
                         {
-                            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-                            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+                            if(account.Role == 1)
+                            {
+                                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                                var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
 
-                            var accessClaims = new List<Claim>
+                                var accessClaims = new List<Claim>
                             {
                                 new Claim("Role", account.Role.ToString()),
                                 new Claim("Email", account.Email),
                                 new Claim("AccountId", account.AccountId.ToString())
                             };
 
-                            var accessExpiration = DateTime.Now.AddMinutes(30);
-                            var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
-                            var newAccessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
+                                var accessExpiration = DateTime.Now.AddMinutes(30);
+                                var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
+                                var newAccessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
 
-                            var refreshClaims = new List<Claim>
+                                var refreshClaims = new List<Claim>
                             {
                                 new Claim("Email", account.Email)
                             };
-                            var refreshExpiration = DateTime.Now.AddDays(14);
-                            var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
-                            var newRefreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
+                                var refreshExpiration = DateTime.Now.AddDays(14);
+                                var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
+                                var newRefreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
 
-                            existRefreshToken.Token = newRefreshToken;
-                            existRefreshToken.ExpiredDate = refreshExpiration;
+                                existRefreshToken.Token = newRefreshToken;
+                                existRefreshToken.ExpiredDate = refreshExpiration;
 
-                            await _unitOfWork.RefreshTokenRepository.UpdateAsync(existRefreshToken);
-                            await _unitOfWork.SaveAsync();
+                                await _unitOfWork.RefreshTokenRepository.UpdateAsync(existRefreshToken);
+                                await _unitOfWork.SaveAsync();
 
-                            return (newAccessToken, newRefreshToken);
+                                return (newAccessToken, newRefreshToken);
+                            } else if(account.Role == 2)
+                            {
+                                var tourGuide = (await _unitOfWork.TourGuideRepository.GetAsync(t => t.AccountId == account.AccountId)).FirstOrDefault();
+
+                                if (tourGuide != null) {
+                                    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                                    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+
+                                    var accessClaims = new List<Claim>
+                            {
+                                new Claim("Role", account.Role.ToString()),
+                                new Claim("Email", account.Email),
+                                new Claim("AccountId", account.AccountId.ToString()),
+                                new Claim("TourGuideId", tourGuide.TourGuideId.ToString())
+                            };
+
+                                    var accessExpiration = DateTime.Now.AddMinutes(30);
+                                    var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
+                                    var newAccessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
+
+                                    var refreshClaims = new List<Claim>
+                            {
+                                new Claim("Email", account.Email)
+                            };
+                                    var refreshExpiration = DateTime.Now.AddDays(14);
+                                    var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
+                                    var newRefreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
+
+                                    existRefreshToken.Token = newRefreshToken;
+                                    existRefreshToken.ExpiredDate = refreshExpiration;
+
+                                    await _unitOfWork.RefreshTokenRepository.UpdateAsync(existRefreshToken);
+                                    await _unitOfWork.SaveAsync();
+
+                                    return (newAccessToken, newRefreshToken);
+                                }
+                            } else if(account.Role == 3)
+                            {
+                                var customer = (await _unitOfWork.CustomerRepository.GetAsync(c => c.AccountId == account.AccountId)).FirstOrDefault();
+                                if (customer != null) {
+                                    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                                    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+
+                                    var accessClaims = new List<Claim>
+                            {
+                                new Claim("Role", account.Role.ToString()),
+                                new Claim("Email", account.Email),
+                                new Claim("AccountId", account.AccountId.ToString()),
+                                new Claim("CustomerId", customer.CustomerId.ToString())
+                            };
+
+                                    var accessExpiration = DateTime.Now.AddMinutes(30);
+                                    var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
+                                    var newAccessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
+
+                                    var refreshClaims = new List<Claim>
+                            {
+                                new Claim("Email", account.Email)
+                            };
+                                    var refreshExpiration = DateTime.Now.AddDays(14);
+                                    var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
+                                    var newRefreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
+
+                                    existRefreshToken.Token = newRefreshToken;
+                                    existRefreshToken.ExpiredDate = refreshExpiration;
+
+                                    await _unitOfWork.RefreshTokenRepository.UpdateAsync(existRefreshToken);
+                                    await _unitOfWork.SaveAsync();
+
+                                    return (newAccessToken, newRefreshToken);
+                                }
+                            }
                         }
 
                     }
@@ -482,43 +645,134 @@ namespace Loloca_BE.Business.Services.Implements
             if (accounts.Any())
             {
                 var account = accounts.FirstOrDefault();
-                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-                var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+                if(account.Role == 3)
+                {
+                    var customer = (await _unitOfWork.CustomerRepository.GetAsync(c => c.AccountId == account.AccountId)).FirstOrDefault();
+                    if(customer != null)
+                    {
+                        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
 
-                var accessClaims = new List<Claim>
+                        var accessClaims = new List<Claim>
+                    {
+                        new Claim("Role", account.Role.ToString()),
+                        new Claim("Email", account.Email),
+                        new Claim("AccountId", account.AccountId.ToString()),
+                        new Claim("CustomerId", customer.CustomerId.ToString())
+                    };
+
+                        var accessExpiration = DateTime.Now.AddMinutes(30);
+                        var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
+                        var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
+
+                        var refreshClaims = new List<Claim>
+                        {
+                            new Claim("Email", account.Email)
+                        };
+                        var refreshExpiration = DateTime.Now.AddDays(14);
+                        var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
+                        var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
+
+                        // Store refresh token in the database
+                        var token = new RefreshToken
+                        {
+                            AccountId = account.AccountId,
+                            Token = refreshToken,
+                            ExpiredDate = refreshExpiration,
+                            Status = true,
+                            DeviceName = "Unknown"
+                        };
+
+                        await _unitOfWork.RefreshTokenRepository.InsertAsync(token);
+                        await _unitOfWork.SaveAsync();
+
+                        return (accessToken, refreshToken);
+                    }
+                } else if (account.Role == 2)
+                {
+                    var tourGuide = (await _unitOfWork.TourGuideRepository.GetAsync(t => t.AccountId == account.AccountId)).FirstOrDefault();
+                    if(tourGuide != null)
+                    {
+                        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+
+                        var accessClaims = new List<Claim>
+                    {
+                        new Claim("Role", account.Role.ToString()),
+                        new Claim("Email", account.Email),
+                        new Claim("AccountId", account.AccountId.ToString()),
+                        new Claim("TourGuideId", tourGuide.TourGuideId.ToString()),
+                    };
+
+                        var accessExpiration = DateTime.Now.AddMinutes(30);
+                        var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
+                        var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
+
+                        var refreshClaims = new List<Claim>
+                        {
+                            new Claim("Email", account.Email)
+                        };
+                        var refreshExpiration = DateTime.Now.AddDays(14);
+                        var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
+                        var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
+
+                        // Store refresh token in the database
+                        var token = new RefreshToken
+                        {
+                            AccountId = account.AccountId,
+                            Token = refreshToken,
+                            ExpiredDate = refreshExpiration,
+                            Status = true,
+                            DeviceName = "Unknown"
+                        };
+
+                        await _unitOfWork.RefreshTokenRepository.InsertAsync(token);
+                        await _unitOfWork.SaveAsync();
+
+                        return (accessToken, refreshToken);
+                    }
+                } else if(account.Role == 1)
+                {
+                    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+
+                    var accessClaims = new List<Claim>
                     {
                         new Claim("Role", account.Role.ToString()),
                         new Claim("Email", account.Email),
                         new Claim("AccountId", account.AccountId.ToString())
                     };
 
-                var accessExpiration = DateTime.Now.AddMinutes(30);
-                var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
-                var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
+                    var accessExpiration = DateTime.Now.AddMinutes(30);
+                    var accessJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], accessClaims, expires: accessExpiration, signingCredentials: credentials);
+                    var accessToken = new JwtSecurityTokenHandler().WriteToken(accessJwt);
 
-                var refreshClaims = new List<Claim>
+                    var refreshClaims = new List<Claim>
                         {
                             new Claim("Email", account.Email)
                         };
-                var refreshExpiration = DateTime.Now.AddDays(14);
-                var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
-                var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
+                    var refreshExpiration = DateTime.Now.AddDays(14);
+                    var refreshJwt = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], refreshClaims, expires: refreshExpiration, signingCredentials: credentials);
+                    var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshJwt);
 
-                // Store refresh token in the database
-                var token = new RefreshToken
-                {
-                    AccountId = account.AccountId,
-                    Token = refreshToken,
-                    ExpiredDate = refreshExpiration,
-                    Status = true,
-                    DeviceName = "Unknown"
-                };
+                    // Store refresh token in the database
+                    var token = new RefreshToken
+                    {
+                        AccountId = account.AccountId,
+                        Token = refreshToken,
+                        ExpiredDate = refreshExpiration,
+                        Status = true,
+                        DeviceName = "Unknown"
+                    };
 
-                await _unitOfWork.RefreshTokenRepository.InsertAsync(token);
-                await _unitOfWork.SaveAsync();
+                    await _unitOfWork.RefreshTokenRepository.InsertAsync(token);
+                    await _unitOfWork.SaveAsync();
 
-                return (accessToken, refreshToken);
+                    return (accessToken, refreshToken);
+                }
             }
             return (null, null);
         }
