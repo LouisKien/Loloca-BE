@@ -22,6 +22,8 @@ namespace Loloca_BE.Business.Models.Mapper
             CreateMap<ChangePasswordTourGuide, TourGuide>();
 
             CreateMap<CityView, City>().ReverseMap();
+            CreateMap<UpdateCityView, City>().ReverseMap();
+            CreateMap<CreateCity, City>().ReverseMap();
 
             CreateMap<OrderModelView, Order>().ReverseMap();
             CreateMap<OrderForBookingTourGuideView, Order>().ReverseMap();

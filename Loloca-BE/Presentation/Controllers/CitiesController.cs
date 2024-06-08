@@ -54,7 +54,7 @@ namespace Loloca_BE.Presentation.Controllers
 
         [Authorize(Policy = "RequireAdminRole")]
         [HttpPost]
-        public async Task<IActionResult> CreateCity([FromBody] CityView cityView)
+        public async Task<IActionResult> CreateCity([FromBody] CreateCity cityView)
         {
             try
             {
@@ -78,7 +78,7 @@ namespace Loloca_BE.Presentation.Controllers
 
         [Authorize(Policy = "RequireAdminRole")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCity(int id, [FromBody] CityView cityView)
+        public async Task<IActionResult> UpdateCity(int id, [FromBody] UpdateCityView cityView)
         {
             try
             {
@@ -118,5 +118,76 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
+
+        [Authorize(Policy = "RequireAdminRole")]
+        [HttpPost("uploadcitybanner")]
+        public async Task<IActionResult> UploadCityBanner([FromForm] int CityId, [FromForm] List<IFormFile> files)
+        {
+            try
+            {
+                if (files == null || files.Count == 0)
+                {
+                    return BadRequest("No files uploaded.");
+                }
+
+                foreach (var file in files)
+                {
+                    if (!IsImage(file))
+                    {
+                        return BadRequest("Only image files are allowed.");
+                    }
+                }
+
+                foreach (var file in files)
+                {
+                    await _citiesService.UploadCityBannerAsync(file, CityId);
+                }
+
+                return Ok("City banner uploaded successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [Authorize(Policy = "RequireAdminRole")]
+        [HttpPost("uploadcitythumbnail")]
+        public async Task<IActionResult> UploadCityThumbnail([FromForm] int CityId, [FromForm] List<IFormFile> files)
+        {
+            try
+            {
+                if (files == null || files.Count == 0)
+                {
+                    return BadRequest("No files uploaded.");
+                }
+
+                foreach (var file in files)
+                {
+                    if (!IsImage(file))
+                    {
+                        return BadRequest("Only image files are allowed.");
+                    }
+                }
+
+                foreach (var file in files)
+                {
+                    await _citiesService.UploadCityThumbnailAsync(file, CityId);
+                }
+
+                return Ok("City thumbnail uploaded successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        private bool IsImage(IFormFile file)
+        {
+            return file.ContentType.StartsWith("image/");
+        }
+
+
     }
 }

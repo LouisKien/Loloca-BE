@@ -24,7 +24,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireTourGuideRole")]
-        [HttpPost("/uploadtour")]
+        [HttpPost("/api/uploadtour")]
         public async Task<IActionResult> UploadTourImages([FromForm] TourModelView tourModel, [FromForm] List<IFormFile> images)
         {
             try
@@ -55,7 +55,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireTourGuideRole")]
-        [HttpPut("/updatetour/{tourId}")]
+        [HttpPut("/api/updatetour/{tourId}")]
         public async Task<IActionResult> UpdateTour(int tourId, [FromForm] TourInfoView tourModel)
         {
             try
@@ -83,7 +83,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireAdminRole")]
-        [HttpPut("/accept-tour-change-status/{tourId}")]
+        [HttpPut("/api/accept-tour-change-status/{tourId}")]
         public async Task<IActionResult> UpdateTourStatus(int tourId, [FromForm] TourStatusView tourModel)
         {
             try
