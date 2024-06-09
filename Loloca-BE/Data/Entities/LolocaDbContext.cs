@@ -112,7 +112,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Customer>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A70122D044")
+                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7B563AD2E")
                     .IsUnique();
 
                 entity.Property(e => e.AddressCustomer).HasMaxLength(255);
@@ -223,7 +223,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<PaymentRequest>(entity =>
             {
                 entity.HasKey(e => e.PaymentId)
-                    .HasName("PK__PaymentR__9B556A380412E9BE");
+                    .HasName("PK__PaymentR__9B556A38E4FF2938");
 
                 entity.Property(e => e.Amount).HasColumnType("decimal(13, 2)");
 
@@ -278,7 +278,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<TourGuide>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A7263C03D8")
+                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A734D75261")
                     .IsUnique();
 
                 entity.Property(e => e.Address).HasMaxLength(255);
@@ -325,7 +325,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourImage>(entity =>
             {
                 entity.HasKey(e => e.ImageId)
-                    .HasName("PK__TourImag__7516F70CEEA87802");
+                    .HasName("PK__TourImag__7516F70C63329F8E");
 
                 entity.ToTable("TourImage");
 

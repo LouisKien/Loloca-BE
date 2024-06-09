@@ -4,6 +4,8 @@
     {
         public int CityId { get; set; }
         public string Name { get; set; } = null!;
+        public string? CityDescription { get; set; }
+
         public bool Status { get; set; }
     }
 }

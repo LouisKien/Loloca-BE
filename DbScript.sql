@@ -52,6 +52,7 @@ GO
 CREATE TABLE Cities (
     CityId INT IDENTITY(1,1) PRIMARY KEY,
     Name NVARCHAR(255) NOT NULL,
+	CityDescription NVARCHAR(MAX),
 	CityBanner NVARCHAR(MAX),
 	CityThumbnail NVARCHAR(MAX),
 	CityBannerUploadDate DATETIME,

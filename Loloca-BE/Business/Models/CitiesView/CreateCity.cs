@@ -3,5 +3,7 @@
     public class CreateCity
     {
         public string Name { get; set; } = null!;
+        public string? CityDescription { get; set; }
+
     }
 }

@@ -4,6 +4,8 @@
     {
         public int CityId { get; set; }
         public string Name { get; set; } = null!;
+        public string? CityDescription { get; set; }
+
         public byte[]? CityBanner { get; set; }
         public byte[]? CityThumbnail { get; set; }
         public DateTime? CityBannerUploadDate { get; set; }

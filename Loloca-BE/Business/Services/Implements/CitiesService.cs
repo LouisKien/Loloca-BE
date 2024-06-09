@@ -44,6 +44,7 @@ namespace Loloca_BE.Business.Services.Implements
                     {
                         CityId = city.CityId,
                         Name = city.Name,
+                        CityDescription = city.CityDescription,
                         CityBanner = bannerContent,
                         CityBannerUploadDate = city.CityBannerUploadDate,
                         CityThumbnail = thumbnailContent,
@@ -84,6 +85,7 @@ namespace Loloca_BE.Business.Services.Implements
                 {
                     CityId = CityId,
                     Name = city.Name,
+                    CityDescription = city.CityDescription,
                     CityBanner = bannerContent,
                     CityBannerUploadDate = city.CityBannerUploadDate,
                     CityThumbnail = thumbnailContent,
