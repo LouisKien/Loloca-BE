@@ -13,5 +13,7 @@ namespace Loloca_BE.Business.Services.Interfaces
         Task UploadFeedbackAsync(FeedbackModelView feedbackModel, List<IFormFile> images);
         Task<bool> UpdateStatusAsync(int feedbackId, bool newStatus);
 
+        Task<(int count, float average)> GetFeedbackStatsAsync(int id, bool isTour);
+
     }
 }

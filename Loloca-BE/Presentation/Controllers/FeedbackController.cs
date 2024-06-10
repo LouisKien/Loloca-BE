@@ -171,5 +171,22 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        [AllowAnonymous]
+        [HttpGet("{bookingId}/feedback-stats")]
+        public async Task<IActionResult> GetFeedbackStatsAsync(int bookingId, [FromQuery] bool isTour)
+        {
+            try
+            {
+                var stats = await _feedbackService.GetFeedbackStatsAsync(bookingId, isTour);
+                return Ok(stats);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
+
 }
+

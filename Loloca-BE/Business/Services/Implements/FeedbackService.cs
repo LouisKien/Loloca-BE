@@ -485,5 +485,18 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
+        public async Task<(int count, float average)> GetFeedbackStatsAsync(int id, bool isTour)
+        {
+            var feedbacks = isTour
+                ? await _unitOfWork.FeedbackRepository.GetAsync(f => f.BookingTourRequestsId == id)
+                : await _unitOfWork.FeedbackRepository.GetAsync(f => f.BookingTourGuideRequestId == id);
+
+            var count = feedbacks.Count();
+            var average = count > 0 ? feedbacks.Average(f => f.NumOfStars) : 0;
+
+            return (count, (float)Math.Round(average, 2));
+        }
+
+
     }
 }
