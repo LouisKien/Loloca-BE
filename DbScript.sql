@@ -116,10 +116,20 @@ CREATE TABLE Tours (
 	Category NVARCHAR(255),
     Activity NVARCHAR(255),
     Duration INT,
-    Price DECIMAL(13,2),
     Status INT NOT NULL,
     CONSTRAINT FK_Tours_Cities FOREIGN KEY (CityId) REFERENCES Cities(CityId),
     CONSTRAINT FK_Tours_TourGuides FOREIGN KEY (TourGuideId) REFERENCES TourGuides(TourGuideId)
+);
+GO
+
+CREATE TABLE TourPrices (
+    TourPriceId INT IDENTITY(1,1) PRIMARY KEY,
+    TourId INT NOT NULL,
+	TotalTouristFrom INT NOT NULL,
+	TotalTouristTo INT NOT NULL,
+	AdultPrice DECIMAL(13,2) NOT NULL,
+	ChildPrice DECIMAL(13,2) NOT NULL,
+    CONSTRAINT FK_TourPrices_Tours FOREIGN KEY (TourId) REFERENCES Tours(TourId)
 );
 GO
 
@@ -197,6 +207,8 @@ CREATE TABLE BookingTourRequests (
     RequestTimeOut DATETIME NOT NULL,
     StartDate DATETIME NOT NULL,
     EndDate DATETIME NOT NULL,
+	NumOfAdult INT NOT NULL,
+	NumOfChild INT NOT NULL,
     TotalPrice DECIMAL(13,2) NOT NULL,
     Note NVARCHAR(MAX),
     Status INT NOT NULL,

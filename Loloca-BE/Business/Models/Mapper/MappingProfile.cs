@@ -44,11 +44,6 @@ namespace Loloca_BE.Business.Models.Mapper
             CreateMap<GetBookingTourGuideRequestView, BookingTourGuideRequest>().ReverseMap();
             CreateMap<BookingTourRequestView, BookingTourRequest>().ReverseMap();
             CreateMap<GetBookingTourRequestView, BookingTourRequest>().ReverseMap();
-            CreateMap<TourHighlightDTO, TourHighlight>().ReverseMap();
-            CreateMap<TourTypeDTO, TourType>().ReverseMap();
-            CreateMap<TourExcludeDTO, TourExclude>().ReverseMap();
-            CreateMap<TourIncludeDTO, TourInclude>().ReverseMap();
-            CreateMap<TourItineraryDTO, TourItinerary>().ReverseMap();
 
 
             //CreateMap<FeedbackImageView, Feedback>().ReverseMap();

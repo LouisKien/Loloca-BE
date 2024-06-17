@@ -13,6 +13,7 @@ namespace Loloca_BE.Data.Entities
             TourImages = new HashSet<TourImage>();
             TourIncludes = new HashSet<TourInclude>();
             TourItineraries = new HashSet<TourItinerary>();
+            TourPrices = new HashSet<TourPrice>();
             TourTypes = new HashSet<TourType>();
         }
 
@@ -24,7 +25,6 @@ namespace Loloca_BE.Data.Entities
         public string? Category { get; set; }
         public string? Activity { get; set; }
         public int? Duration { get; set; }
-        public decimal? Price { get; set; }
         public int Status { get; set; }
 
         public virtual City City { get; set; } = null!;
@@ -35,6 +35,7 @@ namespace Loloca_BE.Data.Entities
         public virtual ICollection<TourImage> TourImages { get; set; }
         public virtual ICollection<TourInclude> TourIncludes { get; set; }
         public virtual ICollection<TourItinerary> TourItineraries { get; set; }
+        public virtual ICollection<TourPrice> TourPrices { get; set; }
         public virtual ICollection<TourType> TourTypes { get; set; }
     }
 }

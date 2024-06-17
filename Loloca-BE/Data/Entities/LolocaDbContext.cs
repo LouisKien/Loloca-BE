@@ -34,6 +34,7 @@ namespace Loloca_BE.Data.Entities
         public virtual DbSet<TourImage> TourImages { get; set; } = null!;
         public virtual DbSet<TourInclude> TourIncludes { get; set; } = null!;
         public virtual DbSet<TourItinerary> TourItineraries { get; set; } = null!;
+        public virtual DbSet<TourPrice> TourPrices { get; set; } = null!;
         public virtual DbSet<TourType> TourTypes { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -117,7 +118,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Customer>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7F528FF80")
+                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7A79F15AD")
                     .IsUnique();
 
                 entity.Property(e => e.AddressCustomer).HasMaxLength(255);
@@ -228,7 +229,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<PaymentRequest>(entity =>
             {
                 entity.HasKey(e => e.PaymentId)
-                    .HasName("PK__PaymentR__9B556A38359B955C");
+                    .HasName("PK__PaymentR__9B556A3810D12E70");
 
                 entity.Property(e => e.Amount).HasColumnType("decimal(13, 2)");
 
@@ -270,8 +271,6 @@ namespace Loloca_BE.Data.Entities
 
                 entity.Property(e => e.Name).HasMaxLength(255);
 
-                entity.Property(e => e.Price).HasColumnType("decimal(13, 2)");
-
                 entity.HasOne(d => d.City)
                     .WithMany(p => p.Tours)
                     .HasForeignKey(d => d.CityId)
@@ -288,7 +287,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourExclude>(entity =>
             {
                 entity.HasKey(e => e.ExcludeId)
-                    .HasName("PK__TourExcl__86705AE93C86B0C9");
+                    .HasName("PK__TourExcl__86705AE9A0ADB2ED");
 
                 entity.HasOne(d => d.Tour)
                     .WithMany(p => p.TourExcludes)
@@ -299,7 +298,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<TourGuide>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A7B53B5C59")
+                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A7BD0DF942")
                     .IsUnique();
 
                 entity.Property(e => e.Address).HasMaxLength(255);
@@ -346,7 +345,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourHighlight>(entity =>
             {
                 entity.HasKey(e => e.HighlightId)
-                    .HasName("PK__TourHigh__B11CEDF049F45C43");
+                    .HasName("PK__TourHigh__B11CEDF028AEE066");
 
                 entity.HasOne(d => d.Tour)
                     .WithMany(p => p.TourHighlights)
@@ -358,7 +357,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourImage>(entity =>
             {
                 entity.HasKey(e => e.ImageId)
-                    .HasName("PK__TourImag__7516F70C1ED90A64");
+                    .HasName("PK__TourImag__7516F70C77BE54B2");
 
                 entity.ToTable("TourImage");
 
@@ -374,7 +373,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourInclude>(entity =>
             {
                 entity.HasKey(e => e.IncludeId)
-                    .HasName("PK__TourIncl__519E2C2DCD0034C5");
+                    .HasName("PK__TourIncl__519E2C2DB24EF267");
 
                 entity.HasOne(d => d.Tour)
                     .WithMany(p => p.TourIncludes)
@@ -386,7 +385,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourItinerary>(entity =>
             {
                 entity.HasKey(e => e.ItineraryId)
-                    .HasName("PK__TourItin__361216C65EAAE815");
+                    .HasName("PK__TourItin__361216C6B93C2D47");
 
                 entity.Property(e => e.Name).HasMaxLength(255);
 
@@ -397,10 +396,23 @@ namespace Loloca_BE.Data.Entities
                     .HasConstraintName("FK_TourItineraries_Tours");
             });
 
+            modelBuilder.Entity<TourPrice>(entity =>
+            {
+                entity.Property(e => e.AdultPrice).HasColumnType("decimal(13, 2)");
+
+                entity.Property(e => e.ChildPrice).HasColumnType("decimal(13, 2)");
+
+                entity.HasOne(d => d.Tour)
+                    .WithMany(p => p.TourPrices)
+                    .HasForeignKey(d => d.TourId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_TourPrices_Tours");
+            });
+
             modelBuilder.Entity<TourType>(entity =>
             {
                 entity.HasKey(e => e.TypeId)
-                    .HasName("PK__TourType__516F03B5D59BF873");
+                    .HasName("PK__TourType__516F03B565DBB0BE");
 
                 entity.Property(e => e.TypeDetail).HasMaxLength(255);
 

@@ -96,7 +96,6 @@ namespace Loloca_BE.Business.Services.Implements
 
                     var bookingRequest = _mapper.Map<BookingTourRequest>(model);
                     bookingRequest.RequestDate = DateTime.Now;
-                    bookingRequest.TotalPrice = (decimal) tourss.Price;
                     bookingRequest.RequestTimeOut = bookingRequest.RequestDate.AddDays(7); // Thêm 20 phút vào RequestDate
                     bookingRequest.Status = 0;
 
