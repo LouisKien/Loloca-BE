@@ -88,16 +88,29 @@ namespace Loloca_BE.Business.Services.Implements
                         }
                     }
 
-                    // Tạo đối tượng yêu cầu đặt tour mới
-                    var tourss = await _unitOfWork.TourRepository.GetByIDAsync( model.TourId );
-                    if(tourss != null)
+                    int numOfTourists = model.NumOfAdult + model.NumOfChild;
+
+                    var rangePrice = (await _unitOfWork.TourPriceRepository.GetAsync(filter: t => t.TourId == model.TourId && (t.TotalTouristFrom <= numOfTourists && t.TotalTouristTo >= numOfTourists))).FirstOrDefault();
+                    if(rangePrice == null)
                     {
+                        throw new Exception("Range price doesnot exist");
                     }
 
-                    var bookingRequest = _mapper.Map<BookingTourRequest>(model);
-                    bookingRequest.RequestDate = DateTime.Now;
-                    bookingRequest.RequestTimeOut = bookingRequest.RequestDate.AddDays(7); // Thêm 20 phút vào RequestDate
-                    bookingRequest.Status = 0;
+                    var date = DateTime.Now;
+                    var bookingRequest = new BookingTourRequest
+                    {
+                        CustomerId = model.CustomerId,
+                        StartDate = model.StartDate,
+                        EndDate = model.EndDate,
+                        RequestDate = date,
+                        RequestTimeOut = date.AddDays(7),
+                        Note = model.Note,
+                        NumOfAdult = model.NumOfChild,
+                        NumOfChild = model.NumOfChild,
+                        Status = 0,
+                        TourId = model.TourId,
+                        TotalPrice = rangePrice.ChildPrice * model.NumOfChild + rangePrice.AdultPrice * model.NumOfChild
+                    };
 
                     await _unitOfWork.BookingTourRequestRepository.InsertAsync(bookingRequest);
                     await _unitOfWork.SaveAsync();
