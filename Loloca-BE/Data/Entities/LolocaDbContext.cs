@@ -117,7 +117,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Customer>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A72332F37D")
+                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7F528FF80")
                     .IsUnique();
 
                 entity.Property(e => e.AddressCustomer).HasMaxLength(255);
@@ -228,7 +228,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<PaymentRequest>(entity =>
             {
                 entity.HasKey(e => e.PaymentId)
-                    .HasName("PK__PaymentR__9B556A383982884D");
+                    .HasName("PK__PaymentR__9B556A38359B955C");
 
                 entity.Property(e => e.Amount).HasColumnType("decimal(13, 2)");
 
@@ -264,6 +264,10 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Tour>(entity =>
             {
+                entity.Property(e => e.Activity).HasMaxLength(255);
+
+                entity.Property(e => e.Category).HasMaxLength(255);
+
                 entity.Property(e => e.Name).HasMaxLength(255);
 
                 entity.Property(e => e.Price).HasColumnType("decimal(13, 2)");
@@ -284,7 +288,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourExclude>(entity =>
             {
                 entity.HasKey(e => e.ExcludeId)
-                    .HasName("PK__TourExcl__86705AE95D2179C0");
+                    .HasName("PK__TourExcl__86705AE93C86B0C9");
 
                 entity.HasOne(d => d.Tour)
                     .WithMany(p => p.TourExcludes)
@@ -295,10 +299,8 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<TourGuide>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A7FF85C6A4")
+                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A7B53B5C59")
                     .IsUnique();
-
-                entity.Property(e => e.Activity).HasMaxLength(255);
 
                 entity.Property(e => e.Address).HasMaxLength(255);
 
@@ -307,8 +309,6 @@ namespace Loloca_BE.Data.Entities
                 entity.Property(e => e.AvatarUploadDate).HasColumnType("datetime");
 
                 entity.Property(e => e.Balance).HasColumnType("decimal(13, 2)");
-
-                entity.Property(e => e.Category).HasMaxLength(255);
 
                 entity.Property(e => e.CoverPath).HasMaxLength(255);
 
@@ -346,7 +346,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourHighlight>(entity =>
             {
                 entity.HasKey(e => e.HighlightId)
-                    .HasName("PK__TourHigh__B11CEDF0B4E1B9B3");
+                    .HasName("PK__TourHigh__B11CEDF049F45C43");
 
                 entity.HasOne(d => d.Tour)
                     .WithMany(p => p.TourHighlights)
@@ -358,7 +358,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourImage>(entity =>
             {
                 entity.HasKey(e => e.ImageId)
-                    .HasName("PK__TourImag__7516F70CF46B5D37");
+                    .HasName("PK__TourImag__7516F70C1ED90A64");
 
                 entity.ToTable("TourImage");
 
@@ -374,7 +374,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourInclude>(entity =>
             {
                 entity.HasKey(e => e.IncludeId)
-                    .HasName("PK__TourIncl__519E2C2D283F9E80");
+                    .HasName("PK__TourIncl__519E2C2DCD0034C5");
 
                 entity.HasOne(d => d.Tour)
                     .WithMany(p => p.TourIncludes)
@@ -386,7 +386,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourItinerary>(entity =>
             {
                 entity.HasKey(e => e.ItineraryId)
-                    .HasName("PK__TourItin__361216C639DD9FCD");
+                    .HasName("PK__TourItin__361216C65EAAE815");
 
                 entity.Property(e => e.Name).HasMaxLength(255);
 
@@ -400,7 +400,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<TourType>(entity =>
             {
                 entity.HasKey(e => e.TypeId)
-                    .HasName("PK__TourType__516F03B59DCADE88");
+                    .HasName("PK__TourType__516F03B5D59BF873");
 
                 entity.Property(e => e.TypeDetail).HasMaxLength(255);
 

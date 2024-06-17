@@ -145,6 +145,8 @@ namespace Loloca_BE.Business.Services.Implements
                     tour.TourGuideId = tourModel.TourGuideId;
                     tour.Name = tourModel.Name;
                     tour.Description = tourModel.Description;
+                    tour.Activity = tourModel.Activity;
+                    tour.Category = tourModel.Category;
                     tour.Duration = tourModel.Duration;
                     // Cập nhật tour trong database
                     await _unitOfWork.TourRepository.UpdateAsync(tour);
@@ -248,6 +250,8 @@ namespace Loloca_BE.Business.Services.Implements
                 {
                     CityName = item.CityName,
                     Description = item.Description,
+                    Activity = item.Activity,
+                    Category = item.Category,
                     Duration = item.Duration,
                     Name = item.Name,
                     ThumbnailTourImage = item.ThumbnailTourImage,
@@ -282,6 +286,8 @@ namespace Loloca_BE.Business.Services.Implements
                 {
                     CityName = item.CityName,
                     Description = item.Description,
+                    Category = item.Category,
+                    Activity = item.Activity,
                     Duration = item.Duration,
                     Name = item.Name,
                     ThumbnailTourImage = item.ThumbnailTourImage,
@@ -311,6 +317,8 @@ namespace Loloca_BE.Business.Services.Implements
                     {
                         CityName = tour.City.Name,
                         Description = tour.Description,
+                        Activity = tour.Activity,
+                        Category = tour.Category,
                         Duration = tour.Duration,
                         Name = tour.Name,
                         ThumbnailTourImage = tourImage == null ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourImage.ImagePath, "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o"),
@@ -392,6 +400,8 @@ namespace Loloca_BE.Business.Services.Implements
                     TourGuideId = tour.TourGuideId,
                     Name = tour.Name,
                     Description = tour.Description,
+                    Activity = tour.Activity,
+                    Category = tour.Category,
                     Duration = tour.Duration,
                     Status = tour.Status,
                 };
@@ -435,6 +445,8 @@ namespace Loloca_BE.Business.Services.Implements
                             CityName = tour.City.Name,
                             Name = tour.Name,
                             Description = tour.Description,
+                            Activity = tour.Activity,
+                            Category = tour.Category,
                             Duration = tour.Duration,
                             ThumbnailTourImage = thumbnail == null ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(thumbnail.ImagePath, "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o"),
                             TourId = tour.TourId,
@@ -474,6 +486,8 @@ namespace Loloca_BE.Business.Services.Implements
                         TourGuideName = tour.TourGuide != null ? $"{tour.TourGuide.LastName} {tour.TourGuide.FirstName}" : string.Empty,
                         Name = tour.Name,
                         Description = tour.Description,
+                        Activity = tour.Activity,
+                        Category = tour.Category,
                         Duration = tour.Duration,
                         Status = tour.Status,
                         tourImgViewList = new List<TourImageView>()
