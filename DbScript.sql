@@ -10,12 +10,12 @@ CREATE TABLE Accounts (
     HashedPassword NVARCHAR(255) NOT NULL,
     Role INT NOT NULL,
     Status INT NOT NULL,
-	ReleaseDate DateTime,
-	CONSTRAINT CK_ReleaseDate_Status CHECK 
-	(
-		(Status = 3 AND ReleaseDate IS NOT NULL) OR
-		(Status <> 3 AND ReleaseDate IS NULL)
-	)
+    ReleaseDate DATETIME,
+    CONSTRAINT CK_ReleaseDate_Status CHECK 
+    (
+        (Status = 3 AND ReleaseDate IS NOT NULL) OR
+        (Status <> 3 AND ReleaseDate IS NULL)
+    )
 );
 GO
 
@@ -52,11 +52,11 @@ GO
 CREATE TABLE Cities (
     CityId INT IDENTITY(1,1) PRIMARY KEY,
     Name NVARCHAR(255) NOT NULL,
-	CityDescription NVARCHAR(MAX),
-	CityBanner NVARCHAR(MAX),
-	CityThumbnail NVARCHAR(MAX),
-	CityBannerUploadDate DATETIME,
-	CityThumbnailUploadDate DATETIME,
+    CityDescription NVARCHAR(MAX),
+    CityBanner NVARCHAR(MAX),
+    CityThumbnail NVARCHAR(MAX),
+    CityBannerUploadDate DATETIME,
+    CityThumbnailUploadDate DATETIME,
     Status BIT NOT NULL
 );
 GO
@@ -68,6 +68,8 @@ CREATE TABLE TourGuides (
     FirstName NVARCHAR(255),
     LastName NVARCHAR(255),
     Description NVARCHAR(MAX),
+    Category NVARCHAR(255),
+    Activity NVARCHAR(255),
     DateOfBirth DATETIME,
     Gender INT,
     PhoneNumber NVARCHAR(255),
@@ -82,11 +84,13 @@ CREATE TABLE TourGuides (
     CoverPath NVARCHAR(255),
     CoverUploadDate DATETIME,
     Balance DECIMAL(13,2) CHECK (Balance >= 0),
-	RejectedBookingCount INT,
+    RejectedBookingCount INT,
     CONSTRAINT FK_TourGuides_Accounts FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId),
     CONSTRAINT FK_TourGuides_Cities FOREIGN KEY (CityId) REFERENCES Cities(CityId)
 );
 GO
+
+
 
 CREATE TABLE Customers (
     CustomerId INT IDENTITY(1,1) PRIMARY KEY,
@@ -100,7 +104,7 @@ CREATE TABLE Customers (
     AvatarPath NVARCHAR(255),
     avatarUploadTime DATETIME,
     Balance DECIMAL(13,2) CHECK (Balance >= 0),
-	CanceledBookingCount INT,
+    CanceledBookingCount INT,
     CONSTRAINT FK_Customers_Accounts FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId)
 );
 GO
@@ -112,12 +116,52 @@ CREATE TABLE Tours (
     Name NVARCHAR(255),
     Description NVARCHAR(MAX),
     Duration INT,
-	Price DECIMAL(13,2),
+    Price DECIMAL(13,2),
     Status INT NOT NULL,
     CONSTRAINT FK_Tours_Cities FOREIGN KEY (CityId) REFERENCES Cities(CityId),
     CONSTRAINT FK_Tours_TourGuides FOREIGN KEY (TourGuideId) REFERENCES TourGuides(TourGuideId)
 );
 GO
+
+CREATE TABLE TourHighlights (
+    HighlightId INT IDENTITY(1,1) PRIMARY KEY,
+    TourId INT NOT NULL,
+    HighlightDetail NVARCHAR(MAX) NOT NULL,
+    CONSTRAINT FK_TourHighlights_Tours FOREIGN KEY (TourId) REFERENCES Tours(TourId)
+);
+GO
+
+CREATE TABLE TourItineraries (
+    ItineraryId INT IDENTITY(1,1) PRIMARY KEY,
+    TourId INT NOT NULL,
+    Name NVARCHAR(255) NOT NULL,
+    Description NVARCHAR(MAX) NOT NULL,
+    CONSTRAINT FK_TourItineraries_Tours FOREIGN KEY (TourId) REFERENCES Tours(TourId)
+);
+GO
+
+CREATE TABLE TourIncludes (
+    IncludeId INT IDENTITY(1,1) PRIMARY KEY,
+    TourId INT NOT NULL,
+    IncludeDetail NVARCHAR(MAX) NOT NULL,
+    CONSTRAINT FK_TourIncludes_Tours FOREIGN KEY (TourId) REFERENCES Tours(TourId)
+);
+GO
+
+CREATE TABLE TourTypes (
+    TypeId INT IDENTITY(1,1) PRIMARY KEY,
+    TourId INT NOT NULL,
+    TypeDetail NVARCHAR(255) NOT NULL,
+    CONSTRAINT FK_TourTypes_Tours FOREIGN KEY (TourId) REFERENCES Tours(TourId)
+);
+GO
+
+CREATE TABLE TourExcludes (
+    ExcludeId INT IDENTITY(1,1) PRIMARY KEY,
+    TourId INT NOT NULL,
+    ExcludeDetail NVARCHAR(MAX) NOT NULL,
+    CONSTRAINT FK_TourExcludes_Tours FOREIGN KEY (TourId) REFERENCES Tours(TourId)
+);
 
 CREATE TABLE TourImage (
     ImageId INT IDENTITY(1,1) PRIMARY KEY,
@@ -188,15 +232,15 @@ CREATE TABLE Feedbacks (
     FeedbackId INT IDENTITY(1,1) PRIMARY KEY,
     CustomerId INT NOT NULL,
     TourGuideId INT NOT NULL,
-	BookingTourRequestsId INT,
-	BookingTourGuideRequestId INT,
+    BookingTourRequestsId INT,
+    BookingTourGuideRequestId INT,
     NumOfStars INT NOT NULL,
     Content NVARCHAR(MAX),
     TimeFeedback DATETIME,
     Status BIT NOT NULL,
     CONSTRAINT FK_Feedbacks_Customers FOREIGN KEY (CustomerId) REFERENCES Customers(CustomerId),
     CONSTRAINT FK_Feedbacks_TourGuides FOREIGN KEY (TourGuideId) REFERENCES TourGuides(TourGuideId),
-	CONSTRAINT FK_Feedbacks_BookingTourGuideRequests FOREIGN KEY (BookingTourGuideRequestId) REFERENCES BookingTourGuideRequests(BookingTourGuideRequestId),
+    CONSTRAINT FK_Feedbacks_BookingTourGuideRequests FOREIGN KEY (BookingTourGuideRequestId) REFERENCES BookingTourGuideRequests(BookingTourGuideRequestId),
     CONSTRAINT FK_Feedbacks_BookingTourRequests FOREIGN KEY (BookingTourRequestsId) REFERENCES BookingTourRequests(BookingTourRequestId),
     CHECK (
         (BookingTourGuideRequestId IS NOT NULL AND BookingTourRequestsId IS NULL)
@@ -214,7 +258,6 @@ CREATE TABLE FeedbackImages (
 );
 GO
 
--- Tạo bảng Notifications
 CREATE TABLE Notifications (
     NotificationId INT IDENTITY(1,1) PRIMARY KEY,
     UserId INT NOT NULL,
@@ -227,7 +270,6 @@ CREATE TABLE Notifications (
 );
 GO
 
--- Trigger để kiểm tra và bảo đảm UserId tồn tại trong bảng tương ứng
 CREATE TRIGGER trg_Notifications_Insert
 ON Notifications
 FOR INSERT

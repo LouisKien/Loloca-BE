@@ -8,7 +8,12 @@ namespace Loloca_BE.Data.Entities
         public Tour()
         {
             BookingTourRequests = new HashSet<BookingTourRequest>();
+            TourExcludes = new HashSet<TourExclude>();
+            TourHighlights = new HashSet<TourHighlight>();
             TourImages = new HashSet<TourImage>();
+            TourIncludes = new HashSet<TourInclude>();
+            TourItineraries = new HashSet<TourItinerary>();
+            TourTypes = new HashSet<TourType>();
         }
 
         public int TourId { get; set; }
@@ -23,6 +28,11 @@ namespace Loloca_BE.Data.Entities
         public virtual City City { get; set; } = null!;
         public virtual TourGuide TourGuide { get; set; } = null!;
         public virtual ICollection<BookingTourRequest> BookingTourRequests { get; set; }
+        public virtual ICollection<TourExclude> TourExcludes { get; set; }
+        public virtual ICollection<TourHighlight> TourHighlights { get; set; }
         public virtual ICollection<TourImage> TourImages { get; set; }
+        public virtual ICollection<TourInclude> TourIncludes { get; set; }
+        public virtual ICollection<TourItinerary> TourItineraries { get; set; }
+        public virtual ICollection<TourType> TourTypes { get; set; }
     }
 }

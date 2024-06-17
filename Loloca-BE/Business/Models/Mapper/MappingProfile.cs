@@ -5,7 +5,12 @@ using Loloca_BE.Business.Models.CitiesView;
 using Loloca_BE.Business.Models.CustomerView;
 using Loloca_BE.Business.Models.FeedbackView;
 using Loloca_BE.Business.Models.OrderView;
+using Loloca_BE.Business.Models.TourExcludeView;
 using Loloca_BE.Business.Models.TourGuideView;
+using Loloca_BE.Business.Models.TourHighlightView;
+using Loloca_BE.Business.Models.TourIncludeView;
+using Loloca_BE.Business.Models.TourItineraryView;
+using Loloca_BE.Business.Models.TourTypeView;
 using Loloca_BE.Business.Models.TourView;
 using Loloca_BE.Data.Entities;
 using System.Diagnostics.Contracts;
@@ -39,6 +44,12 @@ namespace Loloca_BE.Business.Models.Mapper
             CreateMap<GetBookingTourGuideRequestView, BookingTourGuideRequest>().ReverseMap();
             CreateMap<BookingTourRequestView, BookingTourRequest>().ReverseMap();
             CreateMap<GetBookingTourRequestView, BookingTourRequest>().ReverseMap();
+            CreateMap<TourHighlightDTO, TourHighlight>().ReverseMap();
+            CreateMap<TourTypeDTO, TourType>().ReverseMap();
+            CreateMap<TourExcludeDTO, TourExclude>().ReverseMap();
+            CreateMap<TourIncludeDTO, TourInclude>().ReverseMap();
+            CreateMap<TourItineraryDTO, TourItinerary>().ReverseMap();
+
 
             //CreateMap<FeedbackImageView, Feedback>().ReverseMap();
             //CreateMap<FeebackView, Feedback>().ReverseMap();

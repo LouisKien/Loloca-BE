@@ -104,6 +104,12 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IBookingTourGuideRequestService, BookingTourGuideRequestService>();
 builder.Services.AddScoped<IBookingTourRequestService, BookingTourRequestService>();
 builder.Services.AddScoped<IAuthorizeService, AuthorizeService>();
+builder.Services.AddScoped<ITourHighlightService, TourHighlightService>();
+builder.Services.AddScoped<ITourTypeService, TourTypeService>();
+builder.Services.AddScoped<ITourExcludeService, TourExcludeService>();
+builder.Services.AddScoped<ITourIncludeService, TourIncludeService>();
+builder.Services.AddScoped<ITourItineraryService, TourItineraryService>();
+
 //builder.Services.AddScoped<IBookingTourRequestService, BookingTourRequestService>();
 
 // Register in-memory caching

@@ -33,5 +33,13 @@ namespace Loloca_BE.Data.Repositories.Interfaces
         IGenericRepository<TourGuide> TourGuideRepository { get; }
 
         IGenericRepository<TourImage> TourImageRepository { get; }
+
+
+
+        IGenericRepository<TourExclude> TourExcludeRepository { get; }
+        IGenericRepository<TourHighlight> TourHighlightRepository { get; }
+        IGenericRepository<TourInclude> TourIncludeRepository { get; }
+        IGenericRepository<TourItinerary> TourItineraryRepository { get; }
+        IGenericRepository<TourType> TourTypeRepository { get; }
     }
 }

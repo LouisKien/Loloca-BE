@@ -28,8 +28,13 @@ namespace Loloca_BE.Data.Entities
         public virtual DbSet<PaymentRequest> PaymentRequests { get; set; } = null!;
         public virtual DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         public virtual DbSet<Tour> Tours { get; set; } = null!;
+        public virtual DbSet<TourExclude> TourExcludes { get; set; } = null!;
         public virtual DbSet<TourGuide> TourGuides { get; set; } = null!;
+        public virtual DbSet<TourHighlight> TourHighlights { get; set; } = null!;
         public virtual DbSet<TourImage> TourImages { get; set; } = null!;
+        public virtual DbSet<TourInclude> TourIncludes { get; set; } = null!;
+        public virtual DbSet<TourItinerary> TourItineraries { get; set; } = null!;
+        public virtual DbSet<TourType> TourTypes { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -112,7 +117,7 @@ namespace Loloca_BE.Data.Entities
 
             modelBuilder.Entity<Customer>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7B563AD2E")
+                entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A72332F37D")
                     .IsUnique();
 
                 entity.Property(e => e.AddressCustomer).HasMaxLength(255);
@@ -223,7 +228,7 @@ namespace Loloca_BE.Data.Entities
             modelBuilder.Entity<PaymentRequest>(entity =>
             {
                 entity.HasKey(e => e.PaymentId)
-                    .HasName("PK__PaymentR__9B556A38E4FF2938");
+                    .HasName("PK__PaymentR__9B556A383982884D");
 
                 entity.Property(e => e.Amount).HasColumnType("decimal(13, 2)");
 
@@ -276,10 +281,24 @@ namespace Loloca_BE.Data.Entities
                     .HasConstraintName("FK_Tours_TourGuides");
             });
 
+            modelBuilder.Entity<TourExclude>(entity =>
+            {
+                entity.HasKey(e => e.ExcludeId)
+                    .HasName("PK__TourExcl__86705AE95D2179C0");
+
+                entity.HasOne(d => d.Tour)
+                    .WithMany(p => p.TourExcludes)
+                    .HasForeignKey(d => d.TourId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_TourExcludes_Tours");
+            });
+
             modelBuilder.Entity<TourGuide>(entity =>
             {
-                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A734D75261")
+                entity.HasIndex(e => e.AccountId, "UQ__TourGuid__349DA5A7FF85C6A4")
                     .IsUnique();
+
+                entity.Property(e => e.Activity).HasMaxLength(255);
 
                 entity.Property(e => e.Address).HasMaxLength(255);
 
@@ -288,6 +307,8 @@ namespace Loloca_BE.Data.Entities
                 entity.Property(e => e.AvatarUploadDate).HasColumnType("datetime");
 
                 entity.Property(e => e.Balance).HasColumnType("decimal(13, 2)");
+
+                entity.Property(e => e.Category).HasMaxLength(255);
 
                 entity.Property(e => e.CoverPath).HasMaxLength(255);
 
@@ -322,10 +343,22 @@ namespace Loloca_BE.Data.Entities
                     .HasConstraintName("FK_TourGuides_Cities");
             });
 
+            modelBuilder.Entity<TourHighlight>(entity =>
+            {
+                entity.HasKey(e => e.HighlightId)
+                    .HasName("PK__TourHigh__B11CEDF0B4E1B9B3");
+
+                entity.HasOne(d => d.Tour)
+                    .WithMany(p => p.TourHighlights)
+                    .HasForeignKey(d => d.TourId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_TourHighlights_Tours");
+            });
+
             modelBuilder.Entity<TourImage>(entity =>
             {
                 entity.HasKey(e => e.ImageId)
-                    .HasName("PK__TourImag__7516F70C63329F8E");
+                    .HasName("PK__TourImag__7516F70CF46B5D37");
 
                 entity.ToTable("TourImage");
 
@@ -336,6 +369,46 @@ namespace Loloca_BE.Data.Entities
                     .HasForeignKey(d => d.TourId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_TourImage_Tours");
+            });
+
+            modelBuilder.Entity<TourInclude>(entity =>
+            {
+                entity.HasKey(e => e.IncludeId)
+                    .HasName("PK__TourIncl__519E2C2D283F9E80");
+
+                entity.HasOne(d => d.Tour)
+                    .WithMany(p => p.TourIncludes)
+                    .HasForeignKey(d => d.TourId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_TourIncludes_Tours");
+            });
+
+            modelBuilder.Entity<TourItinerary>(entity =>
+            {
+                entity.HasKey(e => e.ItineraryId)
+                    .HasName("PK__TourItin__361216C639DD9FCD");
+
+                entity.Property(e => e.Name).HasMaxLength(255);
+
+                entity.HasOne(d => d.Tour)
+                    .WithMany(p => p.TourItineraries)
+                    .HasForeignKey(d => d.TourId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_TourItineraries_Tours");
+            });
+
+            modelBuilder.Entity<TourType>(entity =>
+            {
+                entity.HasKey(e => e.TypeId)
+                    .HasName("PK__TourType__516F03B59DCADE88");
+
+                entity.Property(e => e.TypeDetail).HasMaxLength(255);
+
+                entity.HasOne(d => d.Tour)
+                    .WithMany(p => p.TourTypes)
+                    .HasForeignKey(d => d.TourId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_TourTypes_Tours");
             });
 
             OnModelCreatingPartial(modelBuilder);
