@@ -82,12 +82,12 @@ INSERT INTO Customers (AccountId, FirstName, Gender, LastName, DateOfBirth, Phon
 (5, 'Michael', 1, 'Johnson', '1987-11-13', '444555666', '654 Avenue', NULL, 0 , 0);
 
 -- Insert into Tours
-INSERT INTO Tours (CityId, TourGuideId, Name, Description, Duration, Price, Status) VALUES
-(1, 1, 'Hanoi City Tour', 'Explore the main attractions of Hanoi', 4,200, 1),
-(2, 2, 'Ho Chi Minh Adventure', 'A thrilling journey through Ho Chi Minh City', 6,300, 1),
-(3, 1, 'Da Nang Highlights', 'Discover the beauty of Da Nang', 5,100, 1),
-(4, 2, 'Nha Trang Beach Day', 'Enjoy a relaxing day at the beach', 8,500, 1),
-(5, 1, 'Hue Cultural Trip', 'Dive into the culture and history of Hue', 3,560, 1);
+INSERT INTO Tours (CityId, TourGuideId, Name, Description, Duration, Status) VALUES
+(1, 1, 'Hanoi City Tour', 'Explore the main attractions of Hanoi', 4, 1),
+(2, 2, 'Ho Chi Minh Adventure', 'A thrilling journey through Ho Chi Minh City', 6, 1),
+(3, 1, 'Da Nang Highlights', 'Discover the beauty of Da Nang', 5, 1),
+(4, 2, 'Nha Trang Beach Day', 'Enjoy a relaxing day at the beach', 8, 1),
+(5, 1, 'Hue Cultural Trip', 'Dive into the culture and history of Hue', 3, 1);
 
 -- Insert into BookingTourGuideRequests
 INSERT INTO BookingTourGuideRequests (TourGuideId, CustomerId, RequestDate, RequestTimeOut, StartDate, EndDate, TotalPrice, Note, Status) VALUES
@@ -98,12 +98,12 @@ INSERT INTO BookingTourGuideRequests (TourGuideId, CustomerId, RequestDate, Requ
 (1, 2, '2024-05-14', '2024-05-19', '2024-05-28', '2024-05-29', 230.00, 'Excited for the tour', 1);
 
 -- Insert into BookingTourRequests (s?a l?i cú pháp)
-INSERT INTO BookingTourRequests (TourId, CustomerId, RequestDate, RequestTimeOut, StartDate, EndDate, TotalPrice, Note, Status) VALUES
-(1, 1, '2024-05-05', '2024-05-10', '2024-05-15', '2024-05-16', 150.00, 'Excited for this tour', 1),
-(2, 2, '2024-05-06', '2024-05-11', '2024-05-17', '2024-05-18', 180.00, 'Looking forward to it', 1),
-(3, 1, '2024-05-07', '2024-05-12', '2024-05-19', '2024-05-20', 170.00, 'Can''t wait to explore!', 1),
-(4, 2, '2024-05-08', '2024-05-13', '2024-05-21', '2024-05-22', 160.00, 'Very excited!', 1),
-(5, 1, '2024-05-09', '2024-05-14', '2024-05-23', '2024-05-24', 190.00, 'Really looking forward to this!', 1);
+INSERT INTO BookingTourRequests (TourId, CustomerId, RequestDate, RequestTimeOut,NumOfAdult,NumOfChild, StartDate, EndDate, TotalPrice, Note, Status) VALUES
+(1, 1, '2024-05-05', '2024-05-10',2,2, '2024-05-15', '2024-05-16', 150.00, 'Excited for this tour', 1),
+(2, 2, '2024-05-06', '2024-05-11',2,1, '2024-05-17', '2024-05-18', 180.00, 'Looking forward to it', 1),
+(3, 1, '2024-05-07', '2024-05-12',2,2, '2024-05-19', '2024-05-20', 170.00, 'Can''t wait to explore!', 1),
+(4, 2, '2024-05-08', '2024-05-13',2,3, '2024-05-21', '2024-05-22', 160.00, 'Very excited!', 1),
+(5, 1, '2024-05-09', '2024-05-14',2,4, '2024-05-23', '2024-05-24', 190.00, 'Really looking forward to this!', 1);
 
 -- Insert into Orders
 INSERT INTO Orders(CustomerId, BookingTourRequestsId, BookingTourGuideRequestId, OrderCode, OrderPrice, PaymentProvider, TransactionCode, Status, CreateAt) VALUES
@@ -121,3 +121,75 @@ INSERT INTO Feedbacks (CustomerId, TourGuideId, NumOfStars, Content, TimeFeedbac
 (2, 1, 5, 'Highly recommend!', '2024-05-23', 1, NULL, 2),
 (1, 2, 4, 'Enjoyed the tour', '2024-05-24', 1, 3, NULL);
 
+-- Insert into TourPrices
+INSERT INTO TourPrices (TourId, TotalTouristFrom, TotalTouristTo, AdultPrice, ChildPrice) VALUES
+(1, 1, 5, 100.00, 50.00),
+(1, 6, 10, 90.00, 45.00),
+(2, 1, 5, 150.00, 75.00),
+(2, 6, 10, 140.00, 70.00),
+(3, 1, 5, 80.00, 40.00),
+(3, 6, 10, 70.00, 35.00),
+(4, 1, 5, 200.00, 100.00),
+(4, 6, 10, 180.00, 90.00),
+(5, 1, 5, 120.00, 60.00),
+(5, 6, 10, 110.00, 55.00);
+
+-- Insert into TourExcludes
+INSERT INTO TourExcludes (TourId, ExcludeDetail) VALUES
+(1, 'Meals not included'),
+(1, 'Personal expenses'),
+(2, 'Travel insurance'),
+(2, 'Entrance fees'),
+(3, 'Hotel accommodation'),
+(3, 'Gratuities'),
+(4, 'Airfare'),
+(4, 'Airport transfer'),
+(5, 'Lunch and dinner'),
+(5, 'Any other services not mentioned in the itinerary');
+
+-- Insert into TourIncludes
+INSERT INTO TourIncludes (TourId, IncludeDetail) VALUES
+(1, 'Guide services'),
+(1, 'Transportation'),
+(2, 'Breakfast'),
+(2, 'Tour guide'),
+(3, 'Entrance fees'),
+(3, 'Bottled water'),
+(4, 'Hotel accommodation'),
+(4, 'Meals as per itinerary'),
+(5, 'Local guide'),
+(5, 'Entrance fees and activities');
+
+-- Insert into TourTypes
+INSERT INTO TourTypes (TourId, TypeDetail) VALUES
+(1, 'City tour'),
+(2, 'Adventure'),
+(3, 'Cultural'),
+(4, 'Beach'),
+(5, 'Historical');
+
+-- Insert into TourItineraries
+INSERT INTO TourItineraries (TourId, Name, Description) VALUES
+(1, 'Day 1: Arrival', 'Arrive in Hanoi and check into your hotel.'),
+(1, 'Day 2: City Tour', 'Visit main attractions in Hanoi.'),
+(2, 'Day 1: Explore', 'Discover the bustling streets of Ho Chi Minh City.'),
+(2, 'Day 2: Adventure', 'Enjoy an adventurous day in the city.'),
+(3, 'Day 1: Sightseeing', 'Tour the beautiful sites of Da Nang.'),
+(3, 'Day 2: Relax', 'Relax at the beach.'),
+(4, 'Day 1: Beach Day', 'Spend the day at the beach.'),
+(4, 'Day 2: City Tour', 'Explore the local markets and attractions.'),
+(5, 'Day 1: Cultural Sites', 'Visit cultural and historical sites in Hue.'),
+(5, 'Day 2: Local Cuisine', 'Enjoy local food and drinks.');
+
+-- Insert into TourHighlights
+INSERT INTO TourHighlights (TourId, HighlightDetail) VALUES
+(1, 'Visit the Ho Chi Minh Mausoleum'),
+(1, 'Explore the Old Quarter'),
+(2, 'Enjoy a boat ride in the Mekong Delta'),
+(2, 'Experience the nightlife of Ho Chi Minh City'),
+(3, 'Visit the Marble Mountains'),
+(3, 'Take a trip to My Khe Beach'),
+(4, 'Relax on the sandy beaches of Nha Trang'),
+(4, 'Snorkel in the clear waters'),
+(5, 'Explore the Imperial City of Hue'),
+(5, 'Visit the Thien Mu Pagoda');
