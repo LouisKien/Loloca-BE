@@ -13,7 +13,6 @@ namespace Loloca_BE.Business.Models.TourView
         public string? Activity { get; set; }
         public int? Duration { get; set; }
         public int Status { get; set; }
-        public decimal? Price { get; set; }
 
         public List<TourImageView> tourImgViewList { get; set; } = new List<TourImageView>();
         public List<TourExcludeDTO> tourExcludeDTOs { get; set; } = new List<TourExcludeDTO>();

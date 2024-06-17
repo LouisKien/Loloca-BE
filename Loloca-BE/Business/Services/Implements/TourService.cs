@@ -25,7 +25,7 @@ namespace Loloca_BE.Business.Services.Implements
             _cache = cache;
         }
 
-        public async Task UploadTourImageAsync(TourModelView tourModel, List<IFormFile> images)
+        public async Task UploadTourAsync(UploadTourDTO tourModel, List<IFormFile> images)
         {
             string parentFolderId = "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o";
 
@@ -43,8 +43,17 @@ namespace Loloca_BE.Business.Services.Implements
                     }
 
                     // Create Tour entity
-                    var tour = _mapper.Map<Tour>(tourModel);
-                    tour.Status = 0; // Thiết lập trạng thái mặc định
+                    var tour = new Tour
+                    {
+                        Activity = tourModel.Activity,
+                        Category = tourModel.Category,
+                        CityId = tourModel.CityId,
+                        Description = tourModel.Description,
+                        Duration = tourModel.Duration,
+                        Name = tourModel.Name,
+                        Status = 0,
+                        TourGuideId = tourModel.TourGuideId,
+                    };
 
                     // Save Tour to database
                     await _unitOfWork.TourRepository.InsertAsync(tour);
@@ -85,6 +94,105 @@ namespace Loloca_BE.Business.Services.Implements
                     if (tourImages.Count > 0)
                     {
                         await _unitOfWork.TourImageRepository.AddRangeAsync(tourImages);
+                        await _unitOfWork.SaveAsync();
+                    }
+
+                    if (tourModel.tourExcludeDTOs.Any()) {
+                        var Excludes = new List<TourExclude>();
+                        foreach (var excludeView in tourModel.tourExcludeDTOs)
+                        {
+                            var exclude = new TourExclude
+                            {
+                                TourId = tourId,
+                                ExcludeDetail = excludeView.ExcludeDetail
+                            };
+                            Excludes.Add(exclude);
+                        }
+                        await _unitOfWork.TourExcludeRepository.AddRangeAsync(Excludes);
+                        await _unitOfWork.SaveAsync();
+                    }
+
+                    if (tourModel.tourItineraryDTOs.Any())
+                    {
+                        var Itineraries = new List<TourItinerary>();
+                        foreach (var itineraryView in tourModel.tourItineraryDTOs)
+                        {
+                            var itinerary = new TourItinerary
+                            {
+                                TourId = tourId,
+                                Description = itineraryView.Description,
+                                Name = itineraryView.Name
+                            };
+                            Itineraries.Add(itinerary);
+                        }
+                        await _unitOfWork.TourItineraryRepository.AddRangeAsync(Itineraries);
+                        await _unitOfWork.SaveAsync();
+                    }
+
+                    if (tourModel.tourTypeDTOs.Any())
+                    {
+                        var Types = new List<TourType>();
+                        foreach (var typeView in tourModel.tourTypeDTOs)
+                        {
+                            var type = new TourType
+                            {
+                                TourId = tourId,
+                                TypeDetail = typeView.TypeDetail
+                            };
+                            Types.Add(type);
+                        }
+                        await _unitOfWork.TourTypeRepository.AddRangeAsync(Types);
+                        await _unitOfWork.SaveAsync();
+                    }
+
+                    if (tourModel.tourHighlightDTOs.Any())
+                    {
+                        var Highlights = new List<TourHighlight>();
+                        foreach (var highlightView in tourModel.tourHighlightDTOs)
+                        {
+                            var highlight = new TourHighlight
+                            {
+                                TourId = tourId,
+                                HighlightDetail = highlightView.HighlightDetail == null ? "" : highlightView.HighlightDetail
+                            };
+                            Highlights.Add(highlight);
+                        }
+                        await _unitOfWork.TourHighlightRepository.AddRangeAsync(Highlights);
+                        await _unitOfWork.SaveAsync();
+                    }
+
+                    if (tourModel.tourIncludeDTOs.Any())
+                    {
+                        var Includes = new List<TourInclude>();
+                        foreach (var includeView in tourModel.tourIncludeDTOs)
+                        {
+                            var include = new TourInclude
+                            {
+                                TourId = tourId,
+                                IncludeDetail = includeView.IncludeDetail
+                            };
+                            Includes.Add(include);
+                        }
+                        await _unitOfWork.TourIncludeRepository.AddRangeAsync(Includes);
+                        await _unitOfWork.SaveAsync();
+                    }
+
+                    if (tourModel.tourPriceDTOs.Any())
+                    {
+                        var Prices = new List<TourPrice>();
+                        foreach (var priceView in tourModel.tourPriceDTOs)
+                        {
+                            var price = new TourPrice
+                            {
+                                TourId = tourId,
+                                TotalTouristFrom = priceView.TotalTouristFrom == null ? 0 : (int) priceView.TotalTouristFrom,
+                                TotalTouristTo = priceView.TotalTouristTo == null ? 0 : (int)priceView.TotalTouristTo,
+                                AdultPrice = priceView.AdultPrice == null ? 0 : (int)priceView.AdultPrice,
+                                ChildPrice = priceView.ChildPrice == null ? 0 : (int)priceView.ChildPrice
+                            };
+                            Prices.Add(price);
+                        }
+                        await _unitOfWork.TourPriceRepository.AddRangeAsync(Prices);
                         await _unitOfWork.SaveAsync();
                     }
 
@@ -473,6 +581,15 @@ namespace Loloca_BE.Business.Services.Implements
                         ChildPrice = price.ChildPrice
                     };
                     tourView.tourPriceDTOs.Add(priceView);
+                }
+
+                foreach (var highlight in tourHighlights)
+                {
+                    var highlightView = new TourHighlightDTO
+                    {
+                        HighlightDetail = highlight.HighlightDetail
+                    };
+                    tourView.tourHighlightDTOs.Add(highlightView);
                 }
 
                 return tourView;
