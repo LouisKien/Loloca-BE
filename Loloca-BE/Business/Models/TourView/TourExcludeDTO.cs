@@ -1,4 +1,4 @@
-﻿namespace Loloca_BE.Business.Models.TourExcludeView
+﻿namespace Loloca_BE.Business.Models.TourView
 {
     public class TourExcludeDTO
     {

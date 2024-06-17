@@ -393,6 +393,13 @@ namespace Loloca_BE.Business.Services.Implements
                 // Load TourImages explicitly
                 await _unitOfWork.TourRepository.LoadCollectionAsync(tour, f => f.TourImages);
 
+                var tourExcludes = (await _unitOfWork.TourExcludeRepository.FindAsync(t => t.TourId == tour.TourId)).ToList();
+                var tourIncludes = (await _unitOfWork.TourIncludeRepository.FindAsync(t => t.TourId == tour.TourId)).ToList();
+                var tourHighlights = (await _unitOfWork.TourHighlightRepository.FindAsync(t => t.TourId == tour.TourId)).ToList();
+                var tourItineraries = (await _unitOfWork.TourItineraryRepository.FindAsync(t => t.TourId == tour.TourId)).ToList();
+                var tourTypes = (await _unitOfWork.TourTypeRepository.FindAsync(t => t.TourId == tour.TourId)).ToList();
+                var tourPrices = (await _unitOfWork.TourPriceRepository.FindAsync(t => t.TourId == tour.TourId)).ToList();
+
                 var tourView = new GetTourByIdView
                 {
                     TourId = tour.TourId,
@@ -417,6 +424,55 @@ namespace Loloca_BE.Business.Services.Implements
                     };
 
                     tourView.tourImgViewList.Add(imageView);
+                }
+
+                foreach (var include in tourIncludes)
+                {
+                    var includeView = new TourIncludeDTO
+                    {
+                        IncludeDetail = include.IncludeDetail
+                    };
+                    tourView.tourIncludeDTOs.Add(includeView);
+                }
+
+                foreach (var exclude in tourExcludes)
+                {
+                    var excludeView = new TourExcludeDTO
+                    {
+                        ExcludeDetail = exclude.ExcludeDetail
+                    };
+                    tourView.tourExcludeDTOs.Add(excludeView);
+                }
+
+                foreach (var itinerary in tourItineraries)
+                {
+                    var itineraryView = new TourItineraryDTO
+                    {
+                        Description = itinerary.Description,
+                        Name = itinerary.Name,
+                    };
+                    tourView.tourItineraryDTOs.Add(itineraryView);
+                }
+
+                foreach (var type in tourTypes)
+                {
+                    var typeView = new TourTypeDTO
+                    {
+                        TypeDetail = type.TypeDetail
+                    };
+                    tourView.tourTypeDTOs.Add(typeView);
+                }
+
+                foreach (var price in tourPrices)
+                {
+                    var priceView = new TourPriceDTO
+                    {
+                        TotalTouristFrom = price.TotalTouristFrom,
+                        TotalTouristTo = price.TotalTouristTo,
+                        AdultPrice = price.AdultPrice,
+                        ChildPrice = price.ChildPrice
+                    };
+                    tourView.tourPriceDTOs.Add(priceView);
                 }
 
                 return tourView;

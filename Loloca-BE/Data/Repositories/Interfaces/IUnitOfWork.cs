@@ -1,4 +1,6 @@
 ﻿using Loloca_BE.Data.Entities;
+using Loloca_BE.Data.Repositories.Implements;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Loloca_BE.Data.Repositories.Interfaces
@@ -31,7 +33,18 @@ namespace Loloca_BE.Data.Repositories.Interfaces
         IGenericRepository<Tour> TourRepository { get; }
 
         IGenericRepository<TourGuide> TourGuideRepository { get; }
-
         IGenericRepository<TourImage> TourImageRepository { get; }
+
+        IGenericRepository<TourExclude> TourExcludeRepository { get; }
+
+        IGenericRepository<TourHighlight> TourHighlightRepository { get; }
+
+        IGenericRepository<TourInclude> TourIncludeRepository { get; }
+
+        IGenericRepository<TourItinerary> TourItineraryRepository { get; }
+
+        IGenericRepository<TourType> TourTypeRepository { get; }
+
+        IGenericRepository<TourPrice> TourPriceRepository { get; }
     }
 }

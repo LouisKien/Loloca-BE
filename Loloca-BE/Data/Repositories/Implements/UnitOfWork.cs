@@ -23,6 +23,13 @@ namespace Loloca_BE.Data.Repositories.Implements
         private GenericRepository<Tour> _tourRepository;
         private GenericRepository<TourGuide> _tourGuideRepository;
         private GenericRepository<TourImage> _tourImageRepository;
+        private GenericRepository<TourExclude> _tourExcludeRepository;
+        private GenericRepository<TourInclude> _tourIncludeRepository;
+        private GenericRepository<TourHighlight> _tourHighlightRepository;
+        private GenericRepository<TourItinerary> _tourItineraryRepository;
+        private GenericRepository<TourType> _tourTypeRepository;
+        private GenericRepository<TourPrice> _tourPriceRepository;
+
         public UnitOfWork(LolocaDbContext dbContext)
         {
             _dbContext = dbContext;
@@ -69,5 +76,17 @@ namespace Loloca_BE.Data.Repositories.Implements
         public IGenericRepository<TourGuide> TourGuideRepository => _tourGuideRepository ??= new GenericRepository<TourGuide>(_dbContext);
 
         public IGenericRepository<TourImage> TourImageRepository => _tourImageRepository ??= new GenericRepository<TourImage>(_dbContext);
+
+        public IGenericRepository<TourExclude> TourExcludeRepository => _tourExcludeRepository ??= new GenericRepository<TourExclude>(_dbContext);
+        
+        public IGenericRepository<TourHighlight> TourHighlightRepository => _tourHighlightRepository ??= new GenericRepository<TourHighlight>(_dbContext);
+
+        public IGenericRepository<TourInclude> TourIncludeRepository => _tourIncludeRepository ??= new GenericRepository<TourInclude>(_dbContext);
+
+        public IGenericRepository<TourItinerary> TourItineraryRepository => _tourItineraryRepository ??= new GenericRepository<TourItinerary>(_dbContext);
+
+        public IGenericRepository<TourType> TourTypeRepository => _tourTypeRepository ??= new GenericRepository<TourType>(_dbContext);
+
+        public IGenericRepository<TourPrice> TourPriceRepository => _tourPriceRepository ??= new GenericRepository<TourPrice>(_dbContext);
     }
 }
