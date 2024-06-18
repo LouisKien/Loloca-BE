@@ -4,6 +4,7 @@ using Loloca_BE.Business.Services.Interfaces;
 using Loloca_BE.Data.Entities;
 using Loloca_BE.Data.Repositories.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
+using System.Linq;
 
 namespace Loloca_BE.Business.Services.Implements
 {
@@ -29,7 +30,7 @@ namespace Loloca_BE.Business.Services.Implements
         {
             string parentFolderId = "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o";
 
-            using (var transaction =  _unitOfWork.BeginTransaction())
+            using (var transaction = _unitOfWork.BeginTransaction())
             {
                 try
                 {
@@ -97,123 +98,8 @@ namespace Loloca_BE.Business.Services.Implements
                         await _unitOfWork.SaveAsync();
                     }
 
-                    if (tourModel.tourExcludeDTOs.Any()) {
-                        var Excludes = new List<TourExclude>();
-                        foreach (var excludeView in tourModel.tourExcludeDTOs)
-                        {
-                            var exclude = new TourExclude
-                            {
-                                TourId = tourId,
-                                ExcludeDetail = excludeView.ExcludeDetail
-                            };
-                            Excludes.Add(exclude);
-                        }
-                        await _unitOfWork.TourExcludeRepository.AddRangeAsync(Excludes);
-                        await _unitOfWork.SaveAsync();
-                    }
-
-                    if (tourModel.tourItineraryDTOs.Any())
-                    {
-                        var Itineraries = new List<TourItinerary>();
-                        foreach (var itineraryView in tourModel.tourItineraryDTOs)
-                        {
-                            var itinerary = new TourItinerary
-                            {
-                                TourId = tourId,
-                                Description = itineraryView.Description,
-                                Name = itineraryView.Name
-                            };
-                            Itineraries.Add(itinerary);
-                        }
-                        await _unitOfWork.TourItineraryRepository.AddRangeAsync(Itineraries);
-                        await _unitOfWork.SaveAsync();
-                    }
-
-                    if (tourModel.tourTypeDTOs.Any())
-                    {
-                        var Types = new List<TourType>();
-                        foreach (var typeView in tourModel.tourTypeDTOs)
-                        {
-                            var type = new TourType
-                            {
-                                TourId = tourId,
-                                TypeDetail = typeView.TypeDetail
-                            };
-                            Types.Add(type);
-                        }
-                        await _unitOfWork.TourTypeRepository.AddRangeAsync(Types);
-                        await _unitOfWork.SaveAsync();
-                    }
-
-                    if (tourModel.tourHighlightDTOs.Any())
-                    {
-                        var Highlights = new List<TourHighlight>();
-                        foreach (var highlightView in tourModel.tourHighlightDTOs)
-                        {
-                            var highlight = new TourHighlight
-                            {
-                                TourId = tourId,
-                                HighlightDetail = highlightView.HighlightDetail == null ? "" : highlightView.HighlightDetail
-                            };
-                            Highlights.Add(highlight);
-                        }
-                        await _unitOfWork.TourHighlightRepository.AddRangeAsync(Highlights);
-                        await _unitOfWork.SaveAsync();
-                    }
-
-                    if (tourModel.tourIncludeDTOs.Any())
-                    {
-                        var Includes = new List<TourInclude>();
-                        foreach (var includeView in tourModel.tourIncludeDTOs)
-                        {
-                            var include = new TourInclude
-                            {
-                                TourId = tourId,
-                                IncludeDetail = includeView.IncludeDetail
-                            };
-                            Includes.Add(include);
-                        }
-                        await _unitOfWork.TourIncludeRepository.AddRangeAsync(Includes);
-                        await _unitOfWork.SaveAsync();
-                    }
-
-                    if (tourModel.tourPriceDTOs.Any())
-                    {
-                        var Prices = new List<TourPrice>();
-                        foreach (var priceView in tourModel.tourPriceDTOs)
-                        {
-                            var price = new TourPrice
-                            {
-                                TourId = tourId,
-                                TotalTouristFrom = priceView.TotalTouristFrom == null ? 0 : (int) priceView.TotalTouristFrom,
-                                TotalTouristTo = priceView.TotalTouristTo == null ? 0 : (int)priceView.TotalTouristTo,
-                                AdultPrice = priceView.AdultPrice == null ? 0 : (int)priceView.AdultPrice,
-                                ChildPrice = priceView.ChildPrice == null ? 0 : (int)priceView.ChildPrice
-                            };
-                            Prices.Add(price);
-                        }
-                        await _unitOfWork.TourPriceRepository.AddRangeAsync(Prices);
-                        await _unitOfWork.SaveAsync();
-                    }
-
-                    // Create and save notifications for admins
-                    var adminAccounts = await _unitOfWork.AccountRepository.GetAllAsync(a => a.Role == 1 && a.Status == 1);
-
-                    var notifications = adminAccounts.Select(admin => new Notification
-                    {
-                        UserId = admin.AccountId,
-                        UserType = "Admin",
-                        Title = "Tour mới đã được tạo",
-                        Message = $"Chuyến đi mới đã được tạo chờ bạn xác nhận tên chuyến đi: {tour.Name}.",
-                        IsRead = false,
-                        CreatedAt = DateTime.Now
-                    }).ToList();
-
-                    if (notifications.Any())
-                    {
-                        await _unitOfWork.NotificationRepository.AddRangeAsync(notifications);
-                        await _unitOfWork.SaveAsync();
-                    }
+                    // Kiểm tra và lưu các DTO khác
+                    await SaveTourDetails(tourModel, tourId);
 
                     // Commit the transaction
                     await transaction.CommitAsync();
@@ -232,6 +118,154 @@ namespace Loloca_BE.Business.Services.Implements
                 }
             }
         }
+
+
+
+        private async Task SaveTourDetails(UploadTourDTO tourModel, int tourId)
+        {
+            // Save TourExcludes
+            if (tourModel.ExcludeDetails?.Any() == true)
+            {
+                var excludes = tourModel.ExcludeDetails.Select(detail => new TourExclude
+                {
+                    TourId = tourId,
+                    ExcludeDetail = detail
+                }).ToList();
+
+                await _unitOfWork.TourExcludeRepository.AddRangeAsync(excludes);
+                await _unitOfWork.SaveAsync();
+            }
+
+            // Save TourHighlights
+            if (tourModel.HighlightDetails?.Any() == true)
+            {
+                var highlights = tourModel.HighlightDetails.Select(detail => new TourHighlight
+                {
+                    TourId = tourId,
+                    HighlightDetail = detail
+                }).ToList();
+
+                await _unitOfWork.TourHighlightRepository.AddRangeAsync(highlights);
+                await _unitOfWork.SaveAsync();
+            }
+
+            // Save TourIncludes
+            if (tourModel.IncludeDetails?.Any() == true)
+            {
+                var includes = tourModel.IncludeDetails.Select(detail => new TourInclude
+                {
+                    TourId = tourId,
+                    IncludeDetail = detail
+                }).ToList();
+
+                await _unitOfWork.TourIncludeRepository.AddRangeAsync(includes);
+                await _unitOfWork.SaveAsync();
+            }
+
+            // Save TourItineraries
+            if (tourModel.ItineraryNames?.Any() == true && tourModel.ItineraryDescriptions?.Any() == true)
+            {
+                for (int i = 0; i < tourModel.ItineraryNames.Count; i++)
+                {
+                    var itinerary = new TourItinerary
+                    {
+                        TourId = tourId,
+                        Name = tourModel.ItineraryNames[i],
+                        Description = tourModel.ItineraryDescriptions[i]
+                    };
+
+                    await _unitOfWork.TourItineraryRepository.InsertAsync(itinerary);
+                }
+                await _unitOfWork.SaveAsync();
+            }
+
+            // Save TourTypes
+            if (tourModel.TypeDetails?.Any() == true)
+            {
+                var types = tourModel.TypeDetails.Select(detail => new TourType
+                {
+                    TourId = tourId,
+                    TypeDetail = detail
+                }).ToList();
+
+                await _unitOfWork.TourTypeRepository.AddRangeAsync(types);
+                await _unitOfWork.SaveAsync();
+            }
+
+            // Save TourPrices
+            if (tourModel.TotalTouristFrom?.Any() == true && tourModel.TotalTouristTo?.Any() == true && tourModel.AdultPrices?.Any() == true && tourModel.ChildPrices?.Any() == true)
+            {
+                var prices = tourModel.TotalTouristFrom.Zip(tourModel.TotalTouristTo, (from, to) => new { from, to })
+                                                       .Zip(tourModel.AdultPrices, (range, adult) => new { range.from, range.to, adult })
+                                                       .Zip(tourModel.ChildPrices, (combined, child) => new TourPrice
+                                                       {
+                                                           TourId = tourId,
+                                                           TotalTouristFrom = combined.from ?? 0,
+                                                           TotalTouristTo = combined.to ?? 0,
+                                                           AdultPrice = combined.adult ?? 0,
+                                                           ChildPrice = child ?? 0
+                                                       }).ToList();
+
+                // Validate the list of TourPrices
+                ValidateTourPrices(prices);
+
+                await _unitOfWork.TourPriceRepository.AddRangeAsync(prices);
+                await _unitOfWork.SaveAsync();
+            }
+
+            // Log hoặc Debug để kiểm tra dữ liệu
+            Console.WriteLine("Tour details saved successfully.");
+        }
+
+
+        public void ValidateTourPrices(List<TourPrice> tourPrices)
+        {
+            // Kiểm tra nếu danh sách null hoặc rỗng
+            if (tourPrices == null || !tourPrices.Any())
+            {
+                throw new ArgumentException("Tour prices cannot be null or empty.");
+            }
+
+            // Biến để giữ giá trị "to" cuối cùng đã được kiểm tra
+            int latestTo = 0;
+
+            // Duyệt qua từng phần tử trong danh sách tourPrices
+            for (int i = 0; i < tourPrices.Count; i++)
+            {
+                var currentPrice = tourPrices[i];
+
+                // Nếu là phần tử đầu tiên
+                if (i == 0)
+                {
+                    // Kiểm tra xem phần tử đầu tiên có bắt đầu từ 1 hay không
+                    if (latestTo == 0 && currentPrice.TotalTouristFrom != 1)
+                    {
+                        throw new InvalidOperationException("The first TourPrice must start from 1.");
+                    }
+                    if (latestTo == 0)
+                    {
+                        // Cập nhật latestTo với giá trị "to" của phần tử đầu tiên
+                        latestTo = currentPrice.TotalTouristTo;
+                    }
+                }
+                else
+                {
+                    // Kiểm tra xem khoảng giá trị hiện tại có liên tục với khoảng giá trị trước đó không
+                    if (currentPrice.TotalTouristFrom != latestTo + 1)
+                    {
+                        throw new InvalidOperationException($"The TourPrice range is not continuous at index {i}.");
+                    }
+                    else
+                    {
+                        // Cập nhật latestTo với giá trị "to" của khoảng giá trị hiện tại
+                        latestTo = currentPrice.TotalTouristTo;
+                    }
+                }
+            }
+        }
+
+
+
 
 
 

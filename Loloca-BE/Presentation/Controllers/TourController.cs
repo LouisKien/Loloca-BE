@@ -25,7 +25,7 @@ namespace Loloca_BE.Presentation.Controllers
 
         [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPost("/api/uploadtour")]
-        public async Task<IActionResult> UploadTourImages([FromBody] UploadTourDTO tourModel, [FromForm] List<IFormFile> images)
+        public async Task<IActionResult> UploadTourImages([FromForm] UploadTourDTO tourModel, [FromForm] List<IFormFile> images)
         {
             try
             {
@@ -37,14 +37,15 @@ namespace Loloca_BE.Presentation.Controllers
                 var checkAuthorize = await _authorizeService.CheckAuthorizeByTourGuideId(tourModel.TourGuideId, int.Parse(accountId));
                 if (checkAuthorize.isUser)
                 {
-                    //if (images == null || images.Count == 0)
-                    //{
-                    //    return BadRequest("No images uploaded.");
-                    //}
+                    if (images == null || images.Count == 0)
+                    {
+                        return BadRequest("No images uploaded.");
+                    }
                     await _tourService.UploadTourAsync(tourModel, images);
                     return Ok("Tour uploaded successfully.");
                 }
-                else {
+                else
+                {
                     return Forbid();
                 }
             }
@@ -53,6 +54,9 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+
+
 
         [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPut("/api/updatetour/{tourId}")]

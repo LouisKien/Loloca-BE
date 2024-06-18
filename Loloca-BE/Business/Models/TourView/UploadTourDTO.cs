@@ -10,11 +10,15 @@
         public string? Activity { get; set; }
         public int? Duration { get; set; }
 
-        public List<TourExcludeDTO>? tourExcludeDTOs { get; set; }
-        public List<TourHighlightDTO>? tourHighlightDTOs { get; set; }
-        public List<TourIncludeDTO>? tourIncludeDTOs { get; set; }
-        public List<TourItineraryDTO>? tourItineraryDTOs { get; set; }
-        public List<TourTypeDTO>? tourTypeDTOs { get; set; }
-        public List<TourPriceDTO>? tourPriceDTOs { get; set; }
+        public List<string>? ExcludeDetails { get; set; }
+        public List<string>? HighlightDetails { get; set; }
+        public List<string>? IncludeDetails { get; set; }
+        public List<string>? ItineraryNames { get; set; }
+        public List<string>? ItineraryDescriptions { get; set; }
+        public List<string>? TypeDetails { get; set; }
+        public List<int?>? TotalTouristFrom { get; set; }
+        public List<int?>? TotalTouristTo { get; set; }
+        public List<decimal?>? AdultPrices { get; set; }
+        public List<decimal?>? ChildPrices { get; set; }
     }
 }
