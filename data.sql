@@ -90,12 +90,12 @@ INSERT INTO Tours (CityId, TourGuideId, Name, Description, Duration, Status) VAL
 (5, 1, 'Hue Cultural Trip', 'Dive into the culture and history of Hue', 3, 1);
 
 -- Insert into BookingTourGuideRequests
-INSERT INTO BookingTourGuideRequests (TourGuideId, CustomerId, RequestDate, RequestTimeOut, StartDate, EndDate, TotalPrice, Note, Status) VALUES
-(1, 2, '2024-05-10', '2024-05-15', '2024-05-20', '2024-05-21', 200.00, 'Looking forward to it', 1),
-(2, 1, '2024-05-11', '2024-05-16', '2024-05-22', '2024-05-23', 240.00, 'Excited for the tour', 1),
-(1, 2, '2024-05-12', '2024-05-17', '2024-05-24', '2024-05-25', 220.00, 'Cant wait!', 1),
-(2, 1, '2024-05-13', '2024-05-18', '2024-05-26', '2024-05-27', 260.00, 'Looking forward to it', 1),
-(1, 2, '2024-05-14', '2024-05-19', '2024-05-28', '2024-05-29', 230.00, 'Excited for the tour', 1);
+INSERT INTO BookingTourGuideRequests (TourGuideId, CustomerId, RequestDate, RequestTimeOut, StartDate, EndDate,NumOfAdult,NumOfChild, TotalPrice, Note, Status) VALUES
+(1, 2, '2024-05-10', '2024-05-15', '2024-05-20', '2024-05-21',1,2, 200.00, 'Looking forward to it', 1),
+(2, 1, '2024-05-11', '2024-05-16', '2024-05-22', '2024-05-23',1,2, 240.00, 'Excited for the tour', 1),
+(1, 2, '2024-05-12', '2024-05-17', '2024-05-24', '2024-05-25',1,2, 220.00, 'Cant wait!', 1),
+(2, 1, '2024-05-13', '2024-05-18', '2024-05-26', '2024-05-27',1,2, 260.00, 'Looking forward to it', 1),
+(1, 2, '2024-05-14', '2024-05-19', '2024-05-28', '2024-05-29',1,2, 230.00, 'Excited for the tour', 1);
 
 -- Insert into BookingTourRequests (s?a l?i cú pháp)
 INSERT INTO BookingTourRequests (TourId, CustomerId, RequestDate, RequestTimeOut,NumOfAdult,NumOfChild, StartDate, EndDate, TotalPrice, Note, Status) VALUES

@@ -191,6 +191,8 @@ CREATE TABLE BookingTourGuideRequests (
     RequestTimeOut DATETIME NOT NULL,
     StartDate DATETIME NOT NULL,
     EndDate DATETIME NOT NULL,
+	NumOfAdult INT NOT NULL,
+	NumOfChild INT NOT NULL,
     TotalPrice DECIMAL(13,2) NOT NULL,
     Note NVARCHAR(MAX),
     Status INT NOT NULL,

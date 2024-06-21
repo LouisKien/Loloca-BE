@@ -106,9 +106,16 @@ namespace Loloca_BE.Business.Services.Implements
                     var bookingRequest = _mapper.Map<BookingTourGuideRequest>(model);
                     TimeSpan numOfDays = bookingRequest.EndDate - bookingRequest.StartDate;
                     bookingRequest.RequestDate = DateTime.Now;
-                    bookingRequest.TotalPrice = (decimal) numOfDays.Days * (decimal) tourGuides.PricePerDay;
+
+
+                    // Tổng giá Child giảm 30%
+                    decimal adultPrice = numOfDays.Days * (decimal)tourGuides.PricePerDay * model.NumOfAdult;
+                    decimal childPrice = numOfDays.Days * (decimal)tourGuides.PricePerDay * model.NumOfChild * 0.7m;
+                    bookingRequest.TotalPrice = adultPrice + childPrice;
+
+
                     bookingRequest.RequestTimeOut = bookingRequest.RequestDate.AddDays(7); // Thêm 20 phút vào RequestDate
-                    bookingRequest.Status = 1;
+                    bookingRequest.Status = 0;
 
                     await _unitOfWork.BookingTourGuideRepository.InsertAsync(bookingRequest);
                     await _unitOfWork.SaveAsync();

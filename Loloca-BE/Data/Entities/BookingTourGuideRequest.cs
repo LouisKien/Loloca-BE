@@ -18,6 +18,8 @@ namespace Loloca_BE.Data.Entities
         public DateTime RequestTimeOut { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public int NumOfAdult { get; set; }
+        public int NumOfChild { get; set; }
         public decimal TotalPrice { get; set; }
         public string? Note { get; set; }
         public int Status { get; set; }
