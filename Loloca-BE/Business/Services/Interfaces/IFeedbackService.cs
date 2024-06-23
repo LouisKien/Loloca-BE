@@ -15,5 +15,8 @@ namespace Loloca_BE.Business.Services.Interfaces
 
         Task<(int count, float average)> GetFeedbackStatsAsync(int id, bool isTour);
 
+        Task<IEnumerable<FeebackView>> GetFeedbacksByTourIdAsync(int tourId);
+
+        Task<IEnumerable<FeebackView>> GetFeedbacksByCityIdAsync(int cityId);
     }
 }

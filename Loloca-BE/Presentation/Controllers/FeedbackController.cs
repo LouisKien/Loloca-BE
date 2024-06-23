@@ -186,6 +186,46 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+
+        [AllowAnonymous]
+        [HttpGet("tour/{tourId}/feedbacks")]
+        public async Task<IActionResult> GetFeedbacksByTourIdAsync(int tourId)
+        {
+            try
+            {
+                var feedbacks = await _feedbackService.GetFeedbacksByTourIdAsync(tourId);
+                if (feedbacks == null || !feedbacks.Any())
+                {
+                    return NotFound($"No feedback found for tour with ID {tourId}");
+                }
+                return Ok(feedbacks);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
+        [AllowAnonymous]
+        [HttpGet("city/{cityId}/feedbacks")]
+        public async Task<IActionResult> GetFeedbacksByCityIdAsync(int cityId)
+        {
+            try
+            {
+                var feedbacks = await _feedbackService.GetFeedbacksByCityIdAsync(cityId);
+                if (feedbacks == null || !feedbacks.Any())
+                {
+                    return NotFound($"No feedback found for city with ID {cityId}");
+                }
+                return Ok(feedbacks);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 
 }

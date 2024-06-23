@@ -498,5 +498,126 @@ namespace Loloca_BE.Business.Services.Implements
         }
 
 
+
+
+        public async Task<IEnumerable<FeebackView>> GetFeedbacksByTourIdAsync(int tourId)
+        {
+            try
+            {
+                // Fetch all BookingTourRequests for the given TourId
+                var bookingTourRequests = await _unitOfWork.BookingTourRequestRepository.GetAsync(b => b.TourId == tourId);
+                var bookingTourRequestIds = bookingTourRequests.Select(b => b.BookingTourRequestId).ToList();
+
+                if (bookingTourRequestIds.Count == 0)
+                {
+                    return null; // No bookings found for the given TourId
+                }
+
+                // Fetch all feedbacks for the given BookingTourRequestIds
+                var feedbacks = await _unitOfWork.FeedbackRepository.GetAsync(
+                    f => bookingTourRequestIds.Contains(f.BookingTourRequestsId.Value),
+                    includeProperties: "FeedbackImages"
+                );
+
+                if (feedbacks == null || !feedbacks.Any())
+                {
+                    return null; // No feedbacks found for the given TourId
+                }
+
+                var feedbackViews = new List<FeebackView>();
+
+                foreach (var feedback in feedbacks)
+                {
+                    await _unitOfWork.FeedbackRepository.LoadCollectionAsync(feedback, f => f.FeedbackImages);
+
+                    var feedbackView = new FeebackView
+                    {
+                        FeedbackId = feedback.FeedbackId,
+                        CustomerId = feedback.CustomerId,
+                        TourGuideId = feedback.TourGuideId,
+                        NumOfStars = feedback.NumOfStars,
+                        Content = feedback.Content,
+                        Status = feedback.Status,
+                        TimeFeedback = feedback.TimeFeedback,
+                        feedBackImgViewList = await GetFeedbackImageViewsAsync(feedback.FeedbackImages.ToList())
+                    };
+
+                    feedbackViews.Add(feedbackView);
+                }
+
+                return feedbackViews;
+            }
+            catch (Exception ex)
+            {
+                // Handle exception and rethrow
+                throw new Exception($"Error occurred while fetching feedbacks for tour with ID {tourId}: {ex.Message}");
+            }
+        }
+
+        public async Task<IEnumerable<FeebackView>> GetFeedbacksByCityIdAsync(int cityId)
+        {
+            try
+            {
+                // Fetch all TourGuides for the given CityId
+                var tourGuides = await _unitOfWork.TourGuideRepository.GetAsync(tg => tg.CityId == cityId);
+                var tourGuideIds = tourGuides.Select(tg => tg.TourGuideId).ToList();
+
+                if (tourGuideIds.Count == 0)
+                {
+                    return null; // No tour guides found for the given CityId
+                }
+
+                // Fetch all BookingTourGuideRequests for the given TourGuideIds
+                var bookingTourGuideRequests = await _unitOfWork.BookingTourGuideRepository.GetAsync(
+                    btg => tourGuideIds.Contains(btg.TourGuideId));
+                var bookingTourGuideRequestIds = bookingTourGuideRequests.Select(btg => btg.BookingTourGuideRequestId).ToList();
+
+                if (bookingTourGuideRequestIds.Count == 0)
+                {
+                    return null; // No booking tour guide requests found for the given TourGuideIds
+                }
+
+                // Fetch all feedbacks for the given BookingTourGuideRequestIds
+                var feedbacks = await _unitOfWork.FeedbackRepository.GetAsync(
+                    f => bookingTourGuideRequestIds.Contains(f.BookingTourGuideRequestId.Value),
+                    includeProperties: "FeedbackImages"
+                );
+
+                if (feedbacks == null || !feedbacks.Any())
+                {
+                    return null; // No feedbacks found for the given CityId
+                }
+
+                var feedbackViews = new List<FeebackView>();
+
+                foreach (var feedback in feedbacks)
+                {
+                    await _unitOfWork.FeedbackRepository.LoadCollectionAsync(feedback, f => f.FeedbackImages);
+
+                    var feedbackView = new FeebackView
+                    {
+                        FeedbackId = feedback.FeedbackId,
+                        CustomerId = feedback.CustomerId,
+                        TourGuideId = feedback.TourGuideId,
+                        NumOfStars = feedback.NumOfStars,
+                        Content = feedback.Content,
+                        Status = feedback.Status,
+                        TimeFeedback = feedback.TimeFeedback,
+                        feedBackImgViewList = await GetFeedbackImageViewsAsync(feedback.FeedbackImages.ToList())
+                    };
+
+                    feedbackViews.Add(feedbackView);
+                }
+
+                return feedbackViews;
+            }
+            catch (Exception ex)
+            {
+                // Handle exception and rethrow
+                throw new Exception($"Error occurred while fetching feedbacks for city with ID {cityId}: {ex.Message}");
+            }
+        }
+
+
     }
 }
