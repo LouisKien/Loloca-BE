@@ -20,7 +20,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireCustomerRole")]
-        [HttpPost("update-info")]
+        [HttpPost("update-info/{customerId}")]
         public async Task<IActionResult> UpdateCustomerInfo(int customerId, [FromBody] UpdateProfile model)
         {
             try
@@ -43,9 +43,10 @@ namespace Loloca_BE.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $" Internal Server Error: {ex.Message}");
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
             }
         }
+
 
         [Authorize(Policy = "RequireCustomerRole")]
         [HttpPost("change-password")]
