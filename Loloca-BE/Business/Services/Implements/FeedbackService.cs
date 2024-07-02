@@ -28,15 +28,18 @@ namespace Loloca_BE.Business.Services.Implements
         {
             try
             {
-                var feedbacks = await _unitOfWork.FeedbackRepository.GetAsync(includeProperties: "FeedbackImages");
+                var feedbacks = await _unitOfWork.FeedbackRepository.GetAsync(includeProperties: "Customer,FeedbackImages");
                 var feedbackViews = new List<FeebackView>();
 
                 foreach (var feedback in feedbacks)
                 {
+                    var customerName = feedback.Customer != null ? $"{feedback.Customer.FirstName} {feedback.Customer.LastName}" : "Unknown Customer";
+
                     var feedbackView = new FeebackView
                     {
                         FeedbackId = feedback.FeedbackId,
                         CustomerId = feedback.CustomerId,
+                        CustomerName = customerName,
                         TourGuideId = feedback.TourGuideId,
                         NumOfStars = feedback.NumOfStars,
                         Content = feedback.Content,
@@ -91,11 +94,13 @@ namespace Loloca_BE.Business.Services.Implements
                 foreach (var feedback in feedbacks)
                 {
                     await _unitOfWork.FeedbackRepository.LoadCollectionAsync(feedback, f => f.FeedbackImages);
+                    var customerName = feedback.Customer != null ? $"{feedback.Customer.FirstName} {feedback.Customer.LastName}" : "Unknown Customer";
 
                     var feedbackView = new GetFeedBackForCustomerView
                     {
                         FeedbackId = feedback.FeedbackId,
                         CustomerId = feedback.CustomerId,
+                        CustomerName = customerName,
                         TourGuideId = feedback.TourGuideId,
                         NumOfStars = feedback.NumOfStars,
                         Content = feedback.Content,
@@ -121,31 +126,39 @@ namespace Loloca_BE.Business.Services.Implements
         {
             try
             {
-                var feedback = await _unitOfWork.FeedbackRepository.GetByIDAsync(feedbackId);
+                // Fetch feedback including Customer and FeedbackImages
+                var feedback = await _unitOfWork.FeedbackRepository.GetAsync(
+                    filter: f => f.FeedbackId == feedbackId,
+                    includeProperties: "Customer,FeedbackImages"
+                );
 
-                if (feedback == null)
+                var feedbackEntity = feedback.FirstOrDefault();
+
+                if (feedbackEntity == null)
                 {
-                    // Xử lý trường hợp không tìm thấy feedback
+                    // Handle case where feedback is not found
                     return null;
                 }
 
-                // Load FeedbackImages explicitly
-                await _unitOfWork.FeedbackRepository.LoadCollectionAsync(feedback, f => f.FeedbackImages);
+                // Load FeedbackImages explicitly if not already included
+                await _unitOfWork.FeedbackRepository.LoadCollectionAsync(feedbackEntity, f => f.FeedbackImages);
+
+                var customerName = feedbackEntity.Customer != null ? $"{feedbackEntity.Customer.FirstName} {feedbackEntity.Customer.LastName}" : "Unknown Customer";
 
                 var feedbackView = new FeebackView
                 {
-                    FeedbackId = feedback.FeedbackId,
-                    CustomerId = feedback.CustomerId,
-                    TourGuideId = feedback.TourGuideId,
-                    NumOfStars = feedback.NumOfStars,
-                    Content = feedback.Content,
-                    Status = feedback.Status,
-                    TimeFeedback = feedback.TimeFeedback,
+                    FeedbackId = feedbackEntity.FeedbackId,
+                    CustomerId = feedbackEntity.CustomerId,
+                    CustomerName = customerName,
+                    TourGuideId = feedbackEntity.TourGuideId,
+                    NumOfStars = feedbackEntity.NumOfStars,
+                    Content = feedbackEntity.Content,
+                    Status = feedbackEntity.Status,
+                    TimeFeedback = feedbackEntity.TimeFeedback,
+                    feedBackImgViewList = new List<FeedbackImageView>()
                 };
 
-                feedbackView.feedBackImgViewList = new List<FeedbackImageView>();
-
-                foreach (var image in feedback.FeedbackImages)
+                foreach (var image in feedbackEntity.FeedbackImages)
                 {
                     var imageView = new FeedbackImageView
                     {
@@ -160,16 +173,17 @@ namespace Loloca_BE.Business.Services.Implements
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception($"Error occurred while fetching feedback with ID {feedbackId}: {ex.Message}");
             }
         }
+
         public async Task<IEnumerable<GetFeedbackForTourGuideView>> GetFeedbackByTourGuideIdAsync(int tourGuideId)
         {
             try
             {
                 var feedbacks = await _unitOfWork.FeedbackRepository.GetAsync(
                     filter: f => f.TourGuideId == tourGuideId && f.Status == true, // Lọc các phản hồi theo TourGuideId
-                    includeProperties: "FeedbackImages"
+                    includeProperties: "Customer,FeedbackImages"
                 );
 
                 if (feedbacks == null || !feedbacks.Any())
@@ -183,10 +197,13 @@ namespace Loloca_BE.Business.Services.Implements
                 {
                     await _unitOfWork.FeedbackRepository.LoadCollectionAsync(feedback, f => f.FeedbackImages);
 
+                    var customerName = feedback.Customer != null ? $"{feedback.Customer.FirstName} {feedback.Customer.LastName}" : "Unknown Customer";
+
                     var feedbackView = new GetFeedbackForTourGuideView
                     {
                         FeedbackId = feedback.FeedbackId,
                         CustomerId = feedback.CustomerId,
+                        CustomerName = customerName,
                         TourGuideId = feedback.TourGuideId,
                         NumOfStars = feedback.NumOfStars,
                         Content = feedback.Content,
@@ -516,7 +533,7 @@ namespace Loloca_BE.Business.Services.Implements
                 // Fetch all feedbacks for the given BookingTourRequestIds
                 var feedbacks = await _unitOfWork.FeedbackRepository.GetAsync(
                     f => bookingTourRequestIds.Contains(f.BookingTourRequestsId.Value),
-                    includeProperties: "FeedbackImages"
+                    includeProperties: "Customer,FeedbackImages"
                 );
 
                 if (feedbacks == null || !feedbacks.Any())
@@ -529,11 +546,13 @@ namespace Loloca_BE.Business.Services.Implements
                 foreach (var feedback in feedbacks)
                 {
                     await _unitOfWork.FeedbackRepository.LoadCollectionAsync(feedback, f => f.FeedbackImages);
+                    var customerName = feedback.Customer != null ? $"{feedback.Customer.FirstName} {feedback.Customer.LastName}" : "Unknown Customer";
 
                     var feedbackView = new FeebackView
                     {
                         FeedbackId = feedback.FeedbackId,
                         CustomerId = feedback.CustomerId,
+                        CustomerName = customerName,
                         TourGuideId = feedback.TourGuideId,
                         NumOfStars = feedback.NumOfStars,
                         Content = feedback.Content,
@@ -580,7 +599,7 @@ namespace Loloca_BE.Business.Services.Implements
                 // Fetch all feedbacks for the given BookingTourGuideRequestIds
                 var feedbacks = await _unitOfWork.FeedbackRepository.GetAsync(
                     f => bookingTourGuideRequestIds.Contains(f.BookingTourGuideRequestId.Value),
-                    includeProperties: "FeedbackImages"
+                    includeProperties: "Customer,FeedbackImages"
                 );
 
                 if (feedbacks == null || !feedbacks.Any())
@@ -593,11 +612,13 @@ namespace Loloca_BE.Business.Services.Implements
                 foreach (var feedback in feedbacks)
                 {
                     await _unitOfWork.FeedbackRepository.LoadCollectionAsync(feedback, f => f.FeedbackImages);
+                    var customerName = feedback.Customer != null ? $"{feedback.Customer.FirstName} {feedback.Customer.LastName}" : "Unknown Customer";
 
                     var feedbackView = new FeebackView
                     {
                         FeedbackId = feedback.FeedbackId,
                         CustomerId = feedback.CustomerId,
+                        CustomerName = customerName,
                         TourGuideId = feedback.TourGuideId,
                         NumOfStars = feedback.NumOfStars,
                         Content = feedback.Content,

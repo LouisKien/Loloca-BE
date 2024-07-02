@@ -4,6 +4,7 @@
     {
         public int FeedbackId { get; set; } // Thêm thuộc tính FeedbackId để xác định phản hồi cụ thể
         public int CustomerId { get; set; }
+        public string? CustomerName { get; set; }
         public int TourGuideId { get; set; }
         public int? BookingTourRequestsId { get; set; }
         public int? BookingTourGuideRequestId { get; set; }

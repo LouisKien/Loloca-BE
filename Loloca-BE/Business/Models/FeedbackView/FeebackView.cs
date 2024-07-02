@@ -6,6 +6,7 @@ namespace Loloca_BE.Business.Models.FeedbackView
     {
         public int FeedbackId { get; set; }
         public int CustomerId { get; set; }
+        public string? CustomerName { get; set; }
         public int TourGuideId { get; set; }
         public int? BookingTourRequestsId { get; set; }
         public int? BookingTourGuideRequestId { get; set; }
