@@ -68,7 +68,7 @@ namespace Loloca_BE.Presentation.Controllers
                             }
                             break;
                         case 0:
-                            await _authService.SendVerificationEmail(account_.Email);
+                            await _authService.SendVerificationEmailForRegister(account_.Email);
                             return Ok("Your account hasn't verified yet, please check email to verify your account, if you don't see it, check your spam");
                         default:
                             return BadRequest("Your status has not been configurated in system");
