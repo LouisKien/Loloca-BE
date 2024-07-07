@@ -173,8 +173,23 @@ namespace Loloca_BE.Business.Services.Implements
         {
             try
             {
-                var BookingTourGuideList = await _unitOfWork.BookingTourRequestRepository.GetAsync();
-                return _mapper.Map<IEnumerable<GetBookingTourRequestView>>(BookingTourGuideList);
+                var BookingTourGuideList = await _unitOfWork.BookingTourRequestRepository.GetAsync(
+                    includeProperties: "Tour"
+                );
+                return BookingTourGuideList.Select(b => new GetBookingTourRequestView
+                {
+                    BookingTourRequestId = b.BookingTourRequestId,
+                    TourId = b.TourId,
+                    TourName = b.Tour.Name,
+                    CustomerId = b.CustomerId,
+                    RequestDate = b.RequestDate,
+                    RequestTimeOut = b.RequestTimeOut,
+                    StartDate = b.StartDate,
+                    EndDate = b.EndDate,
+                    TotalPrice = b.TotalPrice,
+                    Note = b.Note,
+                    Status = b.Status
+                });
             }
             catch (Exception ex)
             {
@@ -182,30 +197,74 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
+
+
         public async Task<GetBookingTourRequestView> GetBookingTourRequestByIdAsync(int id)
         {
             try
             {
-                var tourGuide = await _unitOfWork.BookingTourRequestRepository.GetByIDAsync(id);
-                if (tourGuide == null)
+                var tourGuide = await _unitOfWork.BookingTourRequestRepository.GetAsync(
+                    filter: b => b.BookingTourRequestId == id,
+                    includeProperties: "Tour"
+                );
+
+                var booking = tourGuide.FirstOrDefault();
+                if (booking == null || booking.Tour == null)
                 {
-                    return null;
+                    throw new Exception("Tour không tồn tại.");
                 }
-                return _mapper.Map<GetBookingTourRequestView>(tourGuide);
+
+                return new GetBookingTourRequestView
+                {
+                    BookingTourRequestId = booking.BookingTourRequestId,
+                    TourId = booking.TourId,
+                    TourName = booking.Tour.Name,
+                    CustomerId = booking.CustomerId,
+                    RequestDate = booking.RequestDate,
+                    RequestTimeOut = booking.RequestTimeOut,
+                    StartDate = booking.StartDate,
+                    EndDate = booking.EndDate,
+                    TotalPrice = booking.TotalPrice,
+                    Note = booking.Note,
+                    Status = booking.Status
+                };
             }
             catch (Exception ex)
             {
                 throw new Exception("An error occurred while get booking request.", ex);
             }
         }
+
+
 
         public async Task<IEnumerable<GetBookingTourRequestView>> GetBookingTourRequestByCustomerId(int customerId)
         {
             try
             {
                 var requests = await _unitOfWork.BookingTourRequestRepository.GetAsync(
-                    r => r.CustomerId == customerId);
-                return _mapper.Map<IEnumerable<GetBookingTourRequestView>>(requests);
+                    r => r.CustomerId == customerId,
+                    includeProperties: "Tour"
+                );
+
+                if (!requests.Any() || requests.Any(r => r.Tour == null))
+                {
+                    throw new Exception("Tour không tồn tại.");
+                }
+
+                return requests.Select(b => new GetBookingTourRequestView
+                {
+                    BookingTourRequestId = b.BookingTourRequestId,
+                    TourId = b.TourId,
+                    TourName = b.Tour.Name,
+                    CustomerId = b.CustomerId,
+                    RequestDate = b.RequestDate,
+                    RequestTimeOut = b.RequestTimeOut,
+                    StartDate = b.StartDate,
+                    EndDate = b.EndDate,
+                    TotalPrice = b.TotalPrice,
+                    Note = b.Note,
+                    Status = b.Status
+                });
             }
             catch (Exception ex)
             {
@@ -213,18 +272,43 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
+
+
         public async Task<IEnumerable<GetBookingTourRequestView>> GetBookingTourRequestByTourGuideId(int tourGuideId)
         {
             try
             {
                 var requests = await _unitOfWork.BookingTourRequestRepository.GetAsync(
-                    r => r.Tour.TourGuideId == tourGuideId);
-                return _mapper.Map<IEnumerable<GetBookingTourRequestView>>(requests);
+                    r => r.Tour.TourGuideId == tourGuideId,
+                    includeProperties: "Tour"
+                );
+
+                if (!requests.Any() || requests.Any(r => r.Tour == null))
+                {
+                    throw new Exception("Tour không tồn tại.");
+                }
+
+                return requests.Select(b => new GetBookingTourRequestView
+                {
+                    BookingTourRequestId = b.BookingTourRequestId,
+                    TourId = b.TourId,
+                    TourName = b.Tour.Name,
+                    CustomerId = b.CustomerId,
+                    RequestDate = b.RequestDate,
+                    RequestTimeOut = b.RequestTimeOut,
+                    StartDate = b.StartDate,
+                    EndDate = b.EndDate,
+                    TotalPrice = b.TotalPrice,
+                    Note = b.Note,
+                    Status = b.Status
+                });
             }
             catch (Exception ex)
             {
                 throw new Exception("An error occurred while getting booking tour requests by tour guide ID.", ex);
             }
         }
+
+
     }
 }

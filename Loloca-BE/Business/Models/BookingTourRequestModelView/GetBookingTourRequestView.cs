@@ -4,6 +4,7 @@
     {
         public int BookingTourRequestId { get; set; }
         public int TourId { get; set; }
+        public string TourName { get; set; } = string.Empty;
         public int CustomerId { get; set; }
         public DateTime RequestDate { get; set; }
         public DateTime RequestTimeOut { get; set; }

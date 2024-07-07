@@ -40,7 +40,7 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     if (model.StartDate < DateTime.Now || model.EndDate < DateTime.Now || model.StartDate > model.EndDate)
                     {
-                        return BadRequest("Cút");
+                        return BadRequest("model.StartDate < DateTime.Now || model.EndDate < DateTime.Now || model.StartDate > model.EndDate");
                     }
                     var result = await _bookingService.AddBookingTourGuideRequestAsync(model);
                     return Ok("Tạo thành công");

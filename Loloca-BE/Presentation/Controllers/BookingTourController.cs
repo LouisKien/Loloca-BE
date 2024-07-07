@@ -59,7 +59,7 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireAdminRole")]
-        [HttpGet("get-all-booking-tour-reuqest")]
+        [HttpGet("get-all-booking-tour-request")]
         public async Task<IActionResult> GetAllBookingTourRequest()
         {
             try
