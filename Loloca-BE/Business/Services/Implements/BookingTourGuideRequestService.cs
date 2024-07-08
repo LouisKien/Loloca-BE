@@ -170,31 +170,73 @@ namespace Loloca_BE.Business.Services.Implements
         {
             try
             {
-                var BookingTourGuideList = await _unitOfWork.BookingTourGuideRepository.GetAsync();
-                return _mapper.Map<IEnumerable<GetBookingTourGuideRequestView>>(BookingTourGuideList);
+                var bookingTourGuideList = await _unitOfWork.BookingTourGuideRepository.GetAsync(includeProperties: "TourGuide");
+                var result = bookingTourGuideList.Select(btgr => new GetBookingTourGuideRequestView
+                {
+                    BookingTourGuideRequestId = btgr.BookingTourGuideRequestId,
+                    TourGuideId = btgr.TourGuideId,
+                    CustomerId = btgr.CustomerId,
+                    RequestDate = btgr.RequestDate,
+                    RequestTimeOut = btgr.RequestTimeOut,
+                    StartDate = btgr.StartDate,
+                    EndDate = btgr.EndDate,
+                    NumOfAdult = btgr.NumOfAdult,
+                    NumOfChild = btgr.NumOfChild,
+                    TotalPrice = btgr.TotalPrice,
+                    Note = btgr.Note,
+                    Status = btgr.Status,
+                    TourGuideName = $"{btgr.TourGuide.LastName} {btgr.TourGuide.FirstName}" // Combine LastName and FirstName
+                });
+
+                return result;
             }
             catch (Exception ex)
             {
-                throw new Exception("An error occurred while get booking request.", ex);
+                throw new Exception("An error occurred while getting booking requests.", ex);
             }
         }
+
 
         public async Task<GetBookingTourGuideRequestView> GetBookingTourGuideRequestByIdAsync(int id)
         {
             try
             {
-                var tourGuide = await _unitOfWork.BookingTourGuideRepository.GetByIDAsync(id);
-                if (tourGuide == null)
+                var bookingTourGuideList = await _unitOfWork.BookingTourGuideRepository.GetAsync(
+                    filter: btgr => btgr.BookingTourGuideRequestId == id, includeProperties: "TourGuide");
+                var bookingTourGuide = bookingTourGuideList.FirstOrDefault();
+
+                if (bookingTourGuide == null)
                 {
                     return null;
                 }
-                return _mapper.Map<GetBookingTourGuideRequestView>(tourGuide);
+
+                var result = new GetBookingTourGuideRequestView
+                {
+                    BookingTourGuideRequestId = bookingTourGuide.BookingTourGuideRequestId,
+                    TourGuideId = bookingTourGuide.TourGuideId,
+                    CustomerId = bookingTourGuide.CustomerId,
+                    RequestDate = bookingTourGuide.RequestDate,
+                    RequestTimeOut = bookingTourGuide.RequestTimeOut,
+                    StartDate = bookingTourGuide.StartDate,
+                    EndDate = bookingTourGuide.EndDate,
+                    NumOfAdult = bookingTourGuide.NumOfAdult,
+                    NumOfChild = bookingTourGuide.NumOfChild,
+                    TotalPrice = bookingTourGuide.TotalPrice,
+                    Note = bookingTourGuide.Note,
+                    Status = bookingTourGuide.Status,
+                    TourGuideName = $"{bookingTourGuide.TourGuide.LastName} {bookingTourGuide.TourGuide.FirstName}" // Combine LastName and FirstName
+                };
+
+                return result;
             }
             catch (Exception ex)
             {
-                throw new Exception("An error occurred while get booking request.", ex);
+                throw new Exception("An error occurred while getting the booking request.", ex);
             }
         }
+
+
+
 
 
 
@@ -203,8 +245,25 @@ namespace Loloca_BE.Business.Services.Implements
             try
             {
                 var requests = await _unitOfWork.BookingTourGuideRepository.GetAsync(
-                    r => r.CustomerId == customerId);
-                return _mapper.Map<IEnumerable<GetBookingTourGuideRequestView>>(requests);
+                    r => r.CustomerId == customerId, includeProperties: "TourGuide");
+                var result = requests.Select(r => new GetBookingTourGuideRequestView
+                {
+                    BookingTourGuideRequestId = r.BookingTourGuideRequestId,
+                    TourGuideId = r.TourGuideId,
+                    CustomerId = r.CustomerId,
+                    RequestDate = r.RequestDate,
+                    RequestTimeOut = r.RequestTimeOut,
+                    StartDate = r.StartDate,
+                    EndDate = r.EndDate,
+                    NumOfAdult = r.NumOfAdult,
+                    NumOfChild = r.NumOfChild,
+                    TotalPrice = r.TotalPrice,
+                    Note = r.Note,
+                    Status = r.Status,
+                    TourGuideName = $"{r.TourGuide.LastName} {r.TourGuide.FirstName}" // Combine LastName and FirstName
+                });
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -212,18 +271,37 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
+
         public async Task<IEnumerable<GetBookingTourGuideRequestView>> GetBookingTourGuideRequestByTourGuideId(int tourGuideId)
         {
             try
             {
                 var requests = await _unitOfWork.BookingTourGuideRepository.GetAsync(
-                    r => r.TourGuideId == tourGuideId);
-                return _mapper.Map<IEnumerable<GetBookingTourGuideRequestView>>(requests);
+                    r => r.TourGuideId == tourGuideId, includeProperties: "TourGuide");
+                var result = requests.Select(r => new GetBookingTourGuideRequestView
+                {
+                    BookingTourGuideRequestId = r.BookingTourGuideRequestId,
+                    TourGuideId = r.TourGuideId,
+                    CustomerId = r.CustomerId,
+                    RequestDate = r.RequestDate,
+                    RequestTimeOut = r.RequestTimeOut,
+                    StartDate = r.StartDate,
+                    EndDate = r.EndDate,
+                    NumOfAdult = r.NumOfAdult,
+                    NumOfChild = r.NumOfChild,
+                    TotalPrice = r.TotalPrice,
+                    Note = r.Note,
+                    Status = r.Status,
+                    TourGuideName = $"{r.TourGuide.LastName} {r.TourGuide.FirstName}" // Combine LastName and FirstName
+                });
+
+                return result;
             }
             catch (Exception ex)
             {
                 throw new Exception("An error occurred while getting booking tour guide requests by tour guide ID.", ex);
             }
         }
+
     }
 }

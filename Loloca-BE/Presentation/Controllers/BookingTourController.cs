@@ -45,7 +45,32 @@ namespace Loloca_BE.Presentation.Controllers
                         return BadRequest();
                     }
                     var result = await _bookingTourRequestService.AddBookingTourRequestAsync(model);
-                    return Ok("Tạo thành công");
+
+                    // Fetch the tour details to get the tour name
+                    var tour = await _bookingTourRequestService.GetTourByIdAsync(model.TourId);
+                    if (tour == null)
+                    {
+                        return NotFound("Tour not found.");
+                    }
+
+                    var response = new
+                    {
+                        result.BookingTourRequestId,
+                        result.TourId,
+                        TourName = tour.Name,
+                        result.CustomerId,
+                        result.RequestDate,
+                        result.RequestTimeOut,
+                        result.StartDate,
+                        result.EndDate,
+                        result.TotalPrice,
+                        result.Note,
+                        result.Status,
+                        result.NumOfChild,
+                        result.NumOfAdult
+                    };
+
+                    return Ok(response);
                 } else
                 {
                     return Forbid();

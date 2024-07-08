@@ -5,6 +5,7 @@
         public int BookingTourGuideRequestId { get; set; }
         public int TourGuideId { get; set; }
         public int CustomerId { get; set; }
+        public string TourGuideName { get; set; }= string.Empty;
         public DateTime RequestDate { get; set; }
         public DateTime RequestTimeOut { get; set; }
         public DateTime StartDate { get; set; }

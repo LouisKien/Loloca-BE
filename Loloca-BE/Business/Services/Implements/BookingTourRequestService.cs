@@ -309,6 +309,9 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
-
+        public async Task<Tour> GetTourByIdAsync(int tourId)
+        {
+            return await _unitOfWork.TourRepository.GetByIDAsync(tourId);
+        }
     }
 }
