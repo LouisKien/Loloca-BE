@@ -71,6 +71,7 @@ namespace Loloca_BE.Presentation.Controllers
                     };
 
                     return Ok(response);
+
                 } else
                 {
                     return Forbid();

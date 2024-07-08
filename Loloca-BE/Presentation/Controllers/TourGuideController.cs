@@ -112,8 +112,8 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireTourGuideRole")]
-        [HttpPost("update-info")]
-        public async Task<IActionResult> UpdateTourGuideInfo(int tourGuideId, [FromBody] UpdateProfileTourGuide model)
+        [HttpPost("update-info/{tourGuideId}")]
+        public async Task<IActionResult> UpdateTourGuideInfo([FromRoute] int tourGuideId, [FromBody] UpdateProfileTourGuide model)
         {
             try
             {
@@ -139,9 +139,10 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+
         [Authorize(Policy = "RequireTourGuideRole")]
-        [HttpPost("change-password")]
-        public async Task<IActionResult> ChangePassword(int accountId, [FromBody] ChangePasswordTourGuide model)
+        [HttpPost("change-password/{accountId}")]
+        public async Task<IActionResult> ChangePassword([FromRoute] int accountId, [FromBody] ChangePasswordTourGuide model)
         {
             try
             {
@@ -173,6 +174,7 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
+
 
         [AllowAnonymous]
         [HttpGet("info/{tourGuideId}")]
@@ -316,8 +318,8 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireTourGuideRole")]
-        [HttpPost("accept-booking-tourguide-request")]
-        public async Task<IActionResult> AcceptBookingRequest(int bookingRequestId)
+        [HttpPost("accept-booking-tourguide-request/{bookingRequestId}")]
+        public async Task<IActionResult> AcceptBookingRequest([FromRoute] int bookingRequestId)
         {
             try
             {
@@ -338,7 +340,8 @@ namespace Loloca_BE.Presentation.Controllers
                     {
                         return BadRequest("Failed to accept booking request.");
                     }
-                } else
+                }
+                else
                 {
                     return Forbid();
                 }
@@ -349,9 +352,10 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+
         [Authorize(Policy = "RequireTourGuideRole")]
-        [HttpPost("reject-booking-tourguide-request")]
-        public async Task<IActionResult> RejectBookingRequest(int bookingRequestId)
+        [HttpPost("reject-booking-tourguide-request/{bookingRequestId}")]
+        public async Task<IActionResult> RejectBookingRequest([FromRoute] int bookingRequestId)
         {
             try
             {
@@ -370,7 +374,7 @@ namespace Loloca_BE.Presentation.Controllers
                     }
                     else
                     {
-                        return BadRequest("Failed to rejected booking request.");
+                        return BadRequest("Failed to reject booking request.");
                     }
                 }
                 else
@@ -384,9 +388,10 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+
         [Authorize(Policy = "RequireTourGuideRole")]
-        [HttpPost("accept-booking-tour-request")]
-        public async Task<IActionResult> AcceptBookingTourRequest(int bookingRequestId)
+        [HttpPost("accept-booking-tour-request/{bookingRequestId}")]
+        public async Task<IActionResult> AcceptBookingTourRequest([FromRoute] int bookingRequestId)
         {
             try
             {
@@ -420,8 +425,8 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireTourGuideRole")]
-        [HttpPost("reject-booking-tour-request")]
-        public async Task<IActionResult> RejectBookingTourRequest(int bookingRequestId)
+        [HttpPost("reject-booking-tour-request/{bookingRequestId}")]
+        public async Task<IActionResult> RejectBookingTourRequest([FromRoute] int bookingRequestId)
         {
             try
             {
@@ -440,7 +445,7 @@ namespace Loloca_BE.Presentation.Controllers
                     }
                     else
                     {
-                        return BadRequest("Failed to rejected booking request.");
+                        return BadRequest("Failed to reject booking request.");
                     }
                 }
                 else
@@ -453,5 +458,6 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
+
     }
 }

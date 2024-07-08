@@ -412,7 +412,7 @@ namespace Loloca_BE.Business.Services.Implements
                     }
 
                     // Kiểm tra xem BookingTourGuideRequest có trạng thái là 1 không (đã gửi yêu cầu)
-                    if (bookingRequest.Status != 1)
+                    if (bookingRequest.Status != 0)
                     {
                         throw new Exception("Booking request is not in pending status.");
                     }
@@ -459,7 +459,7 @@ namespace Loloca_BE.Business.Services.Implements
                     }
 
                     // Kiểm tra xem BookingTourGuideRequest có trạng thái là 1 không (đã gửi yêu cầu)
-                    if (bookingRequest.Status != 1)
+                    if (bookingRequest.Status != 0)
                     {
                         throw new Exception("Booking request is not in pending status.");
                     }
@@ -506,7 +506,7 @@ namespace Loloca_BE.Business.Services.Implements
                     }
 
                     // Kiểm tra xem BookingTourRequest có trạng thái là 1 không (đã gửi yêu cầu)
-                    if (bookingRequest.Status != 1)
+                    if (bookingRequest.Status != 0)
                     {
                         throw new Exception("Booking request is not in pending status.");
                     }
@@ -553,7 +553,7 @@ namespace Loloca_BE.Business.Services.Implements
                     }
 
                     // Kiểm tra xem BookingTourGuideRequest có trạng thái là 1 không (đã gửi yêu cầu)
-                    if (bookingRequest.Status != 1)
+                    if (bookingRequest.Status != 0)
                     {
                         throw new Exception("Booking request is not in pending status.");
                     }
