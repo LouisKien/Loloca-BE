@@ -105,11 +105,11 @@ namespace Loloca_BE.Business.Services.Implements
                         RequestDate = date,
                         RequestTimeOut = date.AddDays(7),
                         Note = model.Note,
-                        NumOfAdult = model.NumOfChild,
+                        NumOfAdult = model.NumOfAdult,
                         NumOfChild = model.NumOfChild,
                         Status = 0,
                         TourId = model.TourId,
-                        TotalPrice = rangePrice.ChildPrice * model.NumOfChild + rangePrice.AdultPrice * model.NumOfChild
+                        TotalPrice = rangePrice.ChildPrice * model.NumOfChild + rangePrice.AdultPrice * model.NumOfAdult
                     };
 
                     await _unitOfWork.BookingTourRequestRepository.InsertAsync(bookingRequest);
