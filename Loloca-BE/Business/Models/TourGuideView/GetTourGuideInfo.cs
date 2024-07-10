@@ -3,6 +3,7 @@
     public class GetTourGuideInfo
     {
         public int? AccountStatus {  get; set; }
+        public int CityId { get; set; }
         public string? CityName { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }

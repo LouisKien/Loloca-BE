@@ -212,6 +212,7 @@ namespace Loloca_BE.Business.Services.Implements
                 return new GetTourGuideInfo
                 {
                     AccountStatus = (await _unitOfWork.AccountRepository.GetByIDAsync(tourGuide.AccountId)).Status,
+                    CityId = (await _unitOfWork.CityRepository.GetByIDAsync(tourGuide.CityId)).CityId,
                     CityName = (await _unitOfWork.CityRepository.GetByIDAsync(tourGuide.CityId)).Name,
                     FirstName = tourGuide.FirstName,
                     LastName = tourGuide.LastName,
@@ -617,6 +618,7 @@ namespace Loloca_BE.Business.Services.Implements
                         var item = new GetTourGuideInfo
                         {
                             AccountStatus = (await _unitOfWork.AccountRepository.GetByIDAsync(tourGuide.AccountId)).Status,
+                            CityId = (await _unitOfWork.CityRepository.GetByIDAsync(tourGuide.CityId)).CityId,
                             CityName = (await _unitOfWork.CityRepository.GetByIDAsync(tourGuide.CityId)).Name,
                             FirstName = tourGuide.FirstName,
                             LastName = tourGuide.LastName,
