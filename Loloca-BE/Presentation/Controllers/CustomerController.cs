@@ -200,7 +200,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [Authorize(Policy = "RequireCustomerRole")]
+        [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPost("change-status-booking-tour-guide/{bookingTourGuideRequestId}")]
         public async Task<IActionResult> ChangeStatusBookingTourGuide(int bookingTourGuideRequestId)
         {
@@ -215,7 +215,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        [Authorize(Policy = "RequireCustomerRole")]
+        [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPost("change-status-booking-tour/{bookingTourRequestId}")]
         public async Task<IActionResult> ChangeStatusBookingTour(int bookingTourRequestId)
         {
