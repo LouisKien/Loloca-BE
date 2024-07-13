@@ -245,13 +245,13 @@ namespace Loloca_BE.Business.Services.Implements
 
 
 
-        public async Task UpdateStatusDepositAsync(int paymentRequestId, int status)
+        public async Task UpdateStatusDepositAsync(UpdateDepositStatusView updateDepositStatusView)
         {
             using (var transaction = _unitOfWork.BeginTransaction())
             {
                 try
                 {
-                    var paymentRequests = await _unitOfWork.PaymentRequestRepository.GetAsync(p => p.PaymentId == paymentRequestId, includeProperties: "Account");
+                    var paymentRequests = await _unitOfWork.PaymentRequestRepository.GetAsync(p => p.PaymentId == updateDepositStatusView.PaymentRequestId, includeProperties: "Account");
                     var paymentRequest = paymentRequests.FirstOrDefault();
                     if (paymentRequest == null)
                     {
@@ -298,11 +298,11 @@ namespace Loloca_BE.Business.Services.Implements
                         throw new Exception("Vai trò tài khoản không hợp lệ.");
                     }
 
-                    paymentRequest.Status = status;
+                    paymentRequest.Status = updateDepositStatusView.Status;
                     await _unitOfWork.PaymentRequestRepository.UpdateAsync(paymentRequest);
 
-                    var notificationTitle = status == 1 ? "Yêu cầu nạp tiền đã được chấp thuận" : "Yêu cầu nạp tiền bị từ chối";
-                    var notificationMessage = status == 1
+                    var notificationTitle = updateDepositStatusView.Status == 1 ? "Yêu cầu nạp tiền đã được chấp thuận" : "Yêu cầu nạp tiền bị từ chối";
+                    var notificationMessage = updateDepositStatusView.Status == 1
                         ? $"Yêu cầu nạp tiền của bạn với số tiền {paymentRequest.Amount} đã được chấp nhận."
                         : $"Yêu cầu nạp tiền của bạn với số tiền {paymentRequest.Amount} đã bị từ chối.";
 
@@ -317,7 +317,7 @@ namespace Loloca_BE.Business.Services.Implements
                     };
                     await _unitOfWork.NotificationRepository.InsertAsync(notification);
 
-                    if (status == 1)
+                    if (updateDepositStatusView.Status == 1)
                     {
                         if (userType == "TourGuide")
                         {
@@ -351,6 +351,7 @@ namespace Loloca_BE.Business.Services.Implements
                 }
             }
         }
+
 
 
 
@@ -596,13 +597,13 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
-        public async Task UpdateStatusWithdrawalAsync(int paymentRequestId)
+        public async Task UpdateStatusWithdrawalAsync(UpdateWithdrawalStatusView updateWithdrawalStatusView)
         {
             using (var transaction = _unitOfWork.BeginTransaction())
             {
                 try
                 {
-                    var paymentRequests = await _unitOfWork.PaymentRequestRepository.GetAsync(p => p.PaymentId == paymentRequestId, includeProperties: "Account");
+                    var paymentRequests = await _unitOfWork.PaymentRequestRepository.GetAsync(p => p.PaymentId == updateWithdrawalStatusView.PaymentRequestId, includeProperties: "Account");
                     var paymentRequest = paymentRequests.FirstOrDefault();
                     if (paymentRequest == null)
                     {
@@ -676,6 +677,7 @@ namespace Loloca_BE.Business.Services.Implements
                 }
             }
         }
+
 
 
 

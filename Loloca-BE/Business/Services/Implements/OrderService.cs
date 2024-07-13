@@ -220,19 +220,19 @@ namespace Loloca_BE.Business.Services.Implements
         }
 
 
-        public async Task<OrderModelView> UpdateOrderStatusAsync(int id, int status)
+        public async Task<OrderModelView> UpdateOrderStatusAsync(UpdateOrderStatusView updateOrderStatusView)
         {
             using (var transaction = _unitOfWork.BeginTransaction())
             {
                 try
                 {
-                    var order = await _unitOfWork.OrderRepository.GetByIDAsync(id);
+                    var order = await _unitOfWork.OrderRepository.GetByIDAsync(updateOrderStatusView.OrderId);
                     if (order == null)
                     {
                         throw new KeyNotFoundException("Order not found");
                     }
 
-                    order.Status = status;
+                    order.Status = updateOrderStatusView.Status;
 
                     // Set UpdatedAt to DateTime.Now
                     order.CreateAt = DateTime.Now;
@@ -251,6 +251,7 @@ namespace Loloca_BE.Business.Services.Implements
                 }
             }
         }
+
 
     }
 }

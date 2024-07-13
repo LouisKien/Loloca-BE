@@ -321,5 +321,10 @@ namespace Loloca_BE.Business.Services.Implements
         {
             return await _unitOfWork.TourRepository.GetByIDAsync(tourId);
         }
+
+        public async Task<Customer> GetCustomerByIdAsync(int customerId)
+        {
+            return await _unitOfWork.CustomerRepository.GetByIDAsync(customerId);
+        }
     }
 }

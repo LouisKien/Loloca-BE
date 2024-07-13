@@ -77,8 +77,8 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireAdminRole")]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCity(int id, [FromBody] UpdateCityView cityView)
+        [HttpPut]
+        public async Task<IActionResult> UpdateCity([FromBody] UpdateCityView cityView)
         {
             try
             {
@@ -87,18 +87,20 @@ namespace Loloca_BE.Presentation.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var updatedCity = await _citiesService.UpdateCityAsync(id, cityView);
+                var updatedCity = await _citiesService.UpdateCityAsync(cityView);
                 if (updatedCity == null)
                 {
                     return NotFound();
                 }
 
                 return Ok("Cập nhật thành công");
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
+
 
         [Authorize(Policy = "RequireAdminRole")]
         [HttpDelete("{id}")]

@@ -481,26 +481,28 @@ namespace Loloca_BE.Business.Services.Implements
 
 
 
-        public async Task<bool> UpdateStatusAsync(int feedbackId, bool newStatus)
+        public async Task<bool> UpdateStatusAsync(UpdateFeedbackStatusView updateFeedbackStatusView)
         {
             try
             {
-                var feedback = await _unitOfWork.FeedbackRepository.GetByIDAsync(feedbackId);
+                var feedback = await _unitOfWork.FeedbackRepository.GetByIDAsync(updateFeedbackStatusView.FeedbackId);
                 if (feedback == null)
                 {
                     return false; // Phản hồi không tồn tại
                 }
 
-                feedback.Status = newStatus;
+                feedback.Status = updateFeedbackStatusView.NewStatus;
                 await _unitOfWork.FeedbackRepository.UpdateAsync(feedback);
+                await _unitOfWork.SaveAsync();
                 return true; // Cập nhật thành công
             }
             catch (Exception ex)
             {
                 // Xử lý ngoại lệ và ném lại
-                throw new Exception($"Error occurred while updating status for feedback with ID {feedbackId}: {ex.Message}");
+                throw new Exception($"Error occurred while updating status for feedback with ID {updateFeedbackStatusView.FeedbackId}: {ex.Message}");
             }
         }
+
 
         public async Task<(int count, float average)> GetFeedbackStatsAsync(int id, bool isTour)
         {

@@ -8,7 +8,7 @@ namespace Loloca_BE.Business.Services.Interfaces
         Task<IEnumerable<CityView>> GetAllCitiesAsync();
         Task<CityView> GetCityByIdAsync(int CityId);
         Task<CreateCity> AddCityAsync(CreateCity cityView);
-        Task<UpdateCityView> UpdateCityAsync(int id, UpdateCityView cityView);
+        Task<UpdateCityView?> UpdateCityAsync(UpdateCityView cityView);
         Task<bool> DeleteCityAsync(int id);
 
         Task UploadCityBannerAsync(IFormFile file, int CityId);

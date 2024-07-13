@@ -40,11 +40,36 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     if (model.StartDate < DateTime.Now || model.EndDate < DateTime.Now || model.StartDate > model.EndDate)
                     {
-                        return BadRequest("model.StartDate < DateTime.Now || model.EndDate < DateTime.Now || model.StartDate > model.EndDate");
+                        return BadRequest("StartDate or EndDate is invalid.");
                     }
                     var result = await _bookingService.AddBookingTourGuideRequestAsync(model);
-                    return Ok("Tạo thành công");
-                } else
+
+                    // Fetch the tour guide details to get the tour guide name
+                    var customer = await _bookingService.GetCustomerByIdAsync(model.CustomerId);
+                    if (customer == null)
+                    {
+                        return NotFound("customer not found.");
+                    }
+
+                    var response = new
+                    {
+                        result.BookingTourGuideRequestId,
+                        result.TourGuideId,
+                        CustomerName = customer.LastName + " " + customer.FirstName,
+                        result.CustomerId,
+                        result.RequestDate,
+                        result.StartDate,
+                        result.EndDate,
+                        result.TotalPrice,
+                        result.Note,
+                        result.Status,
+                        result.NumOfChild,
+                        result.NumOfAdult
+                    };
+
+                    return Ok(response);
+                }
+                else
                 {
                     return Forbid();
                 }
@@ -54,6 +79,7 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
 
         [Authorize(Policy = "RequireAdminRole")]
         [HttpGet("get-all-booking-tourguide")]

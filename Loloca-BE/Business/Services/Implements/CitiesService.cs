@@ -117,11 +117,11 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
-        public async Task<UpdateCityView?> UpdateCityAsync(int id, UpdateCityView cityView)
+        public async Task<UpdateCityView?> UpdateCityAsync(UpdateCityView cityView)
         {
             try
             {
-                var existingCity = await _unitOfWork.CityRepository.GetByIDAsync(id);
+                var existingCity = await _unitOfWork.CityRepository.GetByIDAsync(cityView.CityId);
                 if (existingCity == null)
                 {
                     return null;
@@ -138,6 +138,7 @@ namespace Loloca_BE.Business.Services.Implements
                 throw new Exception($"An error occurred while updating the city. Error message: {ex.Message}");
             }
         }
+
 
         public async Task<bool> DeleteCityAsync(int id)
         {

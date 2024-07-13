@@ -139,8 +139,8 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireAdminOrCustomerRole")]
-        [HttpPut("{feedbackId}/status")]
-        public async Task<IActionResult> UpdateFeedbackStatusAsync(int feedbackId, [FromForm] bool newStatus)
+        [HttpPut("status")]
+        public async Task<IActionResult> UpdateFeedbackStatusAsync([FromBody] UpdateFeedbackStatusView updateFeedbackStatusView)
         {
             try
             {
@@ -149,19 +149,20 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     return Forbid();
                 }
-                var checkAuthorize = await _authorizeService.CheckAuthorizeByFeedbackId(feedbackId, int.Parse(accountId));
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByFeedbackId(updateFeedbackStatusView.FeedbackId, int.Parse(accountId));
                 if (checkAuthorize.isUser || checkAuthorize.isAdmin)
                 {
-                    var success = await _feedbackService.UpdateStatusAsync(feedbackId, newStatus);
+                    var success = await _feedbackService.UpdateStatusAsync(updateFeedbackStatusView);
                     if (success)
                     {
                         return Ok("Feedback status updated successfully.");
                     }
                     else
                     {
-                        return NotFound($"Feedback with ID {feedbackId} not found.");
+                        return NotFound($"Feedback with ID {updateFeedbackStatusView.FeedbackId} not found.");
                     }
-                } else
+                }
+                else
                 {
                     return Forbid();
                 }
@@ -171,6 +172,7 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
 
         [AllowAnonymous]
         [HttpGet("{bookingId}/feedback-stats")]

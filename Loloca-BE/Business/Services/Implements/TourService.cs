@@ -269,55 +269,58 @@ namespace Loloca_BE.Business.Services.Implements
 
 
 
-        public async Task UpdateTourAsync(int tourId, TourInfoView tourModel)
+        public async Task UpdateTourAsync(UpdateTourView updateTourView)
+{
+    using (var transaction = _unitOfWork.BeginTransaction())
+    {
+        try
         {
-            using (var transaction = _unitOfWork.BeginTransaction())
+            // Lấy tour từ database
+            var tour = await _unitOfWork.TourRepository.GetByIDAsync(updateTourView.TourId);
+            if (tour == null)
             {
-                try
-                {
-                    // Lấy tour từ database
-                    var tour = await _unitOfWork.TourRepository.GetByIDAsync(tourId);
-                    if (tour == null)
-                    {
-                        throw new Exception($"Tour with ID {tourId} not found");
-                    }
-
-                    // Cập nhật thông tin tour
-                    tour.CityId = tourModel.CityId;
-                    tour.TourGuideId = tourModel.TourGuideId;
-                    tour.Name = tourModel.Name;
-                    tour.Description = tourModel.Description;
-                    tour.Activity = tourModel.Activity;
-                    tour.Category = tourModel.Category;
-                    tour.Duration = tourModel.Duration;
-                    // Cập nhật tour trong database
-                    await _unitOfWork.TourRepository.UpdateAsync(tour);
-                    await _unitOfWork.SaveAsync();
-
-                    // Commit transaction
-                    await transaction.CommitAsync();
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    throw new Exception("Cannot update tour", ex);
-                }
+                throw new Exception($"Tour with ID {updateTourView.TourId} not found");
             }
-        }
 
-        public async Task UpdateTourStatusAsync(int tourId, TourStatusView tourModel)
+            // Cập nhật thông tin tour
+            tour.CityId = updateTourView.CityId;
+            tour.TourGuideId = updateTourView.TourGuideId;
+            tour.Name = updateTourView.Name;
+            tour.Description = updateTourView.Description;
+            tour.Activity = updateTourView.Activity;
+            tour.Category = updateTourView.Category;
+            tour.Duration = updateTourView.Duration;
+            tour.Status = updateTourView.Status;
+
+            // Cập nhật tour trong database
+            await _unitOfWork.TourRepository.UpdateAsync(tour);
+            await _unitOfWork.SaveAsync();
+
+            // Commit transaction
+            await transaction.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            throw new Exception("Cannot update tour", ex);
+        }
+    }
+}
+
+
+        public async Task UpdateTourStatusAsync(UpdateTourStatusView updateTourStatusView)
         {
             using (var transaction = _unitOfWork.BeginTransaction())
             {
                 try
                 {
-                    var tour = await _unitOfWork.TourRepository.GetByIDAsync(tourId);
+                    var tour = await _unitOfWork.TourRepository.GetByIDAsync(updateTourStatusView.TourId);
                     if (tour == null)
                     {
-                        throw new Exception($"Tour with ID {tourId} not found");
+                        throw new Exception($"Tour with ID {updateTourStatusView.TourId} not found");
                     }
 
-                    tour.Status = tourModel.Status;
+                    tour.Status = updateTourStatusView.Status;
 
                     await _unitOfWork.TourRepository.UpdateAsync(tour);
                     await _unitOfWork.SaveAsync();
@@ -330,6 +333,7 @@ namespace Loloca_BE.Business.Services.Implements
                 }
             }
         }
+
 
         public async Task DeleteTourAsync(int tourId)
         {

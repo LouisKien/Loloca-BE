@@ -141,8 +141,8 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireCustomerRole")]
-        [HttpPut("update-status/{id}/{status}")]
-        public async Task<ActionResult<OrderModelView>> UpdateOrderStatusAsync(int id, int status)
+        [HttpPut("update-status")]
+        public async Task<ActionResult<OrderModelView>> UpdateOrderStatusAsync([FromBody] UpdateOrderStatusView updateOrderStatusView)
         {
             try
             {
@@ -151,10 +151,10 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     return Forbid();
                 }
-                var checkAuthorize = await _authorizeService.CheckAuthorizeByOrderId(id, int.Parse(accountId));
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByOrderId(updateOrderStatusView.OrderId, int.Parse(accountId));
                 if (checkAuthorize.isUser)
                 {
-                    var updatedOrder = await _orderService.UpdateOrderStatusAsync(id, status);
+                    var updatedOrder = await _orderService.UpdateOrderStatusAsync(updateOrderStatusView);
                     return Ok(updatedOrder);
                 }
                 else
@@ -171,5 +171,6 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $" Internal Server Error: {ex.Message}");
             }
         }
+
     }
 }

@@ -53,12 +53,20 @@ namespace Loloca_BE.Presentation.Controllers
                         return NotFound("Tour not found.");
                     }
 
+
+                    var customer = await _bookingTourRequestService.GetCustomerByIdAsync(model.CustomerId);
+                    if (customer == null)
+                    {
+                        return NotFound("CustomerName not found.");
+                    }
+
                     var response = new
                     {
                         result.BookingTourRequestId,
                         result.TourId,
                         TourName = tour.Name,
                         result.CustomerId,
+                        CustomerName = customer.LastName + " " + customer.FirstName,
                         result.RequestDate,
                         result.RequestTimeOut,
                         result.StartDate,

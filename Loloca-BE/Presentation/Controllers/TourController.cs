@@ -59,8 +59,8 @@ namespace Loloca_BE.Presentation.Controllers
 
 
         [Authorize(Policy = "RequireTourGuideRole")]
-        [HttpPut("/api/updatetour/{tourId}")]
-        public async Task<IActionResult> UpdateTour(int tourId, [FromForm] TourInfoView tourModel)
+        [HttpPut("/api/updatetour")]
+        public async Task<IActionResult> UpdateTour([FromBody] UpdateTourView updateTourView)
         {
             try
             {
@@ -69,10 +69,10 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     return Forbid();
                 }
-                var checkAuthorize = await _authorizeService.CheckAuthorizeByTourId(tourId, int.Parse(accountId));
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByTourId(updateTourView.TourId, int.Parse(accountId));
                 if (checkAuthorize.isUser)
                 {
-                    await _tourService.UpdateTourAsync(tourId, tourModel);
+                    await _tourService.UpdateTourAsync(updateTourView);
                     return Ok("Tour updated successfully.");
                 }
                 else
@@ -86,20 +86,22 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+
         [Authorize(Policy = "RequireAdminRole")]
-        [HttpPut("/api/accept-tour-change-status/{tourId}")]
-        public async Task<IActionResult> UpdateTourStatus(int tourId, [FromForm] TourStatusView tourModel)
+        [HttpPut("/api/accept-tour-change-status")]
+        public async Task<IActionResult> UpdateTourStatus([FromBody] UpdateTourStatusView updateTourStatusView)
         {
             try
             {
-                await _tourService.UpdateTourStatusAsync(tourId, tourModel);
+                await _tourService.UpdateTourStatusAsync(updateTourStatusView);
                 return Ok("Status updated successfully");
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
-
             }
         }
+
 
         [Authorize(Policy = "RequireTourGuideRole")]
         [HttpDelete("{tourId}")]

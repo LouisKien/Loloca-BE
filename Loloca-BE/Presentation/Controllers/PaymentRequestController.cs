@@ -174,16 +174,16 @@ namespace Loloca_BE.Presentation.Controllers
 
         [Authorize(Policy = "RequireAdminRole")]
         [HttpPut("update-deposit")]
-        public async Task<ActionResult> UpdateStatusDeposit([FromQuery] int paymentRequestId, [FromQuery] int status)
+        public async Task<ActionResult> UpdateStatusDeposit([FromBody] UpdateDepositStatusView updateDepositStatusView)
         {
             try
             {
-                await _paymentRequestService.UpdateStatusDepositAsync(paymentRequestId, status);
-                if (status == 1)
+                await _paymentRequestService.UpdateStatusDepositAsync(updateDepositStatusView);
+                if (updateDepositStatusView.Status == 1)
                 {
                     return Ok("Accept request successfully");
                 }
-                else if (status == 2)
+                else if (updateDepositStatusView.Status == 2)
                 {
                     return Ok("Reject request successfully");
                 }
@@ -196,7 +196,7 @@ namespace Loloca_BE.Presentation.Controllers
             {
                 if (ex.Message.Contains("Không tìm thấy yêu cầu nạp tiền"))
                 {
-                    return BadRequest($"Deposit request with id {paymentRequestId} does not exist");
+                    return BadRequest($"Deposit request with id {updateDepositStatusView.PaymentRequestId} does not exist");
                 }
                 else if (ex.Message.Contains("Loại giao dịch không phù hợp"))
                 {
@@ -216,6 +216,7 @@ namespace Loloca_BE.Presentation.Controllers
                 }
             }
         }
+
 
 
         // ----------------------------------------- WITHDRAWAL --------------------------------------------
@@ -388,11 +389,11 @@ namespace Loloca_BE.Presentation.Controllers
 
         [Authorize(Policy = "RequireAdminRole")]
         [HttpPut("withdrawal")]
-        public async Task<ActionResult> UpdateStatusWithdrawal([FromQuery] int paymentRequestId)
+        public async Task<ActionResult> UpdateStatusWithdrawal([FromBody] UpdateWithdrawalStatusView updateWithdrawalStatusView)
         {
             try
             {
-                await _paymentRequestService.UpdateStatusWithdrawalAsync(paymentRequestId);
+                await _paymentRequestService.UpdateStatusWithdrawalAsync(updateWithdrawalStatusView);
                 return Ok("Withdrawal request successfully accepted");
             }
             catch (Exception ex)
@@ -400,5 +401,6 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"Internal Server Error: {ex.Message}");
             }
         }
+
     }
 }

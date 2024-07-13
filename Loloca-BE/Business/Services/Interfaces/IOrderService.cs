@@ -8,6 +8,6 @@ namespace Loloca_BE.Business.Services.Interfaces
         Task<OrderModelView?> GetOrderByIdAsync(int id);
         Task<OrderForBookingTourGuideView> CreateOrderForBookingTourGuideRequestAsync(OrderForBookingTourGuideView orderModel);
         Task<OrderForBookingTourView> CreateOrderForBookingTourRequestAsync(OrderForBookingTourView orderModel);
-        Task<OrderModelView> UpdateOrderStatusAsync(int id, int status);
+        Task<OrderModelView> UpdateOrderStatusAsync(UpdateOrderStatusView updateOrderStatusView);
     }
 }
