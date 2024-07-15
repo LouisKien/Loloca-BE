@@ -252,6 +252,7 @@ namespace Loloca_BE.Business.Services.Implements
                 {
                     Email = (await _unitOfWork.AccountRepository.GetByIDAsync(tourGuide.AccountId)).Email,
                     TourGuideId = tourGuide.TourGuideId,
+                    CityId = tourGuide.CityId,
                     CityName = (await _unitOfWork.CityRepository.GetByIDAsync(tourGuide.CityId)).Name,
                     FirstName = tourGuide.FirstName,
                     LastName = tourGuide.LastName,

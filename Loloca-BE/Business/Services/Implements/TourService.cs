@@ -269,43 +269,233 @@ namespace Loloca_BE.Business.Services.Implements
 
 
 
-        public async Task UpdateTourAsync(UpdateTourView updateTourView)
-{
-    using (var transaction = _unitOfWork.BeginTransaction())
-    {
-        try
+        public async Task UpdateTourAsync(UpdateTourDTO updateTourModel, List<IFormFile> images)
         {
-            // Lấy tour từ database
-            var tour = await _unitOfWork.TourRepository.GetByIDAsync(updateTourView.TourId);
-            if (tour == null)
+            using (var transaction = _unitOfWork.BeginTransaction())
             {
-                throw new Exception($"Tour with ID {updateTourView.TourId} not found");
+                try
+                {
+                    // Lấy tour từ database
+                    var tour = await _unitOfWork.TourRepository.GetByIDAsync(updateTourModel.TourId);
+                    if (tour == null)
+                    {
+                        throw new Exception($"Tour with ID {updateTourModel.TourId} not found");
+                    }
+
+                    // Cập nhật thông tin tour
+                    tour.CityId = updateTourModel.CityId;
+                    tour.TourGuideId = updateTourModel.TourGuideId;
+                    tour.Name = updateTourModel.Name;
+                    tour.Description = updateTourModel.Description;
+                    tour.Activity = updateTourModel.Activity;
+                    tour.Category = updateTourModel.Category;
+                    tour.Duration = updateTourModel.Duration;
+                    tour.Status = updateTourModel.Status;
+
+                    // Xử lý hình ảnh
+                    string parentFolderId = "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o";
+                    var tourImages = new List<TourImage>();
+
+                    foreach (var image in images)
+                    {
+                        if (!image.ContentType.StartsWith("image/"))
+                        {
+                            throw new InvalidDataException("Only image files are allowed.");
+                        }
+
+                        string fileName = $"Tour_{tour.TourId}_{Guid.NewGuid()}";
+
+                        var fileMetadata = new Google.Apis.Drive.v3.Data.File()
+                        {
+                            Name = fileName,
+                            Parents = new List<string>() { parentFolderId },
+                            MimeType = image.ContentType
+                        };
+
+                        using (var stream = image.OpenReadStream())
+                        {
+                            await _googleDriveService.UploadFileAsync(stream, fileMetadata);
+                        }
+
+                        var tourImage = new TourImage
+                        {
+                            TourId = tour.TourId,
+                            ImagePath = fileName,
+                            UploadDate = DateTime.Now
+                        };
+
+                        tourImages.Add(tourImage);
+                    }
+
+                    // Save TourImages to database
+                    if (tourImages.Count > 0)
+                    {
+                        await _unitOfWork.TourImageRepository.AddRangeAsync(tourImages);
+                        await _unitOfWork.SaveAsync();
+                    }
+
+                    // Lưu các thông tin chi tiết của tour cho update
+                    await SaveUpdateTourDetails(updateTourModel, tour.TourId);
+
+                    // Commit transaction
+                    await transaction.CommitAsync();
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    throw new Exception("Cannot update tour", ex);
+                }
+            }
+        }
+
+
+        private async Task SaveUpdateTourDetails(UpdateTourDTO updateTourModel, int tourId)
+        {
+            // Clear existing data before adding new
+            await ClearTourDetails(tourId);
+
+            // Save TourExcludes
+            if (updateTourModel.ExcludeDetails?.Any() == true)
+            {
+                var excludes = updateTourModel.ExcludeDetails.Select(detail => new TourExclude
+                {
+                    TourId = tourId,
+                    ExcludeDetail = detail
+                }).ToList();
+
+                await _unitOfWork.TourExcludeRepository.AddRangeAsync(excludes);
+                await _unitOfWork.SaveAsync();
             }
 
-            // Cập nhật thông tin tour
-            tour.CityId = updateTourView.CityId;
-            tour.TourGuideId = updateTourView.TourGuideId;
-            tour.Name = updateTourView.Name;
-            tour.Description = updateTourView.Description;
-            tour.Activity = updateTourView.Activity;
-            tour.Category = updateTourView.Category;
-            tour.Duration = updateTourView.Duration;
-            tour.Status = updateTourView.Status;
+            // Save TourHighlights
+            if (updateTourModel.HighlightDetails?.Any() == true)
+            {
+                var highlights = updateTourModel.HighlightDetails.Select(detail => new TourHighlight
+                {
+                    TourId = tourId,
+                    HighlightDetail = detail
+                }).ToList();
 
-            // Cập nhật tour trong database
-            await _unitOfWork.TourRepository.UpdateAsync(tour);
-            await _unitOfWork.SaveAsync();
+                await _unitOfWork.TourHighlightRepository.AddRangeAsync(highlights);
+                await _unitOfWork.SaveAsync();
+            }
 
-            // Commit transaction
-            await transaction.CommitAsync();
+            // Save TourIncludes
+            if (updateTourModel.IncludeDetails?.Any() == true)
+            {
+                var includes = updateTourModel.IncludeDetails.Select(detail => new TourInclude
+                {
+                    TourId = tourId,
+                    IncludeDetail = detail
+                }).ToList();
+
+                await _unitOfWork.TourIncludeRepository.AddRangeAsync(includes);
+                await _unitOfWork.SaveAsync();
+            }
+
+            // Save TourItineraries
+            if (updateTourModel.ItineraryNames?.Any() == true && updateTourModel.ItineraryDescriptions?.Any() == true)
+            {
+                for (int i = 0; i < updateTourModel.ItineraryNames.Count; i++)
+                {
+                    var itinerary = new TourItinerary
+                    {
+                        TourId = tourId,
+                        Name = updateTourModel.ItineraryNames[i],
+                        Description = updateTourModel.ItineraryDescriptions[i]
+                    };
+
+                    await _unitOfWork.TourItineraryRepository.InsertAsync(itinerary);
+                }
+                await _unitOfWork.SaveAsync();
+            }
+
+            // Save TourTypes
+            if (updateTourModel.TypeDetails?.Any() == true)
+            {
+                var types = updateTourModel.TypeDetails.Select(detail => new TourType
+                {
+                    TourId = tourId,
+                    TypeDetail = detail
+                }).ToList();
+
+                await _unitOfWork.TourTypeRepository.AddRangeAsync(types);
+                await _unitOfWork.SaveAsync();
+            }
+
+            // Save TourPrices
+            if (updateTourModel.TotalTouristFrom?.Any() == true && updateTourModel.TotalTouristTo?.Any() == true && updateTourModel.AdultPrices?.Any() == true && updateTourModel.ChildPrices?.Any() == true)
+            {
+                var prices = updateTourModel.TotalTouristFrom.Zip(updateTourModel.TotalTouristTo, (from, to) => new { from, to })
+                                                            .Zip(updateTourModel.AdultPrices, (range, adult) => new { range.from, range.to, adult })
+                                                            .Zip(updateTourModel.ChildPrices, (combined, child) => new TourPrice
+                                                            {
+                                                                TourId = tourId,
+                                                                TotalTouristFrom = combined.from ?? 0,
+                                                                TotalTouristTo = combined.to ?? 0,
+                                                                AdultPrice = combined.adult ?? 0,
+                                                                ChildPrice = child ?? 0
+                                                            }).ToList();
+
+                // Validate the list of TourPrices
+                ValidateTourPrices(prices);
+
+                await _unitOfWork.TourPriceRepository.AddRangeAsync(prices);
+                await _unitOfWork.SaveAsync();
+            }
+
+            // Log hoặc Debug để kiểm tra dữ liệu
+            Console.WriteLine("Tour details saved successfully.");
         }
-        catch (Exception ex)
+
+
+        private async Task ClearTourDetails(int tourId)
         {
-            await transaction.RollbackAsync();
-            throw new Exception("Cannot update tour", ex);
+            // Clear TourExcludes
+            var existingExcludes = await _unitOfWork.TourExcludeRepository.GetAsync(te => te.TourId == tourId);
+            if (existingExcludes.Any())
+            {
+                await _unitOfWork.TourExcludeRepository.DeleteRangeAsync(existingExcludes);
+            }
+
+            // Clear TourHighlights
+            var existingHighlights = await _unitOfWork.TourHighlightRepository.GetAsync(th => th.TourId == tourId);
+            if (existingHighlights.Any())
+            {
+                await _unitOfWork.TourHighlightRepository.DeleteRangeAsync(existingHighlights);
+            }
+
+            // Clear TourIncludes
+            var existingIncludes = await _unitOfWork.TourIncludeRepository.GetAsync(ti => ti.TourId == tourId);
+            if (existingIncludes.Any())
+            {
+                await _unitOfWork.TourIncludeRepository.DeleteRangeAsync(existingIncludes);
+            }
+
+            // Clear TourItineraries
+            var existingItineraries = await _unitOfWork.TourItineraryRepository.GetAsync(ti => ti.TourId == tourId);
+            if (existingItineraries.Any())
+            {
+                await _unitOfWork.TourItineraryRepository.DeleteRangeAsync(existingItineraries);
+            }
+
+            // Clear TourTypes
+            var existingTypes = await _unitOfWork.TourTypeRepository.GetAsync(tt => tt.TourId == tourId);
+            if (existingTypes.Any())
+            {
+                await _unitOfWork.TourTypeRepository.DeleteRangeAsync(existingTypes);
+            }
+
+            // Clear TourPrices
+            var existingPrices = await _unitOfWork.TourPriceRepository.GetAsync(tp => tp.TourId == tourId);
+            if (existingPrices.Any())
+            {
+                await _unitOfWork.TourPriceRepository.DeleteRangeAsync(existingPrices);
+            }
         }
-    }
-}
+
+
+
 
 
         public async Task UpdateTourStatusAsync(UpdateTourStatusView updateTourStatusView)

@@ -7,7 +7,7 @@ namespace Loloca_BE.Business.Services.Interfaces
     public interface ITourService
     {
         Task UploadTourAsync(UploadTourDTO tourModel, List<IFormFile> images);
-        Task UpdateTourAsync(UpdateTourView updateTourView);
+        Task UpdateTourAsync(UpdateTourDTO updateTourModel, List<IFormFile> images);
 
         Task UpdateTourStatusAsync(UpdateTourStatusView updateTourStatusView);
 
