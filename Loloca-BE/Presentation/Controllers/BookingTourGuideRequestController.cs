@@ -107,7 +107,7 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     return Forbid();
                 }
-                var checkAuthorize = await _authorizeService.CheckAuthorizeByCustomerId(1, int.Parse(accountId));
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByBookingTourGuideRequestId(id, int.Parse(accountId));
                 if (checkAuthorize.isUser || checkAuthorize.isAdmin)
                 {
                     var tourGuide = await _bookingService.GetBookingTourGuideRequestByIdAsync(id);
