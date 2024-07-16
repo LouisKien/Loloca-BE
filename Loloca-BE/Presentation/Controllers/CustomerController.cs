@@ -215,6 +215,7 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+
         [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPost("change-status-booking-tour/{bookingTourRequestId}")]
         public async Task<IActionResult> ChangeStatusBookingTour(int bookingTourRequestId)
@@ -229,6 +230,7 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
 
 
     }

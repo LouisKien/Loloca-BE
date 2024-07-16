@@ -206,11 +206,6 @@ recurringJobManager.AddOrUpdate(
     Cron.Minutely
     );
 recurringJobManager.AddOrUpdate(
-    "RejectExpiredOrder",
-    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IOrderBackgroundService>().RejectExpiredOrder(),
-    Cron.Minutely
-    );
-recurringJobManager.AddOrUpdate(
     "RejectTimeOutBookingTourGuideRequest",
     () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IBookingTourGuideRequestBackgroundService>().RejectTimeOutBookingTourGuideRequest(),
     Cron.Minutely

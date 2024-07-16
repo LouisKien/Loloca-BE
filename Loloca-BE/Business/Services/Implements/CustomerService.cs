@@ -274,6 +274,23 @@ namespace Loloca_BE.Business.Services.Implements
                     {
                         booking.Status = 3;
                         await _unitOfWork.BookingTourGuideRepository.UpdateAsync(booking);
+
+                        var order = (await _unitOfWork.OrderRepository.GetAsync(o => o.BookingTourGuideRequestId == bookingTourRequestId)).FirstOrDefault();
+                        if (order == null)
+                        {
+                            throw new Exception("Order not found.");
+                        }
+
+                        var tourGuide = await _unitOfWork.TourGuideRepository.GetByIDAsync(booking.TourGuideId);
+                        if (tourGuide == null)
+                        {
+                            throw new Exception("Tour guide not found.");
+                        }
+
+                        // Cộng tiền vào tài khoản của hướng dẫn viên
+                        tourGuide.Balance += (order.OrderPrice * (decimal)0.7);
+                        await _unitOfWork.TourGuideRepository.UpdateAsync(tourGuide);
+
                         await _unitOfWork.SaveAsync();
 
                         // Tạo thông báo cho khách hàng
@@ -293,7 +310,7 @@ namespace Loloca_BE.Business.Services.Implements
                             UserId = booking.TourGuideId,
                             UserType = "TourGuide",
                             Title = "Trạng thái đặt hướng dẫn viên đã thay đổi",
-                            Message = "Chuyến đi đã được đánh dấu hoàn thành.",
+                            Message = $"Chuyến đi đã được đánh dấu hoàn thành. Bạn đã nhận được {order.OrderPrice * (decimal)0.7} vào số dư của mình.",
                             IsRead = false,
                             CreatedAt = DateTime.Now
                         };
@@ -318,6 +335,7 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
+
         public async Task<bool> ChangeStatusBookingTourAsync(int bookingTourRequestId)
         {
             using (var transaction = _unitOfWork.BeginTransaction())
@@ -335,10 +353,32 @@ namespace Loloca_BE.Business.Services.Implements
                     {
                         booking.Status = 3;
                         await _unitOfWork.BookingTourRequestRepository.UpdateAsync(booking);
+
+                        var order = (await _unitOfWork.OrderRepository.GetAsync(o => o.BookingTourRequestsId == bookingTourRequestId)).FirstOrDefault();
+                        if (order == null)
+                        {
+                            throw new Exception("Order not found.");
+                        }
+                        var tour = await _unitOfWork.TourRepository.GetByIDAsync(booking.TourId);
+                        if (tour == null)
+                        {
+                            throw new Exception("Tour not found.");
+                        }
+
+                        var tourGuide = await _unitOfWork.TourGuideRepository.GetByIDAsync(booking.Tour.TourGuideId);
+                        if (tourGuide == null)
+                        {
+                            throw new Exception("Tour guide not found.");
+                        }
+
+                        // Cộng tiền vào tài khoản của hướng dẫn viên
+                        tourGuide.Balance += (order.OrderPrice * (decimal)0.7);
+                        await _unitOfWork.TourGuideRepository.UpdateAsync(tourGuide);
+
                         await _unitOfWork.SaveAsync();
 
                         // Tạo thông báo cho khách hàng
-                        var notification = new Notification
+                        var customerNotification = new Notification
                         {
                             UserId = booking.CustomerId,
                             UserType = "Customer",
@@ -348,7 +388,19 @@ namespace Loloca_BE.Business.Services.Implements
                             CreatedAt = DateTime.Now
                         };
 
-                        await _unitOfWork.NotificationRepository.InsertAsync(notification);
+                        // Tạo thông báo cho hướng dẫn viên
+                        var tourGuideNotification = new Notification
+                        {
+                            UserId = booking.Tour.TourGuideId,
+                            UserType = "TourGuide",
+                            Title = "Trạng thái đặt tour đã thay đổi",
+                            Message = $"Chuyến đi đã được đánh dấu hoàn thành. Bạn đã nhận được {order.OrderPrice * (decimal)0.7} vào số dư của mình.",
+                            IsRead = false,
+                            CreatedAt = DateTime.Now
+                        };
+
+                        await _unitOfWork.NotificationRepository.InsertAsync(customerNotification);
+                        await _unitOfWork.NotificationRepository.InsertAsync(tourGuideNotification);
                         await _unitOfWork.SaveAsync();
 
                         await transaction.CommitAsync();
@@ -366,5 +418,7 @@ namespace Loloca_BE.Business.Services.Implements
                 }
             }
         }
+
+
     }
 }

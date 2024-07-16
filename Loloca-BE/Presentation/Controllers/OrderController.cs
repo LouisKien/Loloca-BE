@@ -81,7 +81,7 @@ namespace Loloca_BE.Presentation.Controllers
                 {
                     return Forbid();
                 }
-                var checkAuthorize = await _authorizeService.CheckAuthorizeByBookingTourGuideRequestId((int) orderModel.BookingTourGuideRequestId, int.Parse(accountId));
+                var checkAuthorize = await _authorizeService.CheckAuthorizeByBookingTourGuideRequestId((int)orderModel.BookingTourGuideRequestId, int.Parse(accountId));
                 if (checkAuthorize.isUser)
                 {
                     var createdOrder = await _orderService.CreateOrderForBookingTourGuideRequestAsync(orderModel);
@@ -91,14 +91,15 @@ namespace Loloca_BE.Presentation.Controllers
                     }
 
                     return Ok(createdOrder); // Return the created order with HTTP status 200 (OK)
-                } else
+                }
+                else
                 {
                     return Forbid();
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $" Internal Server Error: {ex.Message}");
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
             }
         }
 
