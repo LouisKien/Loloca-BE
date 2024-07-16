@@ -323,27 +323,14 @@ namespace Loloca_BE.Presentation.Controllers
         {
             try
             {
-                var accountId = User.FindFirst("AccountId")?.Value;
-                if (accountId == null)
+                var result = await _tourGuideService.AcceptRequestBookingTourGuideRequest(bookingRequestId);
+                if (result)
                 {
-                    return Forbid();
-                }
-                var checkAuthorize = await _authorizeService.CheckAuthorizeByBookingTourGuideRequestId(bookingRequestId, int.Parse(accountId));
-                if (checkAuthorize.isUser)
-                {
-                    var result = await _tourGuideService.AcceptRequestBookingTourGuideRequest(bookingRequestId);
-                    if (result)
-                    {
-                        return Ok("Booking request accepted successfully.");
-                    }
-                    else
-                    {
-                        return BadRequest("Failed to accept booking request.");
-                    }
+                    return Ok("Booking request accepted successfully.");
                 }
                 else
                 {
-                    return Forbid();
+                    return BadRequest("Failed to accept booking request.");
                 }
             }
             catch (Exception ex)
@@ -351,6 +338,7 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
+
 
 
         [Authorize(Policy = "RequireTourGuideRole")]
@@ -359,27 +347,14 @@ namespace Loloca_BE.Presentation.Controllers
         {
             try
             {
-                var accountId = User.FindFirst("AccountId")?.Value;
-                if (accountId == null)
+                var result = await _tourGuideService.RejectRequestBookingTourGuideRequest(bookingRequestId);
+                if (result)
                 {
-                    return Forbid();
-                }
-                var checkAuthorize = await _authorizeService.CheckAuthorizeByBookingTourGuideRequestId(bookingRequestId, int.Parse(accountId));
-                if (checkAuthorize.isUser)
-                {
-                    var result = await _tourGuideService.RejectRequestBookingTourGuideRequest(bookingRequestId);
-                    if (result)
-                    {
-                        return Ok("Booking request rejected successfully.");
-                    }
-                    else
-                    {
-                        return BadRequest("Failed to reject booking request.");
-                    }
+                    return Ok("Booking request rejected successfully.");
                 }
                 else
                 {
-                    return Forbid();
+                    return BadRequest("Failed to reject booking request.");
                 }
             }
             catch (Exception ex)
@@ -387,6 +362,7 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
+
 
 
         [Authorize(Policy = "RequireTourGuideRole")]
@@ -395,27 +371,14 @@ namespace Loloca_BE.Presentation.Controllers
         {
             try
             {
-                var accountId = User.FindFirst("AccountId")?.Value;
-                if (accountId == null)
+                var result = await _tourGuideService.AcceptRequestBookingTourRequest(bookingRequestId);
+                if (result)
                 {
-                    return Forbid();
-                }
-                var checkAuthorize = await _authorizeService.CheckAuthorizeByBookingTourRequestId(bookingRequestId, int.Parse(accountId));
-                if (checkAuthorize.isUser)
-                {
-                    var result = await _tourGuideService.AcceptRequestBookingTourRequest(bookingRequestId);
-                    if (result)
-                    {
-                        return Ok("Booking request accepted successfully.");
-                    }
-                    else
-                    {
-                        return BadRequest("Failed to accept booking request.");
-                    }
+                    return Ok("Booking request accepted successfully.");
                 }
                 else
                 {
-                    return Forbid();
+                    return BadRequest("Failed to accept booking request.");
                 }
             }
             catch (Exception ex)
@@ -424,33 +387,21 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+
         [Authorize(Policy = "RequireTourGuideRole")]
         [HttpPost("reject-booking-tour-request/{bookingRequestId}")]
         public async Task<IActionResult> RejectBookingTourRequest([FromRoute] int bookingRequestId)
         {
             try
             {
-                var accountId = User.FindFirst("AccountId")?.Value;
-                if (accountId == null)
+                var result = await _tourGuideService.RejectRequestBookingTourRequest(bookingRequestId);
+                if (result)
                 {
-                    return Forbid();
-                }
-                var checkAuthorize = await _authorizeService.CheckAuthorizeByBookingTourRequestId(bookingRequestId, int.Parse(accountId));
-                if (checkAuthorize.isUser)
-                {
-                    var result = await _tourGuideService.RejectRequestBookingTourRequest(bookingRequestId);
-                    if (result)
-                    {
-                        return Ok("Booking request rejected successfully.");
-                    }
-                    else
-                    {
-                        return BadRequest("Failed to reject booking request.");
-                    }
+                    return Ok("Booking request rejected successfully.");
                 }
                 else
                 {
-                    return Forbid();
+                    return BadRequest("Failed to reject booking request.");
                 }
             }
             catch (Exception ex)
@@ -458,6 +409,7 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
+
 
     }
 }

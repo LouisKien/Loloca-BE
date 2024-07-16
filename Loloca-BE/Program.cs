@@ -84,10 +84,10 @@ builder.Services.AddScoped<IRefreshTokenBackgroundService, RefreshTokenBackgroun
 builder.Services.AddScoped<IPaymentRequestBackgroundService, PaymentRequestBackgroundService>();
 builder.Services.AddScoped<ITourGuideBackgroundService, TourGuideBackgroundService>();
 builder.Services.AddScoped<ITourBackgroundService, TourBackgroundService>();
-builder.Services.AddScoped<IBookingTourGuideRequestBackgroundService, BookingTourGuideRequestBackgroundService>();
-builder.Services.AddScoped<IBookingTourRequestBackgroundService, BookingTourRequestBackgroundService>();
-builder.Services.AddScoped<IOrderBackgroundService, OrderBackgroundService>();
-builder.Services.AddScoped<IAccountBackgroundService, AccountBackgroundService>();
+//builder.Services.AddScoped<IBookingTourGuideRequestBackgroundService, BookingTourGuideRequestBackgroundService>();
+//builder.Services.AddScoped<IBookingTourRequestBackgroundService, BookingTourRequestBackgroundService>();
+//builder.Services.AddScoped<IOrderBackgroundService, OrderBackgroundService>();
+//builder.Services.AddScoped<IAccountBackgroundService, AccountBackgroundService>();
 
 builder.Services.AddScoped<IAuthenticateService, AuthenticateService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -205,46 +205,46 @@ recurringJobManager.AddOrUpdate(
     () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IPaymentRequestBackgroundService>().RejectExpiredPaymentRequest(),
     Cron.Minutely
     );
-recurringJobManager.AddOrUpdate(
-    "RejectTimeOutBookingTourGuideRequest",
-    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IBookingTourGuideRequestBackgroundService>().RejectTimeOutBookingTourGuideRequest(),
-    Cron.Minutely
-    );
-recurringJobManager.AddOrUpdate(
-    "RejectTimeOutBookingTourRequest",
-    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IBookingTourRequestBackgroundService>().RejectTimeOutBookingTourRequest(),
-    Cron.Minutely
-    );
-recurringJobManager.AddOrUpdate(
-    "LockSpammedCustomerAccount",
-    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IAccountBackgroundService>().LockSpammedCustomerAccount(),
-    Cron.Minutely
-    );
-recurringJobManager.AddOrUpdate(
-    "LockSpammedTourGuideAccount",
-    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IAccountBackgroundService>().LockSpammedTourGuideAccount(),
-    Cron.Minutely
-    );
-recurringJobManager.AddOrUpdate(
-    "UnlockSpammedCustomerAccount",
-    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IAccountBackgroundService>().UnlockSpammedCustomerAccount(),
-    Cron.Minutely
-    );
-recurringJobManager.AddOrUpdate(
-    "UnlockSpammedTourGuideAccount",
-    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IAccountBackgroundService>().UnlockSpammedTourGuideAccount(),
-    Cron.Minutely
-    );
-recurringJobManager.AddOrUpdate(
-    "CompletedBookingTourGuideRequest",
-    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IBookingTourGuideRequestBackgroundService>().CompletedBookingTourGuideRequest(),
-    Cron.Minutely
-    );
-recurringJobManager.AddOrUpdate(
-    "CompletedBookingTourRequest",
-    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IBookingTourRequestBackgroundService>().CompletedBookingTourRequest(),
-    Cron.Minutely
-    );
+//recurringJobManager.AddOrUpdate(
+//    "RejectTimeOutBookingTourGuideRequest",
+//    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IBookingTourGuideRequestBackgroundService>().RejectTimeOutBookingTourGuideRequest(),
+//    Cron.Minutely
+//    );
+//recurringJobManager.AddOrUpdate(
+//    "RejectTimeOutBookingTourRequest",
+//    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IBookingTourRequestBackgroundService>().RejectTimeOutBookingTourRequest(),
+//    Cron.Minutely
+//    );
+//recurringJobManager.AddOrUpdate(
+//    "LockSpammedCustomerAccount",
+//    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IAccountBackgroundService>().LockSpammedCustomerAccount(),
+//    Cron.Minutely
+//    );
+//recurringJobManager.AddOrUpdate(
+//    "LockSpammedTourGuideAccount",
+//    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IAccountBackgroundService>().LockSpammedTourGuideAccount(),
+//    Cron.Minutely
+//    );
+//recurringJobManager.AddOrUpdate(
+//    "UnlockSpammedCustomerAccount",
+//    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IAccountBackgroundService>().UnlockSpammedCustomerAccount(),
+//    Cron.Minutely
+//    );
+//recurringJobManager.AddOrUpdate(
+//    "UnlockSpammedTourGuideAccount",
+//    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IAccountBackgroundService>().UnlockSpammedTourGuideAccount(),
+//    Cron.Minutely
+//    );
+//recurringJobManager.AddOrUpdate(
+//    "CompletedBookingTourGuideRequest",
+//    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IBookingTourGuideRequestBackgroundService>().CompletedBookingTourGuideRequest(),
+//    Cron.Minutely
+//    );
+//recurringJobManager.AddOrUpdate(
+//    "CompletedBookingTourRequest",
+//    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IBookingTourRequestBackgroundService>().CompletedBookingTourRequest(),
+//    Cron.Minutely
+//    );
 
 app.UseCors();
 

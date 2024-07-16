@@ -12,46 +12,46 @@ namespace Loloca_BE.Business.BackgroundServices.Implements
             _unitOfWork = unitOfWork;
         }
 
-        public async Task CompletedBookingTourRequest()
-        {
-            using (var Transaction = _unitOfWork.BeginTransaction())
-            {
-                try
-                {
-                    var btgr = await _unitOfWork.BookingTourRequestRepository.GetAsync(filter: b => b.Status == 1 && b.EndDate.AddDays(3) <= DateTime.Now);
-                    if (btgr.Any())
-                    {
-                        foreach (var item in btgr)
-                        {
+        //public async Task CompletedBookingTourRequest()
+        //{
+        //    using (var Transaction = _unitOfWork.BeginTransaction())
+        //    {
+        //        try
+        //        {
+        //            var btgr = await _unitOfWork.BookingTourRequestRepository.GetAsync(filter: b => b.Status == 1 && b.EndDate.AddDays(3) <= DateTime.Now);
+        //            if (btgr.Any())
+        //            {
+        //                foreach (var item in btgr)
+        //                {
 
-                            var order = (await _unitOfWork.OrderRepository.GetAsync(o => o.BookingTourRequestsId == item.BookingTourRequestId)).FirstOrDefault();
-                            if (order != null)
-                            {
-                                var tour = await _unitOfWork.TourRepository.GetByIDAsync(item.TourId);
-                                if (tour != null)
-                                {
-                                    var tourGuide = await _unitOfWork.TourGuideRepository.GetByIDAsync(tour.TourGuideId);
-                                    if (tourGuide != null)
-                                    {
-                                        item.Status = 3;
-                                        await _unitOfWork.BookingTourRequestRepository.UpdateAsync(item);
-                                        tourGuide.Balance += (order.OrderPrice * (decimal)0.7);
-                                        await _unitOfWork.TourGuideRepository.UpdateAsync(tourGuide);
-                                        await _unitOfWork.SaveAsync();
-                                    }
-                                }
-                            }
-                        }
-                        await Transaction.CommitAsync();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    await Transaction.RollbackAsync();
-                    throw new Exception(ex.Message);
-                }
-            }
-        }
+        //                    var order = (await _unitOfWork.OrderRepository.GetAsync(o => o.BookingTourRequestsId == item.BookingTourRequestId)).FirstOrDefault();
+        //                    if (order != null)
+        //                    {
+        //                        var tour = await _unitOfWork.TourRepository.GetByIDAsync(item.TourId);
+        //                        if (tour != null)
+        //                        {
+        //                            var tourGuide = await _unitOfWork.TourGuideRepository.GetByIDAsync(tour.TourGuideId);
+        //                            if (tourGuide != null)
+        //                            {
+        //                                item.Status = 3;
+        //                                await _unitOfWork.BookingTourRequestRepository.UpdateAsync(item);
+        //                                tourGuide.Balance += (order.OrderPrice * (decimal)0.7);
+        //                                await _unitOfWork.TourGuideRepository.UpdateAsync(tourGuide);
+        //                                await _unitOfWork.SaveAsync();
+        //                            }
+        //                        }
+        //                    }
+        //                }
+        //                await Transaction.CommitAsync();
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            await Transaction.RollbackAsync();
+        //            throw new Exception(ex.Message);
+        //        }
+        //    }
+        //}
 
         //public async Task RejectTimeOutBookingTourRequest()
         //{
