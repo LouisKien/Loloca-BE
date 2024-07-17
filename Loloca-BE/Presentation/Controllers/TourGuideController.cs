@@ -410,6 +410,14 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
+        [AllowAnonymous]
+        [HttpGet("{cityId}")]
+        public async Task<IActionResult> GetTourGuidesByCityId(int cityId)
+        {
+            var tourGuides = await _tourGuideService.GetTourGuidesByCityId(cityId);
+            return Ok(tourGuides);
+        }
+
 
     }
 }

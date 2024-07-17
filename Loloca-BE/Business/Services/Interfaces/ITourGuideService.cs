@@ -22,5 +22,8 @@ namespace Loloca_BE.Business.Services.Interfaces
 
         Task<bool> AcceptRequestBookingTourRequest(int bookingTourRequestId);
         Task<bool> RejectRequestBookingTourRequest(int bookingTourRequestId);
+        Task<IEnumerable<TourGuideWithCityNameDTO>> GetTourGuidesByCityId(int cityId);
+
+
     }
 }

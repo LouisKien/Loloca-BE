@@ -645,5 +645,36 @@ namespace Loloca_BE.Business.Services.Implements
                 throw new Exception(ex.Message);
             }
         }
+
+
+        public async Task<IEnumerable<TourGuideWithCityNameDTO>> GetTourGuidesByCityId(int cityId)
+        {
+            var tourGuides = await _unitOfWork.TourGuideRepository.GetAsync(
+                filter: tg => tg.CityId == cityId,
+                includeProperties: "City"
+            );
+
+            var tourGuideWithCityNameDTOs = tourGuides.Select(tg => new TourGuideWithCityNameDTO
+            {
+                TourGuideId = tg.TourGuideId,
+                AccountId = tg.AccountId,
+                CityId = tg.CityId,
+                FirstName = tg.FirstName,
+                LastName = tg.LastName,
+                Description = tg.Description,
+                DateOfBirth = tg.DateOfBirth,
+                Gender = tg.Gender,
+                PhoneNumber = tg.PhoneNumber,
+                Address = tg.Address,
+                ZaloLink = tg.ZaloLink,
+                FacebookLink = tg.FacebookLink,
+                InstagramLink = tg.InstagramLink,
+                PricePerDay = tg.PricePerDay,
+                Status = tg.Status,
+                CityName = tg.City.Name 
+            });
+
+            return tourGuideWithCityNameDTOs;
+        }
     }
 }
