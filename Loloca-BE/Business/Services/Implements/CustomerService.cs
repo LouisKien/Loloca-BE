@@ -257,13 +257,13 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
-        public async Task<bool> ChangeStatusBookingTourGuideAsync(int bookingTourRequestId)
+        public async Task<bool> ChangeStatusBookingTourGuideAsync(int bookingTourGuideRequestId)
         {
             using (var transaction = _unitOfWork.BeginTransaction())
             {
                 try
                 {
-                    var booking = await _unitOfWork.BookingTourGuideRepository.GetByIDAsync(bookingTourRequestId);
+                    var booking = await _unitOfWork.BookingTourGuideRepository.GetByIDAsync(bookingTourGuideRequestId);
 
                     if (booking == null)
                     {
@@ -275,7 +275,7 @@ namespace Loloca_BE.Business.Services.Implements
                         booking.Status = 3;
                         await _unitOfWork.BookingTourGuideRepository.UpdateAsync(booking);
 
-                        var order = (await _unitOfWork.OrderRepository.GetAsync(o => o.BookingTourGuideRequestId == bookingTourRequestId)).FirstOrDefault();
+                        var order = (await _unitOfWork.OrderRepository.GetAsync(o => o.BookingTourGuideRequestId == bookingTourGuideRequestId)).FirstOrDefault();
                         if (order == null)
                         {
                             throw new Exception("Order not found.");
@@ -334,7 +334,6 @@ namespace Loloca_BE.Business.Services.Implements
                 }
             }
         }
-
 
         public async Task<bool> ChangeStatusBookingTourAsync(int bookingTourRequestId)
         {
@@ -418,7 +417,5 @@ namespace Loloca_BE.Business.Services.Implements
                 }
             }
         }
-
-
     }
 }

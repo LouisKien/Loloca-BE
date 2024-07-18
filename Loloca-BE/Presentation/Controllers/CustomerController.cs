@@ -201,12 +201,12 @@ namespace Loloca_BE.Presentation.Controllers
         }
 
         [Authorize(Policy = "RequireTourGuideRole")]
-        [HttpPost("change-status-booking-tour-guide/{bookingTourGuideRequestId}")]
-        public async Task<IActionResult> ChangeStatusBookingTourGuide(int bookingTourGuideRequestId)
+        [HttpPost("change-status-booking-tour-guide")]
+        public async Task<IActionResult> ChangeStatusBookingTourGuide([FromBody] ChangeStatusBookingTourGuideRequest request)
         {
             try
             {
-                var result = await _customerService.ChangeStatusBookingTourGuideAsync(bookingTourGuideRequestId);
+                var result = await _customerService.ChangeStatusBookingTourGuideAsync(request.BookingTourGuideRequestId);
                 return result ? Ok("Chuyến đi đánh dấu hoàn thành và thông báo đã được gửi.") : BadRequest("Không thể thay đổi trạng thái của chuyến đi");
             }
             catch (Exception ex)
@@ -214,15 +214,14 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
 
         [Authorize(Policy = "RequireTourGuideRole")]
-        [HttpPost("change-status-booking-tour/{bookingTourRequestId}")]
-        public async Task<IActionResult> ChangeStatusBookingTour(int bookingTourRequestId)
+        [HttpPost("change-status-booking-tour")]
+        public async Task<IActionResult> ChangeStatusBookingTour([FromBody] ChangeStatusBookingRequest request)
         {
             try
             {
-                var result = await _customerService.ChangeStatusBookingTourAsync(bookingTourRequestId);
+                var result = await _customerService.ChangeStatusBookingTourAsync(request.BookingTourRequestId);
                 return result ? Ok("Chuyến đi đánh dấu hoàn thành và thông báo đã được gửi.") : BadRequest("Không thể thay đổi trạng thái của chuyến đi");
             }
             catch (Exception ex)
@@ -230,6 +229,7 @@ namespace Loloca_BE.Presentation.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
 
 
 
