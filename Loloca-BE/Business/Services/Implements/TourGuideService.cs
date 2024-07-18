@@ -649,32 +649,50 @@ namespace Loloca_BE.Business.Services.Implements
 
         public async Task<IEnumerable<TourGuideWithCityNameDTO>> GetTourGuidesByCityId(int cityId)
         {
-            var tourGuides = await _unitOfWork.TourGuideRepository.GetAsync(
-                filter: tg => tg.CityId == cityId,
-                includeProperties: "City"
-            );
-
-            var tourGuideWithCityNameDTOs = tourGuides.Select(tg => new TourGuideWithCityNameDTO
+            try
             {
-                TourGuideId = tg.TourGuideId,
-                AccountId = tg.AccountId,
-                CityId = tg.CityId,
-                FirstName = tg.FirstName,
-                LastName = tg.LastName,
-                Description = tg.Description,
-                DateOfBirth = tg.DateOfBirth,
-                Gender = tg.Gender,
-                PhoneNumber = tg.PhoneNumber,
-                Address = tg.Address,
-                ZaloLink = tg.ZaloLink,
-                FacebookLink = tg.FacebookLink,
-                InstagramLink = tg.InstagramLink,
-                PricePerDay = tg.PricePerDay,
-                Status = tg.Status,
-                CityName = tg.City.Name 
-            });
+                var tourGuides = await _unitOfWork.TourGuideRepository.GetAsync(
+                    filter: tg => tg.CityId == cityId,
+                    includeProperties: "City"
+                );
 
-            return tourGuideWithCityNameDTOs;
+                List<TourGuideWithCityNameDTO> tourGuideWithCityNameDTOs = new List<TourGuideWithCityNameDTO>();
+
+                foreach (var tg in tourGuides)
+                {
+                    byte[]? avatarContent = await _googleDriveService.GetImageFromCacheOrDriveAsync(tg.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn");
+
+                    var item = new TourGuideWithCityNameDTO
+                    {
+                        TourGuideId = tg.TourGuideId,
+                        AccountId = tg.AccountId,
+                        CityId = tg.CityId,
+                        FirstName = tg.FirstName,
+                        LastName = tg.LastName,
+                        Description = tg.Description,
+                        DateOfBirth = tg.DateOfBirth,
+                        Gender = tg.Gender,
+                        PhoneNumber = tg.PhoneNumber,
+                        Address = tg.Address,
+                        ZaloLink = tg.ZaloLink,
+                        FacebookLink = tg.FacebookLink,
+                        InstagramLink = tg.InstagramLink,
+                        PricePerDay = tg.PricePerDay,
+                        Status = tg.Status,
+                        CityName = tg.City.Name,
+                        Avatar = avatarContent,
+                        AvatarUploadedTime = tg.AvatarUploadDate
+                    };
+
+                    tourGuideWithCityNameDTOs.Add(item);
+                }
+
+                return tourGuideWithCityNameDTOs;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

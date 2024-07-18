@@ -17,10 +17,8 @@
         public string InstagramLink { get; set; }
         public decimal? PricePerDay { get; set; }
         public int Status { get; set; }
-        public string AvatarPath { get; set; }
-        public DateTime? AvatarUploadDate { get; set; }
-        public string CoverPath { get; set; }
-        public DateTime? CoverUploadDate { get; set; }
+        public byte[]? Avatar { get; set; }
+        public DateTime? AvatarUploadedTime { get; set; }
         public string CityName { get; set; }
     }
 }
