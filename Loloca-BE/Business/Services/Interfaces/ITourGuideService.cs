@@ -12,10 +12,14 @@ namespace Loloca_BE.Business.Services.Interfaces
         Task<bool> ChangeTourGuidePassword(int tourguideId, ChangePasswordTourGuide model);
         Task<GetTourGuideInfo> GetTourGuideInfoAsync(int tourGuideId);
         Task<GetTourGuidePrivateInfo> GetPrivateTourGuideInfoAsync(int tourGuideId);
-        Task<List<GetTourGuide>> GetRandomTourGuidesAsync(string sessionId, int page, int pageSize);
-        Task<List<GetTourGuide>> GetRandomTourGuidesInCityAsync(string sessionId, int CityId, int page, int pageSize);
-        Task<int> GetTotalPage(int pageSize, int? cityId, string sessionId);
+        //Task<List<GetTourGuide>> GetRandomTourGuidesAsync(string sessionId, int page, int pageSize);
+        //Task<List<GetTourGuide>> GetRandomTourGuidesInCityAsync(string sessionId, int CityId, int page, int pageSize);
+
+        Task<List<GetTourGuide>> GetTourGuideAsync(int page, int pageSize);
+        Task<List<GetTourGuide>> GetTourGuidesInCityAsync(int CityId, int page, int pageSize);
+        //Task<int> GetTotalPage(int pageSize, int? cityId, string sessionId);
         Task<int> GetTotalPage(int pageSize);
+        Task<int> GetTotalPage(int CityId, int pageSize);
         Task<List<GetTourGuideInfo>> GetTourGuidesAsync(int page, int pageSize);
         Task<bool> AcceptRequestBookingTourGuideRequest(int bookingRequestId);
         Task<bool> RejectRequestBookingTourGuideRequest(int bookingRequestId);
