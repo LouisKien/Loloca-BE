@@ -161,27 +161,15 @@ namespace Loloca_BE.Presentation.Controllers
         {
             try
             {
-                string sessionId;
-
-                if (HttpContext.Session.GetString("SessionId") == null)
-                {
-                    sessionId = Guid.NewGuid().ToString();
-                    HttpContext.Session.SetString("SessionId", sessionId);
-                    AddSessionIdToCache(sessionId);
-                }
-                else
-                {
-                    sessionId = HttpContext.Session.GetString("SessionId");
-                }
-                var tours = await _tourService.GetRandomToursAsync(sessionId, page, pageSize);
-                if (!tours.Any())
-                {
-                    return NotFound("No tour exist");
-                }
-                var totalPage = await _tourService.GetTotalPage(pageSize, null, sessionId);
+                var totalPage = await _tourService.GetTotalPage(pageSize, null);
                 if (page > totalPage)
                 {
                     return NotFound("This page does not exist.");
+                }
+                var tours = await _tourService.GetToursAsync(page, pageSize);
+                if (!tours.Any())
+                {
+                    return NotFound("No tour exist");
                 }
                 return Ok(new { tours, totalPage });
             }
@@ -193,31 +181,19 @@ namespace Loloca_BE.Presentation.Controllers
 
         [AllowAnonymous]
         [HttpGet("city")]
-        public async Task<IActionResult> GetRandomToursInCity([FromQuery] int CityId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetToursInCity([FromQuery] int CityId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                string sessionId;
-
-                if (HttpContext.Session.GetString("SessionId") == null)
-                {
-                    sessionId = Guid.NewGuid().ToString();
-                    HttpContext.Session.SetString("SessionId", sessionId);
-                    AddSessionIdToCache(sessionId);
-                }
-                else
-                {
-                    sessionId = HttpContext.Session.GetString("SessionId");
-                }
-                var tours = await _tourService.GetRandomToursInCityAsync(sessionId, CityId, page, pageSize);
-                if (!tours.Any())
-                {
-                    return NotFound("No tour exist");
-                }
-                var totalPage = await _tourService.GetTotalPage(pageSize, CityId, sessionId);
+                var totalPage = await _tourService.GetTotalPage(pageSize, CityId);
                 if (page > totalPage)
                 {
                     return NotFound("This page does not exist.");
+                }
+                var tours = await _tourService.GetToursInCityAsync(CityId, page, pageSize);
+                if (!tours.Any())
+                {
+                    return NotFound("No tour exist");
                 }
                 return Ok(new { tours, totalPage });
             }

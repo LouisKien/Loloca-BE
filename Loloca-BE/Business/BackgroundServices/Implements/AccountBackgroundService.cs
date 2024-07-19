@@ -24,7 +24,7 @@ namespace Loloca_BE.Business.BackgroundServices.Implements
                         foreach (var item in customer)
                         {
                             var account = await _unitOfWork.AccountRepository.GetByIDAsync(item.AccountId);
-                            account.Status = 2;
+                            account.Status = 3;
                             account.ReleaseDate = DateTime.Now.AddDays(90);
                             await _unitOfWork.AccountRepository.UpdateAsync(account);
                             item.CanceledBookingCount = 0;
@@ -54,8 +54,9 @@ namespace Loloca_BE.Business.BackgroundServices.Implements
                         foreach(var item in tourGuide)
                         {
                             var account = await _unitOfWork.AccountRepository.GetByIDAsync(item.AccountId);
-                                account.Status = 2;
+                                account.Status = 3;
                                 account.ReleaseDate = DateTime.Now.AddDays(90);
+                            await _unitOfWork.AccountRepository.UpdateAsync(account);
                             item.RejectedBookingCount = 0;
                             item.Status = 0;
                             await _unitOfWork.TourGuideRepository.UpdateAsync(item);
