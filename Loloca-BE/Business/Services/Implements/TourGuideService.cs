@@ -278,128 +278,128 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
-        public async Task<List<GetTourGuide>> GetRandomTourGuidesAsync(string sessionId, int page, int pageSize)
-        {
-            try
-            {
-                var cacheKey = $"TourGuide_{sessionId}";
+        //public async Task<List<GetTourGuide>> GetRandomTourGuidesAsync(string sessionId, int page, int pageSize)
+        //{
+        //    try
+        //    {
+        //        var cacheKey = $"TourGuide_{sessionId}";
 
-                if (!_cache.TryGetValue(cacheKey, out List<GetTourGuide> shuffledItems))
-                {
-                    var tourGuides = (await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1)).ToList();
-                    shuffledItems = await GenerateShuffledTourList(tourGuides);
-                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(5));
-                }
+        //        if (!_cache.TryGetValue(cacheKey, out List<GetTourGuide> shuffledItems))
+        //        {
+        //            var tourGuides = (await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1)).ToList();
+        //            shuffledItems = await GenerateShuffledTourList(tourGuides);
+        //            _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(5));
+        //        }
 
-                var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        //        var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-                return pagedItems.Select(item => new GetTourGuide
-                {
-                    Avatar = item.Avatar,
-                    AvatarUploadedTime = item.AvatarUploadedTime,
-                    DateOfBirth = item.DateOfBirth,
-                    Description = item.Description,
-                    FirstName = item.FirstName,
-                    Gender = item.Gender,
-                    Id = item.Id,
-                    LastName = item.LastName,
-                    PricePerDay = item.PricePerDay
-                }).ToList();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+        //        return pagedItems.Select(item => new GetTourGuide
+        //        {
+        //            Avatar = item.Avatar,
+        //            AvatarUploadedTime = item.AvatarUploadedTime,
+        //            DateOfBirth = item.DateOfBirth,
+        //            Description = item.Description,
+        //            FirstName = item.FirstName,
+        //            Gender = item.Gender,
+        //            Id = item.Id,
+        //            LastName = item.LastName,
+        //            PricePerDay = item.PricePerDay
+        //        }).ToList();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message);
+        //    }
+        //}
 
-        public async Task<List<GetTourGuide>> GetRandomTourGuidesInCityAsync(string sessionId, int CityId, int page, int pageSize)
-        {
-            try
-            {
-                var cacheKey = $"TourGuide_CityId:{CityId}_{sessionId}";
+        //public async Task<List<GetTourGuide>> GetRandomTourGuidesInCityAsync(string sessionId, int CityId, int page, int pageSize)
+        //{
+        //    try
+        //    {
+        //        var cacheKey = $"TourGuide_CityId:{CityId}_{sessionId}";
 
-                if (!_cache.TryGetValue(cacheKey, out List<GetTourGuide> shuffledItems))
-                {
-                    var tourGuides = (await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1 && t.CityId == CityId)).ToList();
-                    shuffledItems = await GenerateShuffledTourList(tourGuides);
-                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(5));
-                }
+        //        if (!_cache.TryGetValue(cacheKey, out List<GetTourGuide> shuffledItems))
+        //        {
+        //            var tourGuides = (await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1 && t.CityId == CityId)).ToList();
+        //            shuffledItems = await GenerateShuffledTourList(tourGuides);
+        //            _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(5));
+        //        }
 
-                var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        //        var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-                return pagedItems.Select(item => new GetTourGuide
-                {
-                    Avatar = item.Avatar,
-                    AvatarUploadedTime = item.AvatarUploadedTime,
-                    DateOfBirth = item.DateOfBirth,
-                    Description = item.Description,
-                    FirstName = item.FirstName,
-                    Gender = item.Gender,
-                    Id = item.Id,
-                    LastName = item.LastName,
-                    PricePerDay = item.PricePerDay
-                }).ToList();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+        //        return pagedItems.Select(item => new GetTourGuide
+        //        {
+        //            Avatar = item.Avatar,
+        //            AvatarUploadedTime = item.AvatarUploadedTime,
+        //            DateOfBirth = item.DateOfBirth,
+        //            Description = item.Description,
+        //            FirstName = item.FirstName,
+        //            Gender = item.Gender,
+        //            Id = item.Id,
+        //            LastName = item.LastName,
+        //            PricePerDay = item.PricePerDay
+        //        }).ToList();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message);
+        //    }
+        //}
 
-        public async Task<int> GetTotalPage(int pageSize, int? cityId, string sessionId)
-        {
-            try
-            {
-                string cacheKey;
-                if (cityId == null)
-                {
-                    cacheKey = $"TourGuide_{sessionId}";
-                }
-                else
-                {
-                    cacheKey = $"TourGuide_CityId:{cityId}_{sessionId}";
-                }
+        //public async Task<int> GetTotalPage(int pageSize, int? cityId, string sessionId)
+        //{
+        //    try
+        //    {
+        //        string cacheKey;
+        //        if (cityId == null)
+        //        {
+        //            cacheKey = $"TourGuide_{sessionId}";
+        //        }
+        //        else
+        //        {
+        //            cacheKey = $"TourGuide_CityId:{cityId}_{sessionId}";
+        //        }
 
-                if (_cache.TryGetValue(cacheKey, out List<GetTourGuide> shuffledItems))
-                {
-                    int totalPages = (int)Math.Ceiling(shuffledItems.Count / (double)pageSize);
-                    return totalPages;
-                }
-                else
-                {
-                    return 1;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+        //        if (_cache.TryGetValue(cacheKey, out List<GetTourGuide> shuffledItems))
+        //        {
+        //            int totalPages = (int)Math.Ceiling(shuffledItems.Count / (double)pageSize);
+        //            return totalPages;
+        //        }
+        //        else
+        //        {
+        //            return 1;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message);
+        //    }
+        //}
 
-        private async Task<List<GetTourGuide>> GenerateShuffledTourList(List<TourGuide> tourGuides)
-        {
-            var items = new List<GetTourGuide>();
+        //private async Task<List<GetTourGuide>> GenerateShuffledTourList(List<TourGuide> tourGuides)
+        //{
+        //    var items = new List<GetTourGuide>();
 
-            foreach (var tourGuide in tourGuides)
-            {
+        //    foreach (var tourGuide in tourGuides)
+        //    {
 
-                var item = new GetTourGuide
-                {
-                    Avatar = string.IsNullOrEmpty(tourGuide.AvatarPath) ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
-                    AvatarUploadedTime = string.IsNullOrEmpty(tourGuide.AvatarPath) ? null : tourGuide.AvatarUploadDate,
-                    DateOfBirth = tourGuide.DateOfBirth,
-                    Description = tourGuide.Description,
-                    FirstName = tourGuide.FirstName,
-                    Gender = tourGuide.Gender,
-                    Id = tourGuide.TourGuideId,
-                    LastName = tourGuide.LastName,
-                    PricePerDay = tourGuide.PricePerDay
-                };
-                items.Add(item);
-            }
+        //        var item = new GetTourGuide
+        //        {
+        //            Avatar = string.IsNullOrEmpty(tourGuide.AvatarPath) ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+        //            AvatarUploadedTime = string.IsNullOrEmpty(tourGuide.AvatarPath) ? null : tourGuide.AvatarUploadDate,
+        //            DateOfBirth = tourGuide.DateOfBirth,
+        //            Description = tourGuide.Description,
+        //            FirstName = tourGuide.FirstName,
+        //            Gender = tourGuide.Gender,
+        //            Id = tourGuide.TourGuideId,
+        //            LastName = tourGuide.LastName,
+        //            PricePerDay = tourGuide.PricePerDay
+        //        };
+        //        items.Add(item);
+        //    }
 
-            return items.OrderBy(x => _random.Next()).ToList();
-        }
+        //    return items.OrderBy(x => _random.Next()).ToList();
+        //}
 
         public async Task<bool> AcceptRequestBookingTourGuideRequest(int bookingRequestId)
         {
@@ -688,6 +688,84 @@ namespace Loloca_BE.Business.Services.Implements
                 }
 
                 return tourGuideWithCityNameDTOs;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<GetTourGuide>> GetTourGuideAsync(int page, int pageSize)
+        {
+            try
+            {
+                var response = new List<GetTourGuide>();
+                var tourGuides = await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1, orderBy: t => t.OrderByDescending(o => o.TourGuideId));
+                if (tourGuides.Any())
+                {
+                    foreach (var tourGuide in tourGuides)
+                    {
+                        var item = new GetTourGuide
+                        {
+                            Avatar = string.IsNullOrEmpty(tourGuide.AvatarPath) ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+                            AvatarUploadedTime = string.IsNullOrEmpty(tourGuide.AvatarPath) ? null : tourGuide.AvatarUploadDate,
+                            DateOfBirth = tourGuide.DateOfBirth,
+                            Description = tourGuide.Description,
+                            FirstName = tourGuide.FirstName,
+                            Gender = tourGuide.Gender,
+                            Id = tourGuide.TourGuideId,
+                            LastName = tourGuide.LastName,
+                            PricePerDay = tourGuide.PricePerDay
+                        };
+                        response.Add(item);
+                    }
+                }
+                return response;
+            }
+            catch (Exception ex) { 
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<GetTourGuide>> GetTourGuidesInCityAsync(int CityId, int page, int pageSize)
+        {
+            try
+            {
+                var response = new List<GetTourGuide>();
+                var tourGuides = await _unitOfWork.TourGuideRepository.GetAllAsync(filter: t => t.Status == 1 && t.CityId == CityId, orderBy: t => t.OrderByDescending(o => o.TourGuideId));
+                if (tourGuides.Any())
+                {
+                    foreach (var tourGuide in tourGuides)
+                    {
+                        var item = new GetTourGuide
+                        {
+                            Avatar = string.IsNullOrEmpty(tourGuide.AvatarPath) ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourGuide.AvatarPath, "1Jej2xcGybrPJDV4f6CiEkgaQN2fN8Nvn"),
+                            AvatarUploadedTime = string.IsNullOrEmpty(tourGuide.AvatarPath) ? null : tourGuide.AvatarUploadDate,
+                            DateOfBirth = tourGuide.DateOfBirth,
+                            Description = tourGuide.Description,
+                            FirstName = tourGuide.FirstName,
+                            Gender = tourGuide.Gender,
+                            Id = tourGuide.TourGuideId,
+                            LastName = tourGuide.LastName,
+                            PricePerDay = tourGuide.PricePerDay
+                        };
+                        response.Add(item);
+                    }
+                }
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<int> GetTotalPage(int CityId, int pageSize)
+        {
+            try
+            {
+                var totalTour = await _unitOfWork.TourGuideRepository.CountAsync(c => c.CityId == CityId);
+                return (totalTour / pageSize) + 1;
             }
             catch (Exception ex)
             {

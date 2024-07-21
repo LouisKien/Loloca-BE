@@ -229,25 +229,12 @@ namespace Loloca_BE.Presentation.Controllers
         {
             try
             {
-                string sessionId;
-
-                if (HttpContext.Session.GetString("SessionId") == null)
-                {
-                    sessionId = Guid.NewGuid().ToString();
-                    HttpContext.Session.SetString("SessionId", sessionId);
-                    AddSessionIdToCache(sessionId);
-                }
-                else
-                {
-                    sessionId = HttpContext.Session.GetString("SessionId");
-                }
-
-                var tourGuides = await _tourGuideService.GetRandomTourGuidesAsync(sessionId, page, pageSize);
-                var totalPage = await _tourGuideService.GetTotalPage(pageSize, null, sessionId);
+                var totalPage = await _tourGuideService.GetTotalPage(pageSize);
                 if (page > totalPage)
                 {
                     return NotFound("This page does not exist.");
                 }
+                var tourGuides = await _tourGuideService.GetTourGuideAsync(page, pageSize);
                 return Ok(new { tourGuides, totalPage });
             }
             catch (Exception ex)
@@ -276,15 +263,15 @@ namespace Loloca_BE.Presentation.Controllers
             }
         }
 
-        private void AddSessionIdToCache(string sessionId)
-        {
-            var activeSessionIds = _cache.Get<List<string>>("ActiveSessions") ?? new List<string>();
-            if (!activeSessionIds.Contains(sessionId))
-            {
-                activeSessionIds.Add(sessionId);
-                _cache.Set("ActiveSessions", activeSessionIds, TimeSpan.FromMinutes(30));
-            }
-        }
+        //private void AddSessionIdToCache(string sessionId)
+        //{
+        //    var activeSessionIds = _cache.Get<List<string>>("ActiveSessions") ?? new List<string>();
+        //    if (!activeSessionIds.Contains(sessionId))
+        //    {
+        //        activeSessionIds.Add(sessionId);
+        //        _cache.Set("ActiveSessions", activeSessionIds, TimeSpan.FromMinutes(30));
+        //    }
+        //}
 
         [AllowAnonymous]
         [HttpGet("get-random-tourguide-in-city")]
@@ -292,24 +279,12 @@ namespace Loloca_BE.Presentation.Controllers
         {
             try
             {
-                string sessionId;
-
-                if (HttpContext.Session.GetString("SessionId") == null)
-                {
-                    sessionId = Guid.NewGuid().ToString();
-                    HttpContext.Session.SetString("SessionId", sessionId);
-                    AddSessionIdToCache(sessionId);
-                }
-                else
-                {
-                    sessionId = HttpContext.Session.GetString("SessionId");
-                }
-                var tourGuides = await _tourGuideService.GetRandomTourGuidesInCityAsync(sessionId, CityId, page, pageSize);
-                var totalPage = await _tourGuideService.GetTotalPage(pageSize, CityId, sessionId);
+                var totalPage = await _tourGuideService.GetTotalPage(pageSize, CityId);
                 if (page > totalPage)
                 {
                     return NotFound("This page does not exist.");
                 }
+                var tourGuides = await _tourGuideService.GetTourGuidesInCityAsync(CityId, page, pageSize);
                 return Ok(new { tourGuides, totalPage });
             } catch (Exception ex)
             {

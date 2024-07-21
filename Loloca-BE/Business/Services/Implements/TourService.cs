@@ -567,139 +567,139 @@ namespace Loloca_BE.Business.Services.Implements
             }
         }
 
-        public async Task<List<AllToursView>> GetRandomToursAsync(string sessionId, int page, int pageSize)
-        {
-            try
-            {
-                var cacheKey = $"Tour_{sessionId}";
+        //public async Task<List<AllToursView>> GetRandomToursAsync(string sessionId, int page, int pageSize)
+        //{
+        //    try
+        //    {
+        //        var cacheKey = $"Tour_{sessionId}";
 
-                if (!_cache.TryGetValue(cacheKey, out List<AllToursView> shuffledItems))
-                {
-                    var tours = (await _unitOfWork.TourRepository.GetAllAsync(filter: t => t.Status == 1, includeProperties: "TourGuide,City")).ToList();
-                    shuffledItems = await GenerateShuffledTourList(tours);
-                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(5));
-                }
+        //        if (!_cache.TryGetValue(cacheKey, out List<AllToursView> shuffledItems))
+        //        {
+        //            var tours = (await _unitOfWork.TourRepository.GetAllAsync(filter: t => t.Status == 1, includeProperties: "TourGuide,City")).ToList();
+        //            shuffledItems = await GenerateShuffledTourList(tours);
+        //            _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(5));
+        //        }
 
-                var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        //        var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-                return pagedItems.Select(item => new AllToursView
-                {
-                    CityName = item.CityName,
-                    Description = item.Description,
-                    Activity = item.Activity,
-                    Category = item.Category,
-                    Duration = item.Duration,
-                    Name = item.Name,
-                    ThumbnailTourImage = item.ThumbnailTourImage,
-                    CityId = item.CityId,
-                    TourGuideId = item.TourGuideId,
-                    TourId = item.TourId,
-                    TourGuideName = item.Name
-                }).ToList();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+        //        return pagedItems.Select(item => new AllToursView
+        //        {
+        //            CityName = item.CityName,
+        //            Description = item.Description,
+        //            Activity = item.Activity,
+        //            Category = item.Category,
+        //            Duration = item.Duration,
+        //            Name = item.Name,
+        //            ThumbnailTourImage = item.ThumbnailTourImage,
+        //            CityId = item.CityId,
+        //            TourGuideId = item.TourGuideId,
+        //            TourId = item.TourId,
+        //            TourGuideName = item.Name
+        //        }).ToList();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message);
+        //    }
+        //}
 
-        public async Task<List<AllToursView>> GetRandomToursInCityAsync(string sessionId, int CityId, int page, int pageSize)
-        {
-            try
-            {
-                var cacheKey = $"Tour_CityId:{CityId}_{sessionId}";
+        //public async Task<List<AllToursView>> GetRandomToursInCityAsync(string sessionId, int CityId, int page, int pageSize)
+        //{
+        //    try
+        //    {
+        //        var cacheKey = $"Tour_CityId:{CityId}_{sessionId}";
 
-                if (!_cache.TryGetValue(cacheKey, out List<AllToursView> shuffledItems))
-                {
-                    var tours = (await _unitOfWork.TourRepository.GetAllAsync(filter: t => t.Status == 1 && t.CityId == CityId, includeProperties: "TourGuide,City")).ToList();
-                    shuffledItems = await GenerateShuffledTourList(tours);
-                    _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(5));
-                }
+        //        if (!_cache.TryGetValue(cacheKey, out List<AllToursView> shuffledItems))
+        //        {
+        //            var tours = (await _unitOfWork.TourRepository.GetAllAsync(filter: t => t.Status == 1 && t.CityId == CityId, includeProperties: "TourGuide,City")).ToList();
+        //            shuffledItems = await GenerateShuffledTourList(tours);
+        //            _cache.Set(cacheKey, shuffledItems, TimeSpan.FromMinutes(5));
+        //        }
 
-                var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        //        var pagedItems = shuffledItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-                return pagedItems.Select(item => new AllToursView
-                {
-                    CityName = item.CityName,
-                    Description = item.Description,
-                    Category = item.Category,
-                    Activity = item.Activity,
-                    Duration = item.Duration,
-                    Name = item.Name,
-                    ThumbnailTourImage = item.ThumbnailTourImage,
-                    CityId = item.CityId,
-                    TourGuideId = item.TourGuideId,
-                    TourId = item.TourId,
-                    TourGuideName = item.Name
-                }).ToList();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+        //        return pagedItems.Select(item => new AllToursView
+        //        {
+        //            CityName = item.CityName,
+        //            Description = item.Description,
+        //            Category = item.Category,
+        //            Activity = item.Activity,
+        //            Duration = item.Duration,
+        //            Name = item.Name,
+        //            ThumbnailTourImage = item.ThumbnailTourImage,
+        //            CityId = item.CityId,
+        //            TourGuideId = item.TourGuideId,
+        //            TourId = item.TourId,
+        //            TourGuideName = item.Name
+        //        }).ToList();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message);
+        //    }
+        //}
 
-        private async Task<List<AllToursView>> GenerateShuffledTourList(List<Tour> tours)
-        {
-            var items = new List<AllToursView>();
+        //private async Task<List<AllToursView>> GenerateShuffledTourList(List<Tour> tours)
+        //{
+        //    var items = new List<AllToursView>();
 
-            foreach (var tour in tours)
-            {
-                if(tour.TourGuide.Status == 1)
-                {
-                    var tourImage = (await _unitOfWork.TourImageRepository.FindAsync(t => t.TourId == tour.TourId)).FirstOrDefault();
+        //    foreach (var tour in tours)
+        //    {
+        //        if(tour.TourGuide.Status == 1)
+        //        {
+        //            var tourImage = (await _unitOfWork.TourImageRepository.FindAsync(t => t.TourId == tour.TourId)).FirstOrDefault();
 
-                    var item = new AllToursView
-                    {
-                        CityName = tour.City.Name,
-                        Description = tour.Description,
-                        Activity = tour.Activity,
-                        Category = tour.Category,
-                        Duration = tour.Duration,
-                        Name = tour.Name,
-                        ThumbnailTourImage = tourImage == null ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourImage.ImagePath, "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o"),
-                        CityId = tour.CityId,
-                        TourGuideId = tour.TourGuideId,
-                        TourId = tour.TourId,
-                        TourGuideName = $"{tour.TourGuide.LastName} {tour.TourGuide.FirstName}"
-                    };
+        //            var item = new AllToursView
+        //            {
+        //                CityName = tour.City.Name,
+        //                Description = tour.Description,
+        //                Activity = tour.Activity,
+        //                Category = tour.Category,
+        //                Duration = tour.Duration,
+        //                Name = tour.Name,
+        //                ThumbnailTourImage = tourImage == null ? null : await _googleDriveService.GetImageFromCacheOrDriveAsync(tourImage.ImagePath, "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o"),
+        //                CityId = tour.CityId,
+        //                TourGuideId = tour.TourGuideId,
+        //                TourId = tour.TourId,
+        //                TourGuideName = $"{tour.TourGuide.LastName} {tour.TourGuide.FirstName}"
+        //            };
 
-                    items.Add(item);
-                }
-            }
+        //            items.Add(item);
+        //        }
+        //    }
 
-            return items.OrderBy(x => _random.Next()).ToList();
-        }
+        //    return items.OrderBy(x => _random.Next()).ToList();
+        //}
 
-        public async Task<int> GetTotalPage(int pageSize, int? cityId, string sessionId)
-        {
-            try
-            {
-                string cacheKey;
-                if (cityId == null)
-                {
-                    cacheKey = $"Tour_{sessionId}";
-                }
-                else
-                {
-                    cacheKey = $"Tour_CityId:{cityId}_{sessionId}";
-                }
+        //public async Task<int> GetTotalPage(int pageSize, int? cityId)
+        //{
+        //    try
+        //    {
+        //        string cacheKey;
+        //        if (cityId == null)
+        //        {
+        //            cacheKey = $"Tour_{sessionId}";
+        //        }
+        //        else
+        //        {
+        //            cacheKey = $"Tour_CityId:{cityId}_{sessionId}";
+        //        }
 
-                if (_cache.TryGetValue(cacheKey, out List<AllToursView> shuffledItems))
-                {
-                    int totalPages = (int)Math.Ceiling(shuffledItems.Count / (double)pageSize);
-                    return totalPages;
-                }
-                else
-                {
-                    return 1;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+        //        if (_cache.TryGetValue(cacheKey, out List<AllToursView> shuffledItems))
+        //        {
+        //            int totalPages = (int)Math.Ceiling(shuffledItems.Count / (double)pageSize);
+        //            return totalPages;
+        //        }
+        //        else
+        //        {
+        //            return 1;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message);
+        //    }
+        //}
 
         public async Task<int> GetTotalPageByTourGuide(int TourGuideId, int pageSize)
         {
@@ -914,6 +914,129 @@ namespace Loloca_BE.Business.Services.Implements
             catch (Exception ex)
             {
                 throw new Exception("Cannot get tours by status", ex);
+            }
+        }
+
+        public async Task<List<AllToursView>> GetToursAsync(int page, int pageSize)
+        {
+            try
+            {
+                var response = new List<AllToursView>();
+                var tours = (await _unitOfWork.TourRepository.GetAsync(filter: t => t.Status == 1, includeProperties: "TourGuide,City", pageIndex: page, pageSize: pageSize, orderBy: t => t.OrderByDescending(o => o.TourId))).ToList();
+                if (tours.Any()) {
+                    foreach (var tour in tours) {
+                        if(tour.TourGuide.Status == 1)
+                        {
+                            var prices = (await _unitOfWork.TourPriceRepository.GetAsync(t => t.TourId == tour.TourId));
+                            var images = (await _unitOfWork.TourImageRepository.GetAsync(t => t.TourId == tour.TourId)).ToList();
+                            decimal lowestPrice = 0;
+                            foreach (var tourPrice in prices)
+                            {
+                                if (lowestPrice < tourPrice.ChildPrice)
+                                {
+                                    lowestPrice = tourPrice.ChildPrice;
+                                }
+                                if (lowestPrice < tourPrice.AdultPrice)
+                                {
+                                    lowestPrice = tourPrice.AdultPrice;
+                                }
+                            }
+                            var view = new AllToursView
+                            {
+                                Activity = tour.Activity,
+                                Category = tour.Category,
+                                CityId = tour.CityId,
+                                CityName = tour.City.Name,
+                                Description = tour.Description,
+                                Duration = tour.Duration,
+                                Name = tour.Name,
+                                Price = lowestPrice,
+                                TourGuideName = tour.TourGuide.LastName + " " + tour.TourGuide.FirstName,
+                                TourGuideId = tour.TourGuideId,
+                                TourId = tour.TourId,
+                                ThumbnailTourImage = images.Any() ? await _googleDriveService.GetImageFromCacheOrDriveAsync(images[0].ImagePath, "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o") : null
+                            };
+                            response.Add(view);
+                        }
+                    }
+                }
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<AllToursView>> GetToursInCityAsync(int CityId, int page, int pageSize)
+        {
+            try
+            {
+                var response = new List<AllToursView>();
+                var tours = (await _unitOfWork.TourRepository.GetAsync(filter: t => t.Status == 1 && t.CityId == CityId, includeProperties: "TourGuide,City", pageIndex: page, pageSize: pageSize, orderBy: t => t.OrderByDescending(o => o.TourId))).ToList();
+                if (tours.Any())
+                {
+                    foreach (var tour in tours)
+                    {
+                        if (tour.TourGuide.Status == 1)
+                        {
+                            var prices = (await _unitOfWork.TourPriceRepository.GetAsync(t => t.TourId == tour.TourId));
+                            var images = (await _unitOfWork.TourImageRepository.GetAsync(t => t.TourId == tour.TourId)).ToList();
+                            decimal lowestPrice = 0;
+                            foreach (var tourPrice in prices)
+                            {
+                                if (lowestPrice < tourPrice.ChildPrice)
+                                {
+                                    lowestPrice = tourPrice.ChildPrice;
+                                }
+                                if (lowestPrice < tourPrice.AdultPrice)
+                                {
+                                    lowestPrice = tourPrice.AdultPrice;
+                                }
+                            }
+                            var view = new AllToursView
+                            {
+                                Activity = tour.Activity,
+                                Category = tour.Category,
+                                CityId = tour.CityId,
+                                CityName = tour.City.Name,
+                                Description = tour.Description,
+                                Duration = tour.Duration,
+                                Name = tour.Name,
+                                Price = lowestPrice,
+                                TourGuideName = tour.TourGuide.LastName + " " + tour.TourGuide.FirstName,
+                                TourGuideId = tour.TourGuideId,
+                                TourId = tour.TourId,
+                                ThumbnailTourImage = images.Any() ? await _googleDriveService.GetImageFromCacheOrDriveAsync(images[0].ImagePath, "1j6R0VaaZXFbruE553kdGyUrboAxfVw3o") : null
+                            };
+                            response.Add(view);
+                        }
+                    }
+                }
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<int> GetTotalPage(int pageSize, int? cityId)
+        {
+            try
+            {
+                if (cityId == null)
+                {
+                    var totalTour = await _unitOfWork.TourRepository.CountAsync();
+                    return (totalTour / pageSize) + 1;
+                }
+                else {
+                    var totalTour = await _unitOfWork.TourRepository.CountAsync(c => c.CityId == cityId);
+                    return (totalTour / pageSize) + 1;
+                }
+            }
+            catch (Exception ex) { 
+                throw new Exception(ex.Message);
             }
         }
     }

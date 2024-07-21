@@ -180,26 +180,26 @@ recurringJobManager.AddOrUpdate(
     () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IRefreshTokenBackgroundService>().RemoveExpiredRefreshToken(),
     Cron.Minutely
     );
-recurringJobManager.AddOrUpdate(
-    "RefreshTourGuideCache", 
-    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<ITourGuideBackgroundService>().RefreshTourGuideCache(), 
-    Cron.Minutely
-    );
-recurringJobManager.AddOrUpdate(
-    "RefreshTourGuideInCityCache",
-    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<ITourGuideBackgroundService>().RefreshTourGuideInCityCache(),
-    Cron.Minutely
-    );
-recurringJobManager.AddOrUpdate(
-    "RefreshTourCache",
-    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<ITourBackgroundService>().RefreshTourCache(),
-    Cron.Minutely
-    );
-recurringJobManager.AddOrUpdate(
-    "RefreshTourInCityCache",
-    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<ITourBackgroundService>().RefreshTourInCityCache(),
-    Cron.Minutely
-    );
+//recurringJobManager.AddOrUpdate(
+//    "RefreshTourGuideCache", 
+//    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<ITourGuideBackgroundService>().RefreshTourGuideCache(), 
+//    Cron.Minutely
+//    );
+//recurringJobManager.AddOrUpdate(
+//    "RefreshTourGuideInCityCache",
+//    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<ITourGuideBackgroundService>().RefreshTourGuideInCityCache(),
+//    Cron.Minutely
+//    );
+//recurringJobManager.AddOrUpdate(
+//    "RefreshTourCache",
+//    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<ITourBackgroundService>().RefreshTourCache(),
+//    Cron.Minutely
+//    );
+//recurringJobManager.AddOrUpdate(
+//    "RefreshTourInCityCache",
+//    () => app.Services.CreateScope().ServiceProvider.GetRequiredService<ITourBackgroundService>().RefreshTourInCityCache(),
+//    Cron.Minutely
+//    );
 recurringJobManager.AddOrUpdate(
     "RejectExpiredPaymentRequest",
     () => app.Services.CreateScope().ServiceProvider.GetRequiredService<IPaymentRequestBackgroundService>().RejectExpiredPaymentRequest(),
