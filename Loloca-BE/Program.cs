@@ -135,7 +135,7 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddSwaggerGen(opt =>
 {
-    opt.SwaggerDoc("v2", new OpenApiInfo { Title = "Loloca API", Version = "v3" });
+    opt.SwaggerDoc("v3", new OpenApiInfo { Title = "Loloca API", Version = "v3" });
     opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -170,9 +170,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
 	{
-    		c.SwaggerEndpoint("/swagger/v2/swagger.json", "Loloca API V2");
-    		c.RoutePrefix = "api";
-	});
+        c.SwaggerEndpoint("/swagger/v3/swagger.json", "Loloca API V3");
+        c.RoutePrefix = "api";
+    });
 }
 
 app.UseHangfireDashboard();
