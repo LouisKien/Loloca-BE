@@ -133,30 +133,33 @@ builder.Services.AddAuthorization(options =>
 // Load .env file
 //DotNetEnv.Env.Load();
 
-opt.SwaggerDoc("v2", new OpenApiInfo { Title = "Loloca API", Version = "v3" });
-opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+builder.Services.AddSwaggerGen(opt =>
 {
-    In = ParameterLocation.Header,
-    Description = "Please enter token",
-    Name = "Authorization",
-    Type = SecuritySchemeType.Http,
-    BearerFormat = "JWT",
-    Scheme = "bearer"
-});
-
-opt.AddSecurityRequirement(new OpenApiSecurityRequirement
-{
+    opt.SwaggerDoc("v2", new OpenApiInfo { Title = "Loloca API", Version = "v3" });
+    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        new OpenApiSecurityScheme
+        In = ParameterLocation.Header,
+        Description = "Please enter token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "bearer"
+    });
+
+    opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
         {
-            Reference = new OpenApiReference
+            new OpenApiSecurityScheme
             {
-                Type=ReferenceType.SecurityScheme,
-                Id="Bearer"
-            }
-        },
-        new string[]{}
-    }
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            new string[]{}
+        }
+    });
 });
 
 var app = builder.Build();
