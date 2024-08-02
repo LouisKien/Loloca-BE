@@ -135,7 +135,7 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddSwaggerGen(opt =>
 {
-    opt.SwaggerDoc("v3", new OpenApiInfo { Title = "Loloca API", Version = "v3" });
+    opt.SwaggerDoc("v3", new OpenApiInfo { Title = "Loloca API", Version = "3.0.0" });
     opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
